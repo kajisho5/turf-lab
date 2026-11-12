@@ -132,6 +132,11 @@ if _epop:
     FEATS = FEATS + ["epop"]
 if _tc:
     FEATS = FEATS + ["tc"]
+# ★LTR_TIME=1（2026-11-13）: 時計の7列（build_time_feats.py が bt_all.jsonl に書き足す）★
+#   sf1/sfb/sfa=近3走の時計指数、af1/afb/afa=近3走の上がり指数、btf=持ち時計の指数。全部前走までの情報。
+TIME_FEATS = ["sf1", "sfb", "sfa", "af1", "afb", "afa", "btf"]
+if os.environ.get("LTR_TIME", "0") == "1":
+    FEATS = FEATS + TIME_FEATS
 if _surf:
     FEATS = FEATS + ["surf"]
 if _rno:

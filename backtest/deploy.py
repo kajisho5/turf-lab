@@ -36,6 +36,7 @@ MAP = [
     #   LTRモデル本体と、公式の馬別成績索引（wr/dr用）を同じ /odds/ 配下へ。
     #   kajikeiba.com側のhorses.jsonはCORSで読めないためlegacyにも置く。
     ("core/ltr_model.js",             "/seventh-well.com/odds/core/ltr_model.js"),
+    ("core/ltr_model_t.js",           "/seventh-well.com/odds/core/ltr_model_t.js"),   # 時計つきモデル（mv 2.3）
     ("deploy/data/horses.json",       "/seventh-well.com/odds/data/horses.json"),
     ("deploy/data/nar_index_asof.json", "/seventh-well.com/odds/data/nar_index_asof.json"),   # 索引がいつまでの結果で作られたか（外から鮮度を確かめる用）
     # 実運用の成績表（backtest/scoreboard.py が毎朝作る。運営側だけに置く）

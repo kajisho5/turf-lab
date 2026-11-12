@@ -572,6 +572,7 @@
 </div>
 
 <script src="core/ltr_model.js"></script>
+<script src="core/ltr_model_t.js"></script>
 <script>
 "use strict";
 /* ===== エラー監視 =====
@@ -2598,6 +2599,20 @@ function ltrFeatTweet(num, ctx, fn, trackName){
     sir:_pedOf(_LTR_SIDX, e.sire),
     dms:_pedOf(_LTR_DIDX, e.damsire)
   };
+  /* ★2026-11-13 時計の7列（mv 2.3・地方だけ）★ 走破タイム・上がり3F・持ち時計。
+     値は索引（horses.json の s と b）から取る。索引は学習データと同じ関数で作っている
+     （backtest/build_time_feats.py）ので、学習時と同じ値になる。無ければ null＝学習時の欠損と同じ。
+       s = [前走の時計指数, 近3走の最良, 平均, 前走の上がり指数, 最良, 平均]
+       b = {"場|距離": 持ち時計の指数}（今日と同じ場×距離の自己ベスト） */
+  var _ts=(_m==="nar"&&rec&&rec.s&&rec.s.length===6)?rec.s:null;
+  var _nn=function(v){ return (v===null||v===undefined||v!==v)?null:+v; };
+  f.sf1=_ts?_nn(_ts[0]):null; f.sfb=_ts?_nn(_ts[1]):null; f.sfa=_ts?_nn(_ts[2]):null;
+  f.af1=_ts?_nn(_ts[3]):null; f.afb=_ts?_nn(_ts[4]):null; f.afa=_ts?_nn(_ts[5]):null;
+  f.btf=null;
+  try{
+    var _bd=ctx.race&&ctx.race.dist;
+    if(_m==="nar"&&rec&&rec.b&&trackName&&_bd) f.btf=_nn(rec.b[trackName+"|"+(+_bd)]);
+  }catch(_){}
   return f;
 }
 
@@ -2641,6 +2656,9 @@ async function scoreRace(html, r, trackName){
   const _ltrVals={};   // 馬番→LTR生スコア（較正の入力。全頭LTRの時だけ使う）
   const _ltrFeat={};   // 馬番→LTR特徴量（C12の補助モデルに同じ33列を渡す）
   let _c12Cal=null;    // C12を使ったレースだけ: 馬番→raw'（◎複勝見込みの較正入力）
+  const _ltrValsT={};  // 馬番→時計つきモデル(narT)の生スコア（mv 2.3・地方・T_FROM以降だけ）
+  let _calKey="narC12"; // ◎3着内見込みの表のキー（時計つきで並べたら narT）
+  let _oldTop=null;     // 裏の記録用: 時計つきに切り替えたレースで、切替前（C12）の上位3頭
   globalThis.__FIELD__ = _fieldN;   // ★await の後なので入れ直す（並列採点で他レースの頭数に上書きされる）
   const scored=nums.map(num=>{
     const lin=fundamentalScore(num,ctx);          // 線形スコア（フォールバック兼スケール基準。ばんえいはbaneiScoreそのもの）
@@ -2685,6 +2703,10 @@ async function scoreRace(html, r, trackName){
         if(_lf){
           var _lv=ltrScore(_lf, MODE==="jra"?"jra":"nar");
           if(_lv!=null && isFinite(_lv)){ s=50+_lv*12; window.__LTR_USED=(window.__LTR_USED||0)+1; _ltrVals[num]=_lv; _ltrFeat[num]=_lf; }
+          if(tActive(ctx.raceDate) && typeof ltrScoreT==="function"){
+            var _lt=ltrScoreT(_lf,"narT");
+            if(_lt!=null && isFinite(_lt)) _ltrValsT[num]=_lt;
+          }
         }
       }
     }catch(_){}
@@ -2702,13 +2724,37 @@ async function scoreRace(html, r, trackName){
       if(_ok){
         const _mean=a=>a.reduce((p,c)=>p+c,0)/a.length;
         const _sd=a=>{ const m=_mean(a); return Math.sqrt(a.reduce((p,c)=>p+(c-m)*(c-m),0)/a.length); };
-        const L=scored.map(x=>_ltrVals[x.num]), R=scored.map(x=>_res[x.num]);
-        const mL=_mean(L), sL=_sd(L), mR=_mean(R), sR=_sd(R);
-        const comb=scored.map(x=>(sL>0?(_ltrVals[x.num]-mL)/sL:0) + C12_K*(sR>0?(_res[x.num]-mR)/sR:0));
-        const sC=_sd(comb);
+        /* 並べ直しの本体。LV=順位学習の生スコア、RV=補助モデルの値、scale=点数の幅の調整。
+           戻り値 = 馬番→raw'（LVと同じ平均・幅に戻した値） */
+        const _comb=function(LV,RV,scale){
+          const L=scored.map(x=>LV[x.num]), R=scored.map(x=>RV[x.num]);
+          const mL=_mean(L), sL=_sd(L), mR=_mean(R), sR=_sd(R);
+          const comb=scored.map(x=>(sL>0?(LV[x.num]-mL)/sL:0) + C12_K*(sR>0?(RV[x.num]-mR)/sR:0));
+          const sC=_sd(comb); const out={};
+          scored.forEach((x,i)=>{ out[x.num]=mL + sL*scale*(sC>0?comb[i]/sC:0); });
+          return out;
+        };
         const _topBefore=scored[0]&&scored[0].num;
+        let _raw=_comb(_ltrVals,_res,1);
+        /* ★時計つきモデル（mv 2.3・地方・T_FROM以降）★ 順位学習も補助モデルも、時計の7列を足した40列のものに替える。
+           全頭ぶん出せた時だけ。1頭でも欠けたら今までのC12のまま（安全側）。
+           T_SCALE は点数の幅の調整（新モデルは幅が約1.07倍に広がるので、判定の閾値の意味がずれないよう戻す）。
+           切替前（C12）の上位3頭は裏の記録に残す。 */
+        try{
+          if(tActive(ctx.raceDate) && typeof ltrScoreT==="function" && Object.keys(_ltrValsT).length===nums.length){
+            const _resT={}; let _okT=true;
+            scored.forEach(x=>{ const v=ltrScoreT(_ltrFeat[x.num],"narTR"); if(v==null||!isFinite(v)) _okT=false; _resT[x.num]=v; });
+            if(_okT){
+              _oldTop=scored.slice().sort((a,b)=>_raw[b.num]-_raw[a.num]).slice(0,3).map(x=>x.num);
+              _raw=_comb(_ltrValsT,_resT,T_SCALE);
+              _calKey="narT";
+              scored.forEach(x=>{ x._t=true; });
+              window.__T_USED=(window.__T_USED||0)+1;
+            }
+          }
+        }catch(_){}
         _c12Cal={};
-        scored.forEach((x,i)=>{ const raw=mL + sL*(sC>0?comb[i]/sC:0); x.s = 50 + raw*12; x._c12=true; _c12Cal[x.num]=raw; });
+        scored.forEach(x=>{ const raw=_raw[x.num]; x.s = 50 + raw*12; x._c12=true; _c12Cal[x.num]=raw; });
         scored.sort((a,b)=>b.s-a.s);
         window.__C12_USED=(window.__C12_USED||0)+1;
         if(scored[0] && scored[0].num!==_topBefore) window.__C12_CHANGED=(window.__C12_CHANGED||0)+1;
@@ -2839,7 +2885,7 @@ async function scoreRace(html, r, trackName){
     /* C12のレースは「C12の並び(raw')」と C12専用の較正表(narC12)で出す。
        旧表のままだと全ビンで約10pt出しすぎ、LTR生値のままだと◎がLTR首位でない半数で非表示になる（実測）。 */
     if(_c12Cal && marks[0] && marks[0].num!=null)
-      oProb=ltrCalibProb(_c12Cal, marks[0].num, "narC12");
+      oProb=ltrCalibProb(_c12Cal, marks[0].num, _calKey);
     else if(Object.keys(_ltrVals).length===nums.length && marks[0] && marks[0].num!=null)
       oProb=ltrCalibProb(_ltrVals, marks[0].num);
   }catch(_){}
@@ -2854,7 +2900,9 @@ async function scoreRace(html, r, trackName){
     const _top=function(arr){ return arr.slice(0,3).map(function(x){ return x.num; }); };
     const _a=scored.slice().sort(function(p,q){ return (_k(q)+(q._padj||0))-(_k(p)+(p._padj||0)); });
     const _b=scored.slice().sort(function(p,q){ return (_k(q)-(q._koryu?6:0))-(_k(p)-(p._koryu?6:0)); });
-    shadow={ v:1, adj:_top(_a), nokoryu:_top(_b), koryu:(scored.some(function(x){return x._koryu;})?1:0), c12:(scored.some(function(x){return x._c12;})?1:0) };
+    /* old = 時計つきモデルに切り替えたレースで、切替前（C12）の上位3頭。t=1 は時計つきで並べたレース */
+    shadow={ v:2, adj:_top(_a), nokoryu:_top(_b), koryu:(scored.some(function(x){return x._koryu;})?1:0), c12:(scored.some(function(x){return x._c12;})?1:0),
+             t:(scored.some(function(x){return x._t;})?1:0), old:_oldTop };
   }catch(_){ shadow=null; }
   return { no:r.no, name:raceName, track:trackName, race_id:r.race_id, post:(r.post||null), surface:(cond.surface||null), dist:(cond.dist||null), going:(cond.going||null), grade:(r.grade||null), marks, ranked, shadow, brkFull:(marks[0]&&marks[0].brkFull)||null, localLift:(marks[0]&&marks[0].localLift)||null, field:nums.length, firmO, firm1, oProb, hasOdds:!!odds, advice, chaos, locked:!!(_tc && loadLock(_date,_tc)), ovr:_ovr, scratched:(ps.scratched||[]) };
 }
@@ -3315,7 +3363,14 @@ const MODEL_VER = "2.1";
    切替は「レースの日付」で決める（いつ再計算しても同じ◎になる）。中央は未検証なので旧方式。 */
 const C12_K = 2.0, C12_FROM = "20260928";
 function c12Active(dateStr){ return MODE==="nar" && String(dateStr||"")>=C12_FROM; }
-function modelVerFor(dateStr){ return c12Active(dateStr) ? "2.2" : MODEL_VER; }
+/* ★v2.3 = 時計つきモデル（2026-11-13採用・地方のみ・T_FROM以降の日付）★
+   順位学習と補助モデルの両方に、走破タイム・上がり3F・持ち時計から作った7列を足した（40列）。
+   2023-01〜2026-11-12・52,419R で C12 と同じレースを比べて ◎3着内 60.0→63.7% / 複 86.2→88.2 / 単 82.1→82.5、
+   16種類の買い方のうち14で回収率が上がった（backtest/bt_time_feats.py・docs/SCORING_AUDIT.md 2026-11-13）。
+   切替は C12 と同じく「レースの日付」で決める（過去日はいつ再計算しても同じ◎）。 */
+const T_FROM = "20261114", T_SCALE = 0.935;
+function tActive(dateStr){ return MODE==="nar" && String(dateStr||"")>=T_FROM; }
+function modelVerFor(dateStr){ return tActive(dateStr) ? "2.3" : (c12Active(dateStr) ? "2.2" : MODEL_VER); }
 /* 場ごとの天気・馬場見込みを保存用に控えておく（attachTrackWeatherが書く）。
    当日の実馬場と突き合わせて「降水量→馬場」の較正を検証するために残す。 */
 const _WX_SAVE = {};
