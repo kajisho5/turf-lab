@@ -1,5 +1,8 @@
 # 予想ページ一式（seventh-well.com/odds・/lab）を Cloudflare に公開する
-# main に反映したとき（関係するファイルが変わったときだけ）と、手動で動く
+# main に反映したとき（関係するファイルが変わったときだけ）・毎朝・手動で動く
+# 公開のたびに、地方の成績索引（馬・騎手・調教師・父）を公式データから作り直す（backtest/build_nar_index.py）
+#   毎朝の回で取得に失敗したら公開ごと止める（GitHub から失敗の通知が来る。本番は前のまま）
+#   main への反映の回で取得に失敗したら、リポにある索引のまま公開する（警告を出す）
 name: deploy-site
 on:
   push:
@@ -10,7 +13,11 @@ on:
       - "cloudflare/**"
       - "backtest/deploy.py"
       - "backtest/site_config.py"
+      - "backtest/build_nar_index.py"
       - ".github/workflows/deploy-site.yml"
+  schedule:
+    - cron: "40 19 * * *"   # 毎朝 4:40（日本時間）。公式データは 2:00 ごろ更新される
+    - cron: "40 22 * * *"   # 毎朝 7:40（日本時間）。4:40 の回が失敗したときの予備
   workflow_dispatch:
 concurrency:
   group: deploy-site
@@ -37,7 +44,9 @@ jobs:
     uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
     with:
       working-directory: cloudflare
-      build-command: python3 build.py --site both
+      build-command: python3 ../backtest/build_nar_index.py --cache ../.nar_cache ${{ github.event_name == 'push' && '--soft' || '' }} && python3 build.py --site both
+      cache-path: .nar_cache
+      cache-key: nar-zip-v1
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -37,6 +37,7 @@ MAP = [
     #   kajikeiba.com側のhorses.jsonはCORSで読めないためlegacyにも置く。
     ("core/ltr_model.js",             "/seventh-well.com/odds/core/ltr_model.js"),
     ("deploy/data/horses.json",       "/seventh-well.com/odds/data/horses.json"),
+    ("deploy/data/nar_index_asof.json", "/seventh-well.com/odds/data/nar_index_asof.json"),   # 索引がいつまでの結果で作られたか（外から鮮度を確かめる用）
     ("deploy/data/jra_horses.json",   "/seventh-well.com/odds/data/jra_horses.json"),
     # 天気→馬場見込みの較正表（weather_calibrate.py生成。tweet.htmlの表示用）
     ("deploy/data/going_by_rain.json", "/seventh-well.com/odds/data/going_by_rain.json"),

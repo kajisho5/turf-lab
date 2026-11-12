@@ -49,3 +49,9 @@ timelink_create_key.txt
 
 # 依存ライブラリ（npm ci で入る）
 node_modules/
+
+# 公式データの月次ZIP（索引づくりの持ち越しデータ）
+.nar_cache/
+backtest/nardata_zip/
+__pycache__/
+*.pyc
