@@ -2645,6 +2645,7 @@ async function scoreRace(html, r, trackName){
   const scored=nums.map(num=>{
     const lin=fundamentalScore(num,ctx);          // 線形スコア（フォールバック兼スケール基準。ばんえいはbaneiScoreそのもの）
     let s=lin;
+    let _padj=0;   // ★裏の記録用★ 後付け補正（実測先行力・レースレベル・重賞休養・重賞危険信号）の合計。本番の点数には足さない
     try{
       if(!isBanei && typeof gbmScore==="function" && typeof GBM_MODEL!=="undefined"){
         const brk=fullBreakdown(num,ctx);         // 各ファクターの寄与（__T適用後）
@@ -2671,6 +2672,7 @@ async function scoreRace(html, r, trackName){
           // 重賞危険信号も同様（fundamentalScore参照）
           const _dg=brk.find(z=>z[0]==="重賞危険信号");
           if(_dg && s!==lin) s += _dg[1];
+          _padj=(_ff?(+_ff[1]||0):0)+(_rl?(+_rl[1]||0):0)+(_sr?(+_sr[1]||0):0)+(_dg?(+_dg[1]||0):0);
         }
       }
     }catch(_){ /* 失敗時は線形スコアのまま */ }
@@ -2686,7 +2688,7 @@ async function scoreRace(html, r, trackName){
         }
       }
     }catch(_){}
-    return { num, name:(ps.entries[num]&&ps.entries[num].name)||num, s, lin };
+    return { num, name:(ps.entries[num]&&ps.entries[num].name)||num, s, lin, _padj };
   }).sort((a,b)=>b.s-a.s);
   /* ★C12（地方・C12_FROM以降）★ 全頭のLTRが出せたレースだけ、補助モデル narR を足して並べ直す。
      s をLTRと同じ平均・ばらつきに戻してから 50+raw·12 に写すので、下流（信頼度・狙い目・見送りの
@@ -2841,7 +2843,20 @@ async function scoreRace(html, r, trackName){
     else if(Object.keys(_ltrVals).length===nums.length && marks[0] && marks[0].num!=null)
       oProb=ltrCalibProb(_ltrVals, marks[0].num);
   }catch(_){}
-  return { no:r.no, name:raceName, track:trackName, race_id:r.race_id, post:(r.post||null), surface:(cond.surface||null), dist:(cond.dist||null), going:(cond.going||null), grade:(r.grade||null), marks, ranked, brkFull:(marks[0]&&marks[0].brkFull)||null, localLift:(marks[0]&&marks[0].localLift)||null, field:nums.length, firmO, firm1, oProb, hasOdds:!!odds, advice, chaos, locked:!!(_tc && loadLock(_date,_tc)), ovr:_ovr, scratched:(ps.scratched||[]) };
+  /* ★裏の記録（2026-11-13・v4.3.58）★ 本番の印・点数・並びは一切変えない。
+     「別の並べ方をしたら上位が誰になるか」だけを保存し、後で公式の結果と突き合わせて成績を比べる。
+       adj     = 今の点数に、並べ替えモデルで上書きされて消えている後付け補正を足した場合の上位3頭
+       nokoryu = 交流のJRA馬+6 を足さなかった場合の上位3頭（koryu=1 のレースだけ本番と違い得る）
+     失敗しても予想は止めない（shadow が null になるだけ）。 */
+  let shadow=null;
+  try{
+    const _k=function(x){ return (x._sadj!=null?x._sadj:x.s); };
+    const _top=function(arr){ return arr.slice(0,3).map(function(x){ return x.num; }); };
+    const _a=scored.slice().sort(function(p,q){ return (_k(q)+(q._padj||0))-(_k(p)+(p._padj||0)); });
+    const _b=scored.slice().sort(function(p,q){ return (_k(q)-(q._koryu?6:0))-(_k(p)-(p._koryu?6:0)); });
+    shadow={ v:1, adj:_top(_a), nokoryu:_top(_b), koryu:(scored.some(function(x){return x._koryu;})?1:0), c12:(scored.some(function(x){return x._c12;})?1:0) };
+  }catch(_){ shadow=null; }
+  return { no:r.no, name:raceName, track:trackName, race_id:r.race_id, post:(r.post||null), surface:(cond.surface||null), dist:(cond.dist||null), going:(cond.going||null), grade:(r.grade||null), marks, ranked, shadow, brkFull:(marks[0]&&marks[0].brkFull)||null, localLift:(marks[0]&&marks[0].localLift)||null, field:nums.length, firmO, firm1, oProb, hasOdds:!!odds, advice, chaos, locked:!!(_tc && loadLock(_date,_tc)), ovr:_ovr, scratched:(ps.scratched||[]) };
 }
 /* 荒れ指数 0-100。高いほど波乱含み。オッズ未確定なら頭数のみで簡易算出 */
 function chaosIndex(odds, scored, marks, fieldN){
@@ -3148,7 +3163,7 @@ function savePredictions(date,tc,trackName,races,resArr){
          （2026-07-31、実際に全レースが夜に書き換わり結果に都合よくなっていた）。
          手動の「全場予想」ボタンからの保存は noclobber=false で従来通り上書き可。 */
       noclobber: !!(LINE_AUTO || autoOddsBusy),
-      races: src.map((m)=>({ no:m.no, name:m.name, race_id:m.race_id||null, post:(m.post||null), surface:(m.surface||null), dist:(m.dist||null), going:(m.going||null), marks:m.marks, ranked:(m.ranked||null), firmO:(m.firmO!=null?m.firmO:null), firm1:(m.firm1!=null?m.firm1:null), oProb:(m.oProb!=null?m.oProb:null), hasOdds:(m.hasOdds!==false), field:(m.field||0), chaos:(m.chaos||null), skip:!!m.skip, skipReason:m.skipReason||null, ovr:(m.ovr||null), scratched:(m.scratched||[]) })),
+      races: src.map((m)=>({ no:m.no, name:m.name, race_id:m.race_id||null, post:(m.post||null), surface:(m.surface||null), dist:(m.dist||null), going:(m.going||null), marks:m.marks, ranked:(m.ranked||null), firmO:(m.firmO!=null?m.firmO:null), firm1:(m.firm1!=null?m.firm1:null), oProb:(m.oProb!=null?m.oProb:null), hasOdds:(m.hasOdds!==false), field:(m.field||0), chaos:(m.chaos||null), skip:!!m.skip, skipReason:m.skipReason||null, ovr:(m.ovr||null), scratched:(m.scratched||[]), shadow:(m.shadow||null) })),
       wx: (_WX_SAVE[tc]||null) };
     PRED_CACHE[predKey(date,tc)]=payload;   // セッション内キャッシュ（同一セッションの答え合わせ用）
     /* サーバー保存。フル版が弾かれたら（WAF/POSTサイズ制限）軽量版で自動リトライ。
