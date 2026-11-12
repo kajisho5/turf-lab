@@ -1,0 +1,32 @@
+# X自動投稿（kajikeiba-autopost）を Cloudflare に公開する
+# main に反映したとき（tools/x-autopost が変わったときだけ）と、手動で動く
+name: deploy-autopost
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/x-autopost/**"
+      - ".github/workflows/deploy-autopost.yml"
+  workflow_dispatch:
+concurrency:
+  group: deploy-autopost
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: "22" }
+      - name: 書き間違い確認
+        run: node --check tools/x-autopost/src/worker.js
+  deploy:
+    needs: check
+    uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
+    with:
+      working-directory: tools/x-autopost
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
