@@ -7,6 +7,7 @@ import { Env, Budget, dateC, ymd, jst, nowSec, sleep, isObj, empty } from './lib
 import { oldUpsert, OLD_MAX } from './api/oddslog';
 import { narCollect } from './api/nar';
 import { indexRaces } from './api/race';
+import { recordT10 } from './t10';
 
 const WINDOW_BEFORE = 30, WINDOW_AFTER = 8, RESULT_AFTER = 4, REQ_SLEEP = 700, MAX_RACES = 24, MAX_SNAPS = 60;
 const TH = { drop: 22, rise: 28, vel: 8 };
@@ -129,7 +130,8 @@ export async function oddsCron(env: Env): Promise<Record<string, unknown>> {
   const row = await env.DB.prepare("SELECT v FROM kv WHERE k='odds_snaps'").first<{ v: string }>();
   let snaps: Record<string, any> = {};
   try { const j = row ? JSON.parse(row.v) : {}; if (isObj(j)) snaps = j; } catch { /* noop */ }
-  let collected = 0, reconciled = 0;
+  let collected = 0, reconciled = 0, t10 = 0;
+  const predCache = new Map<string, Record<string, unknown> | null>();
   const touched = new Set<string>();
 
   for (const r of targets) {
@@ -137,6 +139,8 @@ export async function oddsCron(env: Env): Promise<Record<string, unknown>> {
     if (now <= r.postMin!) {
       const win = await fetchWinOdds(b, rid, mode); await sleep(REQ_SLEEP);
       if (win) {
+        // 発走10分前の記録（記録だけ。失敗しても先へ進む）
+        try { if (await recordT10(env, predCache, r, today, r.postMin! - now, nowSec(), win)) t10++; } catch (e) { console.error('t10', rid, e); }
         if (!snaps[rid]) snaps[rid] = { mode, track: r.track, no: r.no, postMin: r.postMin, series: [] };
         snaps[rid].series.push({ ts: nowSec(), win });
         if (snaps[rid].series.length > MAX_SNAPS) snaps[rid].series = snaps[rid].series.slice(-MAX_SNAPS);
@@ -177,9 +181,9 @@ export async function oddsCron(env: Env): Promise<Record<string, unknown>> {
   }
   await env.DB.batch([
     env.DB.prepare("INSERT OR REPLACE INTO kv(k,v,at) VALUES('odds_snaps',?,?)").bind(JSON.stringify(snaps), nowSec()),
-    env.DB.prepare("INSERT OR REPLACE INTO kv(k,v,at) VALUES('odds_cron_state',?,?)").bind(JSON.stringify({ lastRun: dateC(), now, targets: targets.length, collected, reconciled, budgetLeft: b.left }), nowSec()),
+    env.DB.prepare("INSERT OR REPLACE INTO kv(k,v,at) VALUES('odds_cron_state',?,?)").bind(JSON.stringify({ lastRun: dateC(), now, targets: targets.length, collected, reconciled, t10, budgetLeft: b.left }), nowSec()),
   ]);
-  return { ok: true, targets: targets.length, collected, reconciled };
+  return { ok: true, targets: targets.length, collected, reconciled, t10 };
 }
 
 export async function scheduled(ev: ScheduledController, env: Env): Promise<void> {
