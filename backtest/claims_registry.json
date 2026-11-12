@@ -1,0 +1,345 @@
+{
+ "note": "公開している実測数字の単一台帳。check_claims.py が deploy/*.html と突き合わせ、乖離があると npm run check が落ちる。数字を更新するときは【必ず】測り直し→この台帳→HTML の順（89%事故: 文面だけ古い数字が残るのを機械で防ぐ）。",
+ "claims": [
+  {
+   "id": "fuku-nar-p3",
+   "value": "72.8",
+   "desc": "複勝推奨(地方・C12) ◎複勝率%",
+   "measured": "2026-09-27",
+   "source": "C12再測定 holdout 2023- (12,934R)",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "nar:\\{p3:72\\.8"
+    ],
+    [
+     "deploy/tweet.html",
+     "実測72\\.8%"
+    ]
+   ]
+  },
+  {
+   "id": "legacy-fuku-nar-p3",
+   "value": "73.5",
+   "desc": "tweet2(旧LTRのまま動く試作)の 複勝推奨(地方) ◎複勝率%",
+   "measured": "2026-07-31",
+   "source": "backtest/verify_fuku_rec.py (15,165R)",
+   "files": [
+    [
+     "deploy/tweet2.html",
+     "複勝率73\\.5%"
+    ]
+   ]
+  },
+  {
+   "id": "fuku-nar-roi",
+   "value": "89.4",
+   "desc": "複勝推奨(地方・C12) 複勝ROI%",
+   "measured": "2026-09-27",
+   "source": "C12再測定 holdout",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "roi:89\\.4"
+    ]
+   ]
+  },
+  {
+   "id": "legacy-fuku-nar-roi",
+   "value": "86.4",
+   "desc": "tweet2(旧LTRのまま動く試作)の 複勝推奨(地方) 複勝ROI%",
+   "measured": "2026-07-31",
+   "source": "backtest/verify_fuku_rec.py",
+   "files": [
+    [
+     "deploy/tweet2.html",
+     "回収率は86\\.4%"
+    ]
+   ]
+  },
+  {
+   "id": "fuku-jra-p3",
+   "value": "71.1",
+   "desc": "複勝推奨(中央) ◎複勝率%",
+   "measured": "2026-07-31",
+   "source": "backtest/verify_fuku_rec.py (1,182R)",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "jra:\\{p3:71\\.1"
+    ]
+   ]
+  },
+  {
+   "id": "fuku-jra-roi",
+   "value": "85.8",
+   "desc": "複勝推奨(中央) 複勝ROI%",
+   "measured": "2026-07-31",
+   "source": "backtest/verify_fuku_rec.py",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "jra:\\{p3:71\\.1, roi:85\\.8"
+    ]
+   ]
+  },
+  {
+   "id": "all-nar-p3",
+   "value": "58.4",
+   "desc": "全レース(地方・C12) ◎複勝率%",
+   "measured": "2026-09-27",
+   "source": "C12再測定 払戻基準 (49,323R)",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "allP3:58\\.4"
+    ],
+    [
+     "deploy/scoring_explainer.html",
+     "58\\.4%"
+    ]
+   ]
+  },
+  {
+   "id": "all-nar-roi",
+   "value": "86.4",
+   "desc": "全レース(地方・C12) 複勝ROI%",
+   "measured": "2026-09-27",
+   "source": "eval_bets holdout (C12)",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "allRoi:86\\.4"
+    ],
+    [
+     "deploy/scoring_explainer.html",
+     "86\\.4%"
+    ]
+   ]
+  },
+  {
+   "id": "all-jra-p3",
+   "value": "58.2",
+   "desc": "全レース(中央) ◎複勝率%",
+   "measured": "2026-07-31",
+   "source": "verify_fuku_rec.py (12,188R)",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "allP3:58\\.2"
+    ],
+    [
+     "deploy/scoring_explainer.html",
+     "58\\.2%"
+    ]
+   ]
+  },
+  {
+   "id": "all-jra-roi",
+   "value": "81.5",
+   "desc": "全レース(中央) 複勝ROI%",
+   "measured": "2026-07-31",
+   "source": "eval_bets (holdout)",
+   "files": [
+    [
+     "deploy/scoring_explainer.html",
+     "81\\.5%"
+    ]
+   ]
+  },
+  {
+   "id": "tan-nar-hit",
+   "value": "27.8",
+   "desc": "単勝◎的中率(地方・C12)%",
+   "measured": "2026-09-27",
+   "source": "eval_bets 33列+C12",
+   "files": [
+    [
+     "deploy/scoring_explainer.html",
+     "27\\.8%"
+    ]
+   ]
+  },
+  {
+   "id": "tan-nar-roi",
+   "value": "82.0",
+   "desc": "単勝◎ROI(地方・C12)%",
+   "measured": "2026-09-27",
+   "source": "eval_bets 33列+C12",
+   "files": [
+    [
+     "deploy/scoring_explainer.html",
+     "82\\.0%"
+    ]
+   ]
+  },
+  {
+   "id": "tan-jra-hit",
+   "value": "27.5",
+   "desc": "単勝◎的中率(中央)%",
+   "measured": "2026-07-31",
+   "source": "eval_bets 31列",
+   "files": [
+    [
+     "deploy/scoring_explainer.html",
+     "27\\.5%"
+    ]
+   ]
+  },
+  {
+   "id": "tan-jra-roi",
+   "value": "77.8",
+   "desc": "単勝◎ROI(中央)%",
+   "measured": "2026-07-31",
+   "source": "eval_bets 31列",
+   "files": [
+    [
+     "deploy/scoring_explainer.html",
+     "77\\.8%"
+    ]
+   ]
+  },
+  {
+   "id": "kochi-star-fuku",
+   "value": "35",
+   "desc": "高知⭐(人気薄×先行)の実測複勝%",
+   "measured": "2026-07-18",
+   "source": "SCORING_AUDIT 高知検証",
+   "files": [
+    [
+     "deploy/kochi.html",
+     "実測\\s*複勝35%|実測複勝35%"
+    ]
+   ]
+  },
+  {
+   "id": "iron-p3",
+   "value": "86.8",
+   "desc": "鉄板(◎1人気×単勝1.9倍以下×10頭以下・C12) ◎複勝率%",
+   "measured": "2026-09-27",
+   "source": "C12再測定 (地方878R・公式確定オッズ・Wilson95% 84.4〜88.9)",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "実測◎複勝率86\\.8%"
+    ]
+   ]
+  },
+  {
+   "id": "legacy-iron-p3",
+   "value": "84.2",
+   "desc": "tweet2(旧LTRのまま動く試作)の 鉄板(◎1人気×単勝1.9倍以下×10頭以下) ◎複勝率%",
+   "measured": "2026-08-03",
+   "source": "backtest/verify_iron_rec.py (地方1,430R・公式確定オッズ2026-03〜07・Wilson95% 82.2〜86.0)",
+   "files": [
+    [
+     "deploy/tweet2.html",
+     "実測◎複勝率84\\.2%"
+    ]
+   ]
+  },
+  {
+   "id": "iron-roi",
+   "value": "92.9",
+   "desc": "鉄板 複勝ROI%(C12)",
+   "measured": "2026-09-27",
+   "source": "C12再測定",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "複勝ROI92\\.9%"
+    ]
+   ]
+  },
+  {
+   "id": "legacy-iron-roi",
+   "value": "90.4",
+   "desc": "tweet2(旧LTRのまま動く試作)の 鉄板 複勝ROI%",
+   "measured": "2026-08-03",
+   "source": "backtest/verify_iron_rec.py",
+   "files": [
+    [
+     "deploy/tweet2.html",
+     "複勝ROI90\\.4%"
+    ]
+   ]
+  },
+  {
+   "id": "iron-tan-roi",
+   "value": "83.7",
+   "desc": "鉄板 単勝ROI%(C12・コメント内の参考値)",
+   "measured": "2026-09-27",
+   "source": "C12再測定",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "単勝ROI83\\.7%"
+    ]
+   ]
+  },
+  {
+   "id": "roi-range",
+   "value": "86",
+   "desc": "解説ページ注意書きの複勝ROIの幅の上端(地方C12 86.4を丸め)",
+   "measured": "2026-09-27",
+   "source": "all-nar-roi と同じ",
+   "files": [
+    [
+     "deploy/scoring_explainer.html",
+     "81〜86%"
+    ]
+   ]
+  },
+  {
+   "id": "iron-p3-round",
+   "value": "87",
+   "desc": "鉄板バッジの丸め表示(86.8)",
+   "measured": "2026-09-27",
+   "source": "iron-p3 と同じ",
+   "files": [
+    [
+     "deploy/tweet.html",
+     "鉄板 複勝87%"
+    ]
+   ]
+  }
+ ],
+ "forbidden": [
+  {
+   "pattern": "回収1?5?6%|回収169%|ROI\\s*156|ROI\\s*169",
+   "desc": "撤回済みの高知⭐回収率(後知恵)を肯定文脈で再掲してはならない",
+   "files": [
+    "deploy/tweet.html",
+    "deploy/tweet2.html"
+   ],
+   "allow_context": "撤回|再現できず|再現できて"
+  },
+  {
+   "pattern": "複勝ROIは89%|回収率は89%",
+   "desc": "旧89%の再混入禁止(実測86.4%)",
+   "files": [
+    "deploy/tweet.html",
+    "deploy/tweet2.html",
+    "deploy/scoring_explainer.html"
+   ],
+   "allow_context": "だった|89%\\u3001|旧|誤"
+  },
+  {
+   "pattern": "鉄板 複勝84%",
+   "desc": "C12切替後の旧鉄板率(84%)の再混入禁止（画像のcanvas直書きで一度取り残した）",
+   "files": [
+    "deploy/tweet.html"
+   ],
+   "allow_context": "旧|だった"
+  },
+  {
+   "pattern": "全て検証プラス|回収(172|166|128|115)%|\"(172|166|128|115)%\"",
+   "desc": "高知⭐フォメ『他の買い方』の後知恵⭐由来の回収率(172/166/128/115%)の再掲禁止（kochi.htmlだけ直してtweet.htmlに残っていた）",
+   "files": [
+    "deploy/tweet.html",
+    "deploy/kochi.html"
+   ],
+   "allow_context": "撤回|撤去|再現できず|やめた"
+  }
+ ]
+}

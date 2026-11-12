@@ -7741,6 +7741,96 @@ C12 の検証はこの補正なし。LTR は当地複勝率(wr)を既に特徴�
    （v318 の狙い目と同じ穴）。checkRace で保存予想から battle を判定して c.battle に入れた。今日: ★勝負 8R 回収率196%（全て狙い目の内側＝整合）。
 検証: JS構文OK・check_undefined OK・check_scoring_sync OK(35件一致)・JSエラー0。キャッシュトークンは deploy.py が v4.3.52 に上げる。
 
+## 2026-10-29: 夜の自動投稿(?auto=evening)の段階別を整合させた（v4.3.53）
+
+上の★勝負行の修正で、夜フックに「★勝負」行が出るようになったが、ドライラン（今日の地方）で矛盾が出た:
+`狙い目 10R 回収40% / ★勝負 8R 回収196%` ＋締め文「自信度と成績が素直に相関」。
+原因2つ: ①夜フックは狙い目を「朝の保存信頼度(firmO≥60)」で決め直すが、勝負は別基準(betPlan)のまま＝勝負が狙い目の外にはみ出した。
+②締め文が「最後の区分 − 全レース」だけで判定していたので、途中の狙い目が崩れていても「相関」と書いた。
+修正: ①夜フックで勝負を狙い目の内側に限る（c.battle = battle && aim）。②締め文は区分の並び全体を見て、
+上がり続け=up／下がり続け=down／凸凹=mixed（新設8文・「相関」とは言わない）。手動の段階別ツイート文も同じ判定になる。
+ドライラン後: `全48R 112% / 推奨41R 127% / 狙い目10R 40% / ★勝負3R 16%` ＋「きれいな階段にはならなかった」。
+X自動投稿の仕組み（tools/x-autopost・9/18作成）は未デプロイのまま。ドライランは朝90秒（4枚）・夜24秒（4投稿・画像6枚）で生成OK。
+
+## 2026-10-29: X自動投稿（tools/x-autopost）を Cloudflare に配置（DRYRUN=1・まだ投稿しない）
+
+ユーザーがXの鍵を発行し setup_x.bat（wrangler login→deploy→鍵4つをsecret登録→試し運転）を実行。
+Worker: https://kajikeiba-autopost.kajisho5.workers.dev（cron 朝8:00/夜21:30 JST）。
+初回の試し運転: 夜は成功、朝だけ500。ダッシュボードで実行時間P90=249秒・CPU超過/例外は0件。
+原因は特定していない（推測: 朝の全場予想がCloudflare上で待ち上限150秒を超え、後片付けの page.close が投げて500）。
+対策: 待ち上限420秒・ブラウザ keep_alive 600秒・page/browser.close を try で包む・モード単位でエラーを返す（500にしない）・所要秒を記録。
+再配置後（redeploy_dry.bat）: 朝 OK 39秒（予想カード4枚）／夜 OK 14秒（4投稿・画像6枚）。
+X Developer Console の残高は $0。本番投稿は「クレジット購入 → wrangler.toml の DRYRUN を 0 にして再配置」で開始。
+
+## 2026-10-29 夜 /odds・/lab を Cloudflare（kajikeiba-turf）へ切替
+
+- 経緯: 21:56ごろ別セッションが seventh-well.com 本体を Worker「seventhwell-live」に切替 → /odds/・/lab/ が全部404（curlで確認）。
+- 対応: D1「kajikeiba」(4a865324-…) を作成 → kajikeiba-turf をデプロイ → 旧サーバーからFTPで吸い出し（migrate.py ftp-pull）→ D1へ投入
+  （予想568・結果4,691・馬10,549・ロック4・回顧689。回顧は旧URLが引けないので同日夕方のhttp写しを使用）
+  → ルート seventh-well.com/odds* と /lab* を kajikeiba-turf へ（ルートはカスタムドメインより優先。会社HPは無傷を確認）。
+- 確認: /odds/tweet.html・sw.js(v4.3.53)・predictions.php・/lab/ が200。tweet.html?auto=evening を本番URLで回し、
+  事前のドライランと同じ数字（48R 的中67% 回収112% 等）が出ることを確認。
+- kajikeiba.com は旧サーバーのまま（未切替）。deploy_cf.json に odds_cloudflare:true を追加し、sync_pred_data.py は
+  /odds のデータを Cloudflare から取るように変更（公開サイトの反映は従来どおりFTP）。
+- ★今後 tweet.html を出すときは deploy.py --site legacy（FTP）ではなく cloudflare/deploy_cf.py --site legacy --push★
+- 残: FTP吸い出しの残り（騎手・バイアス・オッズ時系列・ログ・LINE履歴）は cf_golive.ps1 が完走後に自動で投入する。
+  LINE配信は LINE_CHANNEL_TOKEN を Worker に登録するまで動かない。
+
+## 2026-10-29 夜 X自動投稿（kajikeiba-autopost）が 401 で失敗
+
+- 23:05/23:28/23:42 に夜の結果を本番投稿しようとして、Xの tweet 作成が 401 Unauthorized（nar・jra とも）。画像生成までは成功。
+- OAuth1.0a 署名はXの公式の例（期待値 hCtSmYh+iHYCEqBWrE7C7hYmtUk=）と一致を確認 → 実装ではなく登録した鍵の問題。
+  鍵の前後空白を除く修正も入れたが変わらず → 鍵が違う（作り直し後の古い鍵等）と判断。鍵の再発行と再登録が必要（本人作業）。
+- 結果をダッシュボードのログに残すよう observability を有効化。scheduled の朝夜判定を「0 23 だけ朝、他は夜」に変更。
+- 臨時の投稿時刻は全部外し、8:00／21:30 の2本だけに戻した（golive.log で確認）。
+
+## 2026-10-30 0時台 X自動投稿 復旧＋画像フォント修正（tweet.html v4.3.54）
+
+- 401の原因は貼り替え前のアクセストークン（本人がアクセストークン2つを再登録→0:10の確認で GET /2/users/me が200・@kaji_keiba）。
+  10/29分の結果は 0:25 に地方だけ date=20261029 指定で投稿（4投稿のスレッド、投稿数1,633→1,637を確認）。
+- 投稿画像の数字・見出しのフォントが違っていた: Cloudflareのヘッドレスには Space Mono / Saira Condensed が無く代替で描画
+  （公式: Browser Run は未導入フォントを似たフォントで代替 https://developers.cloudflare.com/browser-run/features/custom-fonts/ ）。
+  → ensureAutoFonts(): ?auto=morning|evening の時だけ jsdelivr の google/fonts から Noto Sans JP(可変)・Saira Condensed 600/700/800・
+  Space Mono 400/700 を FontFace で読み込んでから描く。手元の画面（?autoなし）は変更なし。
+  フォントの入っていない環境（このコンテナ）で本番データの夜を回し、6書体とも読込成功・数字がSpace Monoで描かれることを画像で確認。
+  ※google/fonts@main を参照（コミット固定はできていない＝未確認の差し替えリスクあり）。
+- 「回収率です」に場別回収率（画面の「場別 総合回収率」表と同じ calcRecovery 集計）を3枚目として追加（ユーザー指示）。
+  drawVenueRecoveryCanvas に noSave 引数を追加。10/29で 門別264%／大井9%／名古屋170%／園田43%／全場127% を確認。
+- check_undefined.js の GLOBALS に FontFace を追加（ブラウザ標準の名前）。
+- 公開: cloudflare/deploy_cf.py --site legacy（sw.js v4.3.53→v4.3.54）。本番の tweet.html とローカルが完全一致することを確認。
+
+## 2026-10-30 1時台 結果メール／フォント自前配信／中央の空投稿・MODE横取りの修正（tweet.html v4.3.55）
+
+- フォントを /odds/fonts/ から自前配信に変更（cloudflare/static_extra/odds/fonts/。OFLのライセンス文も同梱）。外部CDN依存をなくした。
+- ★v4.3.54 で入れた await ensureAutoFonts() が LINE_AUTO=true より前にあり、その間に restoreSavedPredictions() が
+  割り込んで MODE を最新保存（地方）に戻していた → ?mode=jra なのに地方のスレッドを作る＝21:30に地方が2回投稿されるところだった。
+  フォント読込を LINE_AUTO=true の後へ移動。jra/nar とも MODE が保たれることをヘッドレスで確認。
+- ★中央の平日は夜に「【中央】的中なし。推奨0R中0的中」が作られ、毎晩投稿されるところだった（10/29 23:28 の jra 側401もこれ）。
+  確定レース0件なら ok:false（no races）で投稿しないようにした。10/29: 中央=投稿なし、地方=従来どおり4投稿を確認。
+  朝の中央（平日）はカード0枚で投稿なし、朝の地方は4場のカードが正しいフォントで出ることを確認（保存POSTは遮断して試験）。
+- 自動投稿の結果メール: Cloudflare Email Service（登録済みの notify.seventh-well.com）から kajiyama@seventh-well.com 宛に、
+  毎回「投稿OK／⚠失敗あり／投稿なし」と投稿リンク・エラー文を送る。宛先は send_email の destination_address で1件に固定。
+  中央の「開催なし」は失敗扱いにしない。
+
+## 2026-10-30 朝 自動投稿で狙い目/★勝負が出ない → 「⚡オッズ無しでも確定」をONに（tweet.html v4.3.56）
+
+- 10/30 8:03 の自動投稿カードは紫枠（先行推奨）のみで狙い目/★勝負が出なかった。本人の手動運用では出ていた。
+- 原因: 本人の端末は「⚡ オッズ無しでも確定」(#noOddsFinal, localStorage tweetNoOddsFinal=1) がON。
+  ヘッドレスは localStorage が空でOFF → oddsGateOK が false（8:00/9:10時点では4場とも hasOdds 0件）。
+- 修正: ?auto=morning|evening の時はチェックをONにする。9:27に本番データで再生成し、
+  狙い目/勝負: 大井4・金沢7・名古屋8・園田8（修正前は全場0）、カードに★勝負/狙い目の枠が出ることを画像で確認。
+- 未対応（既存の仕様のずれ）: 夜の答え合わせは「保存済み firmO≥60」で狙い目を数えるが、朝カードの狙い目は betPlan(gap) 判定。
+  両者が一致するとは限らない。
+
+## 2026-10-30 朝 公開した狙い目/★勝負を確定値にする（tweet.html v4.3.57）
+
+- ユーザー指示「確定したものは夜に変えないで」。
+- 朝の自動投稿（?auto=morning）で runAll 後に各場の {no:{aim,battle}} を locks 表へ tc="pub_<tc>" で保存（既にあれば上書きしない＝最初の公開が正）。
+- 夜（?auto=evening）は pub があればその aim/battle をそのまま使い、firmO≥60 での引き直しをしない。pub が無い日は従来どおり。
+- 試験: listlocks を差し替えて 10/29 夜を再計算 → pub を与えた場だけ aim/battle が pub どおりになることを確認（段階別の狙い目件数が変化）。
+- 10/30 は 9:53 に「確定版」を出し直して pub を保存: 大井 狙い目4(勝負2)／金沢 7(4)／名古屋 8(2)／園田 8(3)。
+- 手動の画面（自動以外）の答え合わせは未対応（pub を読まない）。
+
 ## 2026-11-13: 公開をGitHubへ移行・索引の停止を発見して復旧・実運用の成績を初集計（クラウドの作業環境で実施）
 
 ユーザー判断「回収率重視」「GitHub＋towerに移す」。パソコンがつながらない状態で実施した。

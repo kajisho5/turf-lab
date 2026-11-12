@@ -1,0 +1,11 @@
+{
+ "note": "14px未満のfont-size箇所数の基準線。増えたらNG。減らしたら --update で更新する。0にするのが目標。",
+ "counts": {
+  "deploy/anomaly.html": 144,
+  "deploy/kaiko.html": 36,
+  "deploy/kochi.html": 16,
+  "deploy/lab.html": 1,
+  "deploy/tweet.html": 169,
+  "deploy/tweet2.html": 166
+ }
+}
