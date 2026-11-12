@@ -38,6 +38,9 @@ MAP = [
     ("core/ltr_model.js",             "/seventh-well.com/odds/core/ltr_model.js"),
     ("deploy/data/horses.json",       "/seventh-well.com/odds/data/horses.json"),
     ("deploy/data/nar_index_asof.json", "/seventh-well.com/odds/data/nar_index_asof.json"),   # 索引がいつまでの結果で作られたか（外から鮮度を確かめる用）
+    # 実運用の成績表（backtest/scoreboard.py が毎朝作る。運営側だけに置く）
+    ("deploy/data/scoreboard.json",    "/seventh-well.com/odds/data/scoreboard.json"),
+    ("deploy/data/scoreboard.txt",     "/seventh-well.com/odds/data/scoreboard.txt"),
     ("deploy/data/jra_horses.json",   "/seventh-well.com/odds/data/jra_horses.json"),
     # 天気→馬場見込みの較正表（weather_calibrate.py生成。tweet.htmlの表示用）
     ("deploy/data/going_by_rain.json", "/seventh-well.com/odds/data/going_by_rain.json"),

@@ -10,6 +10,7 @@ import { errorLog, errlogView, stats, statsView, linePush, cleanup, unzipGone } 
 import { nardata, narOfficial } from './api/nar';
 import { racePage, sitemap } from './api/race';
 import { admin } from './admin';
+import { t10List } from './t10';
 import { scheduled } from './cron';
 import { LAB_SUBS, LAB_PATH, LAB_ADSENSE } from './gen/meta';
 
@@ -21,6 +22,7 @@ const ODDS: Record<string, H> = {
   '/cleanup.php': cleanup, '/results.php': results, '/horse.php': horse, '/jockey.php': jockey, '/bias.php': bias,
   '/oddslog.php': oddslog, '/unzip.php': unzipGone, '/unzip_horse.php': unzipGone, '/error_log.php': errorLog,
   '/errlog_view.php': errlogView, '/line_push.php': linePush, '/kaiko.php': kaiko, '/odds-log.php': oddsLogOld,
+  '/t10.php': t10List,          // 発走10分前の記録の読み出し（成績表づくり用）
   '/odds-cron.php': async (c) => {
     const r = await c.env.DB.prepare("SELECT v FROM kv WHERE k='odds_cron_state'").first<{ v: string }>();
     return resp(r?.v ?? '{}', 200, { 'Content-Type': 'application/json; charset=utf-8' });

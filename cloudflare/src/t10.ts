@@ -4,7 +4,7 @@
  *   目的: 「10分前のオッズで◎が1番人気／鉄板のレースだけ出す」案を、確定オッズではなく
  *        実際に手に入る10分前のオッズで確かめる（2026-11-13 ユーザー指示「記録だけとっといて」）。
  *   1レース1行（先に入った記録を残す）。失敗しても oddsCron を止めない（呼び出し側で握りつぶす）。 */
-import { Env, safeKey, unpackBody, isObj } from './lib';
+import { Env, Ctx, CORS, JSON_CT, NO_STORE, json, q, safeKey, unpackBody, isObj } from './lib';
 
 export const T10_FROM = 8, T10_TO = 12;          // 発走の何分前に取れた記録を残すか
 const IRON_ODDS_MAX = 1.9, IRON_FIELD_MAX = 10;   // tweet.html の「鉄板」と同じ条件（◎が1番人気・1.9倍以下・10頭以下）
@@ -87,4 +87,21 @@ export async function recordT10(env: Env, cache: PredCache, r: T10Race, date: st
      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
   ).bind(x.rid, x.date, x.mode, x.track, x.no, x.post, x.ts, x.mtp, x.field, x.o_num, x.o_odds, x.o_pop, x.gap, x.fav, x.iron, x.mv, x.body).run();
   return (res.meta?.changes ?? 0) > 0;
+}
+
+/** 記録の読み出し（成績表づくり用）。GET /odds/t10.php?from=YYYYMMDD&to=YYYYMMDD。全頭のオッズ(body)は返さない */
+export async function t10List(c: Ctx): Promise<Response> {
+  const H = { ...CORS, 'Content-Type': JSON_CT, 'Cache-Control': NO_STORE };
+  const d8 = (v: string | undefined, def: string) => (v && /^\d{8}$/.test(v) ? v : def);
+  const from = d8(q(c.url, 'from'), '00000000'), to = d8(q(c.url, 'to'), '99999999');
+  try {
+    const rs = await c.env.DB.prepare(
+      `SELECT rid,date,mode,track,no,post,ts,mtp,field,o_num,o_odds,o_pop,gap,fav,iron,mv
+         FROM t10_log WHERE date BETWEEN ?1 AND ?2 ORDER BY date, rid LIMIT 20000`,
+    ).bind(from, to).all();
+    return json({ ok: true, rows: rs.results }, 200, H);
+  } catch (e) {
+    // 表がまだ無い（最初の記録の前）ときは空で返す
+    return json({ ok: true, rows: [], note: String((e as Error)?.message ?? e).slice(0, 120) }, 200, H);
+  }
 }

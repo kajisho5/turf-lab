@@ -3,6 +3,7 @@
 # 公開のたびに、地方の成績索引（馬・騎手・調教師・父）を公式データから作り直す（backtest/build_nar_index.py）
 #   毎朝の回で取得に失敗したら公開ごと止める（GitHub から失敗の通知が来る。本番は前のまま）
 #   main への反映の回で取得に失敗したら、リポにある索引のまま公開する（警告を出す）
+# 続けて、実運用の成績表（backtest/scoreboard.py）を作り直す。失敗しても公開は止めない
 name: deploy-site
 on:
   push:
@@ -14,6 +15,7 @@ on:
       - "backtest/deploy.py"
       - "backtest/site_config.py"
       - "backtest/build_nar_index.py"
+      - "backtest/scoreboard.py"
       - ".github/workflows/deploy-site.yml"
   schedule:
     - cron: "40 19 * * *"   # 毎朝 4:40（日本時間）。公式データは 2:00 ごろ更新される
@@ -44,7 +46,7 @@ jobs:
     uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
     with:
       working-directory: cloudflare
-      build-command: python3 ../backtest/build_nar_index.py --cache ../.nar_cache ${{ github.event_name == 'push' && '--soft' || '' }} && python3 build.py --site both
+      build-command: python3 ../backtest/build_nar_index.py --cache ../.nar_cache ${{ github.event_name == 'push' && '--soft' || '' }} && (python3 ../backtest/scoreboard.py --cache ../.nar_cache || echo "::warning::成績表を作れませんでした（前の成績表のまま公開します）") && python3 build.py --site both
       cache-path: .nar_cache
       cache-key: nar-zip-v1
     secrets:
