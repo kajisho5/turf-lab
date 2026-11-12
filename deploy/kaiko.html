@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>回顧 ｜ SW TURF LAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Saira+Condensed:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#050505; --panel:#0d0e10; --panel2:#141518; --line:#26282d;
+  --txt:#f0f0f0; --muted:#8a8f98; --plus:#73c95a; --minus:#d8423a; --mid:#e8a838; --accent:#46b8e8; }
+[data-theme="light"]{ --bg:#f4f4f2; --panel:#fff; --panel2:#ececea; --line:#d4d4d0; --txt:#0a0a0a; --muted:#6a6f78; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:"Noto Sans JP",sans-serif;-webkit-text-size-adjust:100%}
+body{padding:18px 14px 60px;max-width:780px;margin:0 auto}
+.toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.back{font-size:12px;color:var(--mid);text-decoration:none;font-family:"Space Mono",monospace}
+.themebtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:20px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:"Space Mono",monospace}
+h1{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:30px;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.sub{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:.05em;margin-bottom:14px}
+.filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter select,.filter input{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 10px;font-size:13px;font-family:"Space Mono",monospace}
+.filter label{font-size:11px;color:var(--muted)}
+.reload{background:var(--accent);border:none;color:#001;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.streak-banner{background:linear-gradient(120deg,rgba(240,101,74,.12),rgba(240,168,56,.08));border:1px solid rgba(240,101,74,.3);border-radius:12px;padding:12px 16px;margin-bottom:18px}
+.stk-row{display:flex;flex-wrap:wrap;gap:14px}
+.stk-cur{font-size:16px;font-weight:800;color:#f0654a}
+.stk-rec{font-size:12px;color:var(--muted);margin-top:7px}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px}
+.sc .l{font-size:10px;color:var(--muted);font-family:"Space Mono",monospace;margin-bottom:5px}
+.sc .v{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:25px;line-height:1}
+.sc .v small{font-size:13px;color:var(--muted);font-weight:500}
+.plus{color:var(--plus)} .minus{color:var(--minus)} .mid{color:var(--mid)}
+.sec{margin-bottom:24px}
+.sec-h{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);font-family:"Space Mono",monospace}
+th{color:var(--muted);font-size:10px;font-weight:400;text-transform:uppercase}
+td:first-child,th:first-child{text-align:left;font-family:"Noto Sans JP";font-size:12px}
+.chartwrap{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.bar-row{display:flex;align-items:center;gap:9px;padding:4px 0}
+.bar-lbl{width:96px;font-size:12px;flex-shrink:0}
+.bar-wrap{flex:1;height:20px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.bar-val{font-family:"Space Mono",monospace;font-size:11px;min-width:108px;text-align:right;flex-shrink:0}
+.empty{color:var(--muted);font-size:13px;padding:30px 0;text-align:center}
+.note{font-size:10px;color:var(--muted);line-height:1.6;margin-top:10px;font-family:"Space Mono",monospace}
+.foot{font-size:10px;color:var(--muted);line-height:1.6;margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-family:"Space Mono",monospace}
+svg{display:block;width:100%;height:auto}
+table.matrix th,table.matrix td{padding:7px 4px;text-align:center;font-size:13px;white-space:nowrap}
+table.matrix td:first-child,table.matrix th:first-child{text-align:left;font-size:12px;position:sticky;left:0;background:var(--bg)}
+table.matrix th{font-size:11px}
+.rt-warn{background:#2a1c0a;border:1px solid #7a5a1e;color:#ffce8a;border-radius:10px;padding:9px 12px;margin:0 0 12px;font-size:13px;line-height:1.5}
+.rt-warn b{color:#fff}
+.dtin{font:inherit;padding:3px 6px;border-radius:6px;border:1px solid var(--bd,#444);background:var(--card,#1a1a1a);color:inherit}
+</style>
+<style>
+.sw-modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:100000;opacity:0;pointer-events:none;transition:opacity .18s;padding:24px}
+.sw-modal-bd.show{opacity:1;pointer-events:auto}
+.sw-modal{background:#16191e;border:1px solid #3a4151;border-radius:14px;max-width:340px;width:100%;padding:20px 18px 16px;box-shadow:0 18px 50px rgba(0,0,0,.6);transform:translateY(12px) scale(.98);transition:transform .18s}
+.sw-modal-bd.show .sw-modal{transform:none}
+.sw-modal-msg{color:#f0f0f0;font-size:13.5px;line-height:1.6;font-weight:600;white-space:pre-wrap;margin-bottom:16px;font-family:"Noto Sans JP",sans-serif}
+.sw-modal-btns{display:flex;gap:9px;justify-content:flex-end}
+.sw-modal-btn{font-size:13px;font-weight:700;padding:9px 18px;border-radius:9px;border:1px solid #3a4151;background:transparent;color:#aeb6c2;cursor:pointer;font-family:"Noto Sans JP",sans-serif}
+.sw-modal-btn.primary{background:#d8423a;border-color:#d8423a;color:#fff}
+.sw-modal-btn:active{opacity:.82}
+</style>
+<script>
+/* iOS standalone PWA では native confirm/alert がフリーズするため自前モーダルで代替 */
+function _swModal(message, withCancel){
+  return new Promise(function(res){
+    var bd=document.createElement("div"); bd.className="sw-modal-bd";
+    var cancel = withCancel ? '<button class="sw-modal-btn" data-v="0">キャンセル</button>' : '';
+    bd.innerHTML='<div class="sw-modal"><div class="sw-modal-msg"></div><div class="sw-modal-btns">'+cancel+'<button class="sw-modal-btn primary" data-v="1">OK</button></div></div>';
+    bd.querySelector(".sw-modal-msg").textContent=message;
+    (document.body||document.documentElement).appendChild(bd);
+    requestAnimationFrame(function(){bd.classList.add("show");});
+    var done=function(v){ bd.classList.remove("show"); setTimeout(function(){bd.remove();},180); res(v); };
+    bd.querySelectorAll(".sw-modal-btn").forEach(function(b){ b.onclick=function(){ done(b.dataset.v==="1"); }; });
+    bd.addEventListener("click",function(e){ if(e.target===bd && withCancel) done(false); });
+  });
+}
+function swConfirm(message){ return _swModal(message, true); }
+function swAlert(message){ return _swModal(message, false); }
+</script>
+</head>
+<body>
+<script>(function(){try{var t=localStorage.getItem('sw_kaiko_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+
+<div class="toprow">
+  <a class="back" href="./">← 本体に戻る</a>
+  <button class="themebtn" id="themeBtn">◑ テーマ</button>
+</div>
+<h1>回顧 / 実績</h1>
+<div class="sub">SW TURF LAB ／ 答え合わせの蓄積データ</div>
+
+<div class="filter">
+  <label>モード</label>
+  <select id="fMode"><option value="">全部</option><option value="jra">JRA</option><option value="nar">地方</option></select>
+  <label>期間</label>
+  <select id="fRange">
+    <option value="all">全期間</option>
+    <option value="7">直近7日</option>
+    <option value="30">直近30日</option>
+    <option value="90">直近90日</option>
+  </select>
+  <label>日付指定</label>
+  <input type="date" id="fFrom" class="dtin"> 〜 <input type="date" id="fTo" class="dtin">
+  <label>レース</label>
+  <select id="fRaceType">
+    <option value="">全レース</option>
+    <option value="jraMain">JRAメイン(11R)</option>
+    <option value="finalR">最終R(ファイナル)</option>
+    <option value="kochiFinal">高知ファイナル</option>
+  </select>
+  <button class="reload" id="reloadBtn">更新</button>
+  <button class="reload" id="imgBtn" style="background:var(--mid)">実績画像</button>
+  <button class="reload" id="imgBtn2" style="background:var(--accent,#46b8e8)">場×券種画像</button>
+  <button class="reload" id="imgBtn3" style="background:#f0654a">狙い目画像</button>
+  <button class="reload" id="imgBtn4" style="background:#9b6cf0">信頼度画像</button>
+  <button class="reload" id="imgBtn5" style="background:#5aa86c">券種別画像</button>
+  <button class="reload" id="imgBtn6" style="background:#e8a838">期間まとめ画像</button>
+  <button class="reload" id="imgBtn7" style="background:#d8423a">段階別画像</button>
+  <button class="reload" id="imgBtnTri" style="background:#c0392b">🎯三連単高配当</button>
+  <button class="reload" id="imgBtnTw" style="background:#1d9bf0">📤成績ツイート</button>
+  <button class="reload" id="imgBtnFc" style="background:#8e44ad">📊効き目検証</button>
+  <button class="reload" id="imgBtnRno" style="background:#2c7a4b">🔢R別的中</button>
+</div>
+
+<div id="content"><div class="empty">読み込み中…</div></div>
+
+<div class="foot" id="foot"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const API="kaiko.php";
+let RAW=[];
+let STATS=null;
+
+const STAGE=[
+  {label:"単複まで", keys:["tanO","fukuO"]},
+  {label:"ワイドまで", keys:["tanO","fukuO","wideO","wideP"]},
+  {label:"馬連まで", keys:["tanO","fukuO","wideO","wideP","umarenO","umarenP"]},
+  {label:"馬単まで", keys:["tanO","fukuO","wideO","wideP","umarenO","umarenP","umatanO","umatanP"]},
+  {label:"3連複まで", keys:["tanO","fukuO","wideO","wideP","umarenO","umarenP","umatanO","umatanP","fuku3O","fuku3P"]},
+  {label:"3連単まで", keys:["tanO","fukuO","wideO","wideP","umarenO","umarenP","umatanO","umatanP","fuku3O","fuku3P","tan3O","tan3P"]},
+];
+
+function pctClass(r){ return r>=100?"plus":r>=80?"mid":"minus"; }
+function yen(n){ return (n<0?"-":"")+"¥"+Math.abs(Math.round(n)).toLocaleString(); }
+
+async function load(){
+  $("#content").innerHTML='<div class="empty">読み込み中…</div>';
+  let recs=[];
+  try{
+    const r=await fetch(API+"?action=list",{cache:"no-store"});
+    const j=await r.json(); recs=j.records||[];
+  }catch(e){ $("#content").innerHTML='<div class="empty">データ取得に失敗しました（kaiko.php未設置 or 通信エラー）</div>'; return; }
+  RAW=recs;
+  buildMonthOpts();
+  render();
+}
+
+function buildMonthOpts(){
+  const sel=$("#fRange"); [...sel.querySelectorAll('option[data-m]')].forEach(o=>o.remove());
+  const months=[...new Set(RAW.map(r=>(r.date||"").slice(0,6)).filter(x=>x.length===6))].sort().reverse();
+  months.forEach(m=>{ const o=document.createElement('option'); o.value="m:"+m; o.dataset.m="1"; o.textContent=`${m.slice(0,4)}年${+m.slice(4,6)}月`; sel.appendChild(o); });
+}
+function rangeLabel(){
+  const f=($("#fFrom")?.value||"").replace(/-/g,""), t=($("#fTo")?.value||"").replace(/-/g,"");
+  if(f||t) return `${f||"開始"}〜${t||"現在"}`;
+  const v=$("#fRange").value;
+  if(v&&v.startsWith("m:")){ const m=v.slice(2); return `${m.slice(0,4)}年${+m.slice(4,6)}月`; }
+  return {all:"全期間","7":"直近7日","30":"直近30日","90":"直近90日"}[v]||"期間";
+}
+function filtered(){
+  const mode=$("#fMode").value; const range=$("#fRange").value;
+  const fromStr=($("#fFrom")?.value||"").replace(/-/g,""); const toStr=($("#fTo")?.value||"").replace(/-/g,"");
+  let recs=RAW.slice();
+  if(mode) recs=recs.filter(r=>r.mode===mode);
+  if(fromStr||toStr){
+    const lo=fromStr||"00000000", hi=toStr||"99999999";
+    recs=recs.filter(r=>{const d=r.date||""; return d>=lo&&d<=hi;});
+  } else if(range.startsWith("m:")){
+    const ym=range.slice(2); recs=recs.filter(r=>(r.date||"").slice(0,6)===ym);
+  } else if(range!=="all"){
+    const days=+range; const now=new Date();
+    const cut=new Date(now.getTime()-days*86400000);
+    const cutStr=`${cut.getFullYear()}${String(cut.getMonth()+1).padStart(2,'0')}${String(cut.getDate()).padStart(2,'0')}`;
+    recs=recs.filter(r=>(r.date||"")>=cutStr);
+  }
+  return recs;
+}
+
+/* 連勝ストリーク計算。days={date:{inv,ret}} */
+function calcStreaks(days){
+  const keys=Object.keys(days).sort();  // 古い→新しい
+  if(!keys.length) return {curPlus:0, curHit:0, maxPlus:0, maxHit:0, lastDate:null};
+  // 日ごとに「プラス収支か」「的中があったか(ret>0)」を判定
+  let curPlus=0, maxPlus=0, curHit=0, maxHit=0;
+  keys.forEach(d=>{
+    const x=days[d]; const prof=(x.ret||0)-(x.inv||0); const hit=(x.ret||0)>0;
+    // プラス収支連続
+    if(prof>=0){ curPlus++; if(curPlus>maxPlus)maxPlus=curPlus; } else curPlus=0;
+    // 的中連続（その日1つでも当たり）
+    if(hit){ curHit++; if(curHit>maxHit)maxHit=curHit; } else curHit=0;
+  });
+  return { curPlus, curHit, maxPlus, maxHit, lastDate:keys[keys.length-1] };
+}
+function render(){
+  const recs=filtered();
+  if(!recs.length){ $("#content").innerHTML='<div class="empty">蓄積データがありません。<br>推奨馬まとめページで「全場まとめて答え合わせ」をすると、結果がここに貯まります。</div>'; updateFoot(); return; }
+
+  // ---- 集計 ----
+  const rt=$("#fRaceType").value;
+  // レース種別フィルタ: そのレコード内の最大R（最終R判定用）
+  const maxRofRec={};
+  recs.forEach(rec=>{ let mx=0; (rec.races||[]).forEach(r=>{ if(typeof r.no==="number"&&r.no>mx)mx=r.no; }); maxRofRec[rec.key]=mx; });
+  function raceMatch(rec, r){
+    if(!rt) return true;
+    if(rt==="jraMain")    return rec.mode==="jra" && r.no===11;
+    if(rt==="finalR")     return r.no===maxRofRec[rec.key] && maxRofRec[rec.key]>0;
+    if(rt==="kochiFinal") return rec.track==="高知" && r.no===maxRofRec[rec.key] && maxRofRec[rec.key]>0;
+    return true;
+  }
+  const days={};
+  let inv=0,ret=0;
+  let raceCount=0, hitRaceCount=0;
+  let oRun=0,oWin=0,oP3=0;
+  const byTrack={};
+  const hitTypeCount={};      // 券種 -> 的中レース数
+  const typeRaceCount={};     // 券種 -> 対象レース数（その券種を買った=確定レース数）
+  const trackBet={};          // 場 -> 券種 -> {hit,n}
+  const firmBands={"60以上":{n:0,hit:0,o3:0,oRun:0},"50-59":{n:0,hit:0,o3:0,oRun:0},"40-49":{n:0,hit:0,o3:0,oRun:0},"40未満":{n:0,hit:0,o3:0,oRun:0}};
+  const firmRows=[];  // 閾値スイープ用 {f,hit,o3,oRun}
+  const aimAgg={races:0, hitRaces:0, inv:0, ret:0, oRun:0, oP3:0};  // 狙い目だけの集計
+  // 段階別集計（全レース / 推奨 / 狙い目 / 勝負）
+  const tierAgg={
+    all:    {label:"全レース", races:0, hitRaces:0, inv:0, ret:0, oRun:0, oP3:0},
+    rec:    {label:"推奨", races:0, hitRaces:0, inv:0, ret:0, oRun:0, oP3:0},
+    aim:    {label:"狙い目", races:0, hitRaces:0, inv:0, ret:0, oRun:0, oP3:0},
+    battle: {label:"★勝負", races:0, hitRaces:0, inv:0, ret:0, oRun:0, oP3:0},
+  };
+  // ◎軸/○軸の仮想投資額を計算（全券種・1点U円）
+  function calcInv(marks){
+    const hon=(marks||[]).find(m=>m.mk==="◎"); if(!hon) return 0;
+    const tai=(marks||[]).find(m=>m.mk==="○");
+    const aO=(marks||[]).filter(m=>m.mk!=="◎").length;
+    const aP=(marks||[]).filter(m=>m.mk!=="◎"&&m.mk!=="○").length;
+    let inv=U*2;
+    if(aO>=1) inv+=U*aO*3;
+    if(aO>=2) inv+=U*comb2(aO)*(1+6);
+    if(tai&&aP>=1) inv+=U*aP*3;
+    if(tai&&aP>=2) inv+=U*comb2(aP)*(1+6);
+    return inv;
+  }
+  // 1レースを指定tierに加算
+  function addToTier(t, r, oAll){
+    t.races++;
+    if(r.hits&&r.hits.length) t.hitRaces++;
+    if(oAll&&oAll.rank!=null){ t.oRun++; if(oAll.rank<=3)t.oP3++; }
+    t.inv+=calcInv(r.marks);
+    (r.hits||[]).forEach(h=>t.ret+=h.yen);
+  }
+  const aimByTrack={};  // 狙い目だけの場別収支
+  let firmSaved=0;            // firmOが保存されてるレース数
+  // 券種別 回収率（配当yenから逆算。1点100円・実際の◎軸/○軸流しの点数を再現）
+  const RTYPES=["単勝","複勝","馬連 ◎","ワイド ◎","馬単 ◎","3連複 ◎","3連単 ◎","馬連 ○","ワイド ○","馬単 ○","3連複 ○","3連単 ○"];
+  const typeRec={}; RTYPES.forEach(t=>typeRec[t]={inv:0,ret:0,hit:0,races:0});
+  const comb2=n=>n*(n-1)/2; const U=100;
+  const BET_TYPES=["単勝","複勝","ワイド","馬連","馬単","3連複","3連単"];
+  const filterActive=!!rt;
+  const modeSplit={jra:{inv:0,ret:0,races:0,hit:0},nar:{inv:0,ret:0,races:0,hit:0}};
+
+  recs.forEach(rec=>{
+    // 回収率（投資/回収）はレース単位の内訳が無いため、フィルタ無し時のみ日サマリで集計
+    if(!filterActive){
+      const s=rec.summary||{inv:0,ret:0};
+      inv+=s.inv||0; ret+=s.ret||0;
+      days[rec.date]=days[rec.date]||{inv:0,ret:0};
+      days[rec.date].inv+=s.inv||0; days[rec.date].ret+=s.ret||0;
+      byTrack[rec.track]=byTrack[rec.track]||{inv:0,ret:0,races:0,hit:0};
+      byTrack[rec.track].inv+=s.inv||0; byTrack[rec.track].ret+=s.ret||0;
+    }
+    { const ms=modeSplit[rec.mode]; if(ms){ const sm=rec.summary||{}; ms.inv+=sm.inv||0; ms.ret+=sm.ret||0; (rec.races||[]).forEach(r=>{ if(r.skip||!r.decided)return; ms.races++; if(r.hits&&r.hits.length)ms.hit++; }); } }
+    (rec.races||[]).forEach(r=>{
+      if(r.skip||!r.decided) return;
+      if(!raceMatch(rec,r)) return;
+      // 信頼度帯別の検証は見送り含む全レース対象（見送り判定が正しいかを見るため）
+      const oAll=(r.marks||[]).find(m=>m.mk==="◎");
+      if(r.firmO!=null){
+        firmSaved++;
+        const fb=r.firmO>=60?"60以上":r.firmO>=50?"50-59":r.firmO>=40?"40-49":"40未満";
+        const B=firmBands[fb]; B.n++;
+        if(r.hits&&r.hits.length) B.hit++;
+        if(oAll&&oAll.rank!=null){ B.oRun++; if(oAll.rank<=3)B.o3++; }
+        // 閾値スイープ用: 各レースの (firmO, 的中したか, ◎複勝したか) を貯める
+        firmRows.push({ f:r.firmO, hit:!!(r.hits&&r.hits.length), o3:!!(oAll&&oAll.rank!=null&&oAll.rank<=3), oRun:!!(oAll&&oAll.rank!=null) });
+      }
+      // 段階別集計: 全レース（見送り含む全部）
+      addToTier(tierAgg.all, r, oAll);
+      const isAimR0 = r.firmO!=null && r.firmO>=60;
+      const isBattleR = r.firmO!=null && r.firmO>=75;
+      if(!r.pass){ addToTier(tierAgg.rec, r, oAll); }       // 推奨（見送り以外）
+      if(isAimR0){ addToTier(tierAgg.aim, r, oAll); }        // 狙い目（60以上）
+      if(isBattleR){ addToTier(tierAgg.battle, r, oAll); }   // 勝負（75以上）
+      if(r.pass) return;   // 見送り（信頼度40未満）は買わない＝成績集計から除外
+      raceCount++;
+      // 狙い目（信頼度60以上）だけの集計を並行して溜める
+      const isAimR = r.firmO!=null && r.firmO>=60;
+      if(isAimR){
+        aimAgg.races++;
+        const T=aimByTrack[rec.track]=aimByTrack[rec.track]||{races:0,hitRaces:0,inv:0,ret:0,oRun:0,oP3:0};
+        T.races++;
+        if(r.hits&&r.hits.length){ aimAgg.hitRaces++; T.hitRaces++; }
+        if(oAll&&oAll.rank!=null){ aimAgg.oRun++; T.oRun++; if(oAll.rank<=3){aimAgg.oP3++; T.oP3++;} }
+        // 投資・回収（◎軸の単複＋相手流し、○軸も含む全券種の仮想集計）
+        const hon=(r.marks||[]).find(m=>m.mk==="◎");
+        const tai=(r.marks||[]).find(m=>m.mk==="○");
+        if(hon){
+          const aO=(r.marks||[]).filter(m=>m.mk!=="◎").length;
+          const aP=(r.marks||[]).filter(m=>m.mk!=="◎"&&m.mk!=="○").length;
+          let inv=U*2; // 単複
+          if(aO>=1) inv+=U*aO*3;          // 馬連馬単ワイド ◎
+          if(aO>=2) inv+=U*comb2(aO)*(1+6); // 3連複+3連単マルチ ◎
+          if(tai&&aP>=1) inv+=U*aP*3;
+          if(tai&&aP>=2) inv+=U*comb2(aP)*(1+6);
+          aimAgg.inv+=inv; T.inv+=inv;
+        }
+        (r.hits||[]).forEach(h=>{ aimAgg.ret+=h.yen; T.ret+=h.yen; });
+      }
+      byTrack[rec.track]=byTrack[rec.track]||{inv:0,ret:0,races:0,hit:0};
+      byTrack[rec.track].races++;
+      const hit=(r.hits&&r.hits.length); if(hit){ hitRaceCount++; byTrack[rec.track].hit++; }
+      const o=oAll;
+      if(o&&o.rank!=null){ oRun++; if(o.rank===1)oWin++; if(o.rank<=3)oP3++; }
+      // 券種別：このレースで各券種が的中したか（◎軸・○軸どちらでも的中扱い）
+      const hitTypes=new Set((r.hits||[]).map(h=>String(h.type).replace(/^[◎○]/,"").replace(/マルチ/,"").trim()));
+      trackBet[rec.track]=trackBet[rec.track]||{};
+      BET_TYPES.forEach(bt=>{
+        typeRaceCount[bt]=(typeRaceCount[bt]||0)+1;
+        let matched=false;
+        hitTypes.forEach(ht=>{ if(ht.indexOf(bt)>=0||bt.indexOf(ht)>=0) matched=true; });
+        if(matched) hitTypeCount[bt]=(hitTypeCount[bt]||0)+1;
+        trackBet[rec.track][bt]=trackBet[rec.track][bt]||{hit:0,n:0};
+        trackBet[rec.track][bt].n++;
+        if(matched) trackBet[rec.track][bt].hit++;
+      });
+      // 券種別 回収率の逆算（投資=点数×100円、回収=hits.yen）
+      const honmei=(r.marks||[]).find(m=>m.mk==="◎");
+      const taikou=(r.marks||[]).find(m=>m.mk==="○");
+      if(honmei){
+        const aiteO=(r.marks||[]).filter(m=>m.mk!=="◎").length;
+        const aiteP=(r.marks||[]).filter(m=>m.mk!=="◎"&&m.mk!=="○").length;
+        typeRec["単勝"].inv+=U; typeRec["単勝"].races++;
+        typeRec["複勝"].inv+=U; typeRec["複勝"].races++;
+        if(aiteO>=1){ ["馬連 ◎","馬単 ◎","ワイド ◎"].forEach(k=>{typeRec[k].inv+=U*aiteO;typeRec[k].races++;}); }
+        if(aiteO>=2){ typeRec["3連複 ◎"].inv+=U*comb2(aiteO);typeRec["3連複 ◎"].races++; typeRec["3連単 ◎"].inv+=U*comb2(aiteO)*6;typeRec["3連単 ◎"].races++; }
+        if(taikou&&aiteP>=1){ ["馬連 ○","馬単 ○","ワイド ○"].forEach(k=>{typeRec[k].inv+=U*aiteP;typeRec[k].races++;}); }
+        if(taikou&&aiteP>=2){ typeRec["3連複 ○"].inv+=U*comb2(aiteP);typeRec["3連複 ○"].races++; typeRec["3連単 ○"].inv+=U*comb2(aiteP)*6;typeRec["3連単 ○"].races++; }
+      }
+      (r.hits||[]).forEach(h=>{
+        const isP=h.type.startsWith("○");
+        const base=h.type.replace(/^[◎○]/,"").replace(/マルチ/,"").trim();
+        let key=null;
+        if(base==="単勝")key="単勝"; else if(base==="複勝")key="複勝";
+        else if(["馬連","馬単","ワイド","3連複","3連単"].includes(base)) key=base+" "+(isP?"○":"◎");
+        if(key&&typeRec[key]){ typeRec[key].ret+=h.yen; typeRec[key].hit++; }
+      });
+    });
+  });
+
+  const rate = inv>0? Math.round(ret/inv*100):0;
+  const prof = ret-inv;
+  const hitRate = raceCount>0? Math.round(hitRaceCount/raceCount*100):0;
+  const oWinPct = oRun>0? Math.round(oWin/oRun*100):0;
+  const oP3Pct = oRun>0? Math.round(oP3/oRun*100):0;
+  const dayCount=Object.keys(days).length;
+  // 連勝ストリーク（日ごとの収支から計算）
+  const streak=calcStreaks(days);
+  STATS={ rate, prof, inv, ret, hitRate, hitRaceCount, raceCount, oWin, oRun, oWinPct, oP3, oP3Pct, dayCount, byTrack, hitTypeCount, typeRaceCount, trackBet, typeRec, RTYPES, firmBands, firmRows, aimAgg, aimByTrack, firmSaved, filterActive, BET_TYPES, days, streak, tierAgg, modeSplit };
+
+  let html="";
+  const rtLabel={"":"全レース",jraMain:"JRAメイン(11R)",finalR:"最終R",kochiFinal:"高知ファイナル"}[rt];
+
+  if(filterActive){
+    html+=`<div class="sec" style="margin-bottom:14px"><div class="sec-h">${rtLabel} に絞り込み中</div>
+      <div class="note">この絞り込みでは「的中率」系のみ表示します（回収率はレース単位の投資額を保存していないため全レース時のみ）。</div></div>`;
+    html+=`<div class="summary">
+      <div class="sc"><div class="l">対象レース</div><div class="v">${raceCount}<small>R</small></div></div>
+      <div class="sc"><div class="l">推奨的中率</div><div class="v ${hitRate>=50?'plus':hitRate>=30?'mid':'minus'}">${hitRate}<small>% (${hitRaceCount}/${raceCount})</small></div></div>
+      <div class="sc"><div class="l">◎ 勝率</div><div class="v">${oWinPct}<small>% (${oWin}/${oRun})</small></div></div>
+      <div class="sc"><div class="l">◎ 複勝率</div><div class="v">${oP3Pct}<small>% (${oP3}/${oRun})</small></div></div>
+    </div>`;
+  } else {
+    html+=`<div class="summary">
+      <div class="sc"><div class="l">通算回収率</div><div class="v ${pctClass(rate)}">${rate}<small>%</small></div></div>
+      <div class="sc"><div class="l">収支</div><div class="v ${prof>=0?'plus':'minus'}">${prof>=0?'+':''}${Math.round(prof/1000)}<small>k円</small></div></div>
+      <div class="sc"><div class="l">日数 / レース</div><div class="v">${dayCount}<small>日 ${raceCount}R</small></div></div>
+      <div class="sc"><div class="l">推奨的中率</div><div class="v">${hitRate}<small>% (${hitRaceCount}/${raceCount})</small></div></div>
+      <div class="sc"><div class="l">◎ 勝率</div><div class="v">${oWinPct}<small>% (${oWin}/${oRun})</small></div></div>
+      <div class="sc"><div class="l">◎ 複勝率</div><div class="v">${oP3Pct}<small>% (${oP3}/${oRun})</small></div></div>
+    </div>`;
+  }
+  if(!filterActive){ const ms=modeSplit, mR=m=>m.inv>0?Math.round(m.ret/m.inv*100):0, mH=m=>m.races>0?Math.round(m.hit/m.races*100):0, mP=m=>Math.round((m.ret-m.inv)/1000);
+    if(ms.jra.races||ms.nar.races){ html+=`<div class="sec" style="margin-top:6px"><div class="sec-h">JRA / 地方 別</div><div class="summary">
+      <div class="sc"><div class="l">JRA 回収率</div><div class="v ${pctClass(mR(ms.jra))}">${mR(ms.jra)}<small>% (${ms.jra.races}R)</small></div></div>
+      <div class="sc"><div class="l">JRA 収支</div><div class="v ${(ms.jra.ret-ms.jra.inv)>=0?'plus':'minus'}">${mP(ms.jra)>=0?'+':''}${mP(ms.jra)}<small>k円</small></div></div>
+      <div class="sc"><div class="l">JRA 的中率</div><div class="v">${mH(ms.jra)}<small>% (${ms.jra.hit}/${ms.jra.races})</small></div></div>
+      <div class="sc"><div class="l">地方 回収率</div><div class="v ${pctClass(mR(ms.nar))}">${mR(ms.nar)}<small>% (${ms.nar.races}R)</small></div></div>
+      <div class="sc"><div class="l">地方 収支</div><div class="v ${(ms.nar.ret-ms.nar.inv)>=0?'plus':'minus'}">${mP(ms.nar)>=0?'+':''}${mP(ms.nar)}<small>k円</small></div></div>
+      <div class="sc"><div class="l">地方 的中率</div><div class="v">${mH(ms.nar)}<small>% (${ms.nar.hit}/${ms.nar.races})</small></div></div>
+    </div></div>`; }
+  }
+  // 連勝ストリーク・バナー（両ブランチ共通）
+  if(streak && (streak.curPlus>=2 || streak.curHit>=2 || streak.maxPlus>=3)){
+    const items=[];
+    if(streak.curHit>=2) items.push(`<span class="stk-cur">🔥 ${streak.curHit}日連続的中中</span>`);
+    if(streak.curPlus>=2) items.push(`<span class="stk-cur">📈 ${streak.curPlus}日連続プラス収支中</span>`);
+    const recs=[];
+    if(streak.maxHit>=3) recs.push(`最長連続的中 ${streak.maxHit}日`);
+    if(streak.maxPlus>=3) recs.push(`最長連続プラス ${streak.maxPlus}日`);
+    html+=`<div class="streak-banner">
+      ${items.length?`<div class="stk-row">${items.join("")}</div>`:""}
+      ${recs.length?`<div class="stk-rec">${recs.join(" ・ ")}</div>`:""}
+    </div>`;
+  }
+
+  // 券種別 的中率（常に表示・レース単位）
+  const btRows=BET_TYPES.map(bt=>{
+    const n=typeRaceCount[bt]||0; const hit=hitTypeCount[bt]||0;
+    if(!n) return "";
+    const hr=Math.round(hit/n*100);
+    const col=hr>=40?"plus":hr>=15?"mid":"minus";
+    return `<tr><td>${bt}</td><td>${hit}/${n}</td><td class="${col}">${hr}%</td></tr>`;
+  }).filter(Boolean).join("");
+  html+=`<div class="sec"><div class="sec-h">券種別 的中率</div><table>
+    <tr><th>券種</th><th>的中/対象</th><th>的中率</th></tr>${btRows||'<tr><td colspan="3" style="text-align:center;color:var(--muted)">データなし</td></tr>'}</table>
+    <div class="note">◎軸・○軸どちらかで1点でも的中したレースをカウント。当てやすい券種ほど上の数字が高い。</div></div>`;
+
+  // 場別 × 券種別 的中率マトリクス
+  const trackKeys=Object.keys(trackBet).sort((a,b)=>(byTrack[b]?byTrack[b].races:0)-(byTrack[a]?byTrack[a].races:0));
+  if(trackKeys.length){
+    const abbr={"単勝":"単","複勝":"複","ワイド":"ワ","馬連":"馬連","馬単":"馬単","3連複":"3複","3連単":"3単"};
+    let head=`<tr><th>場</th><th>R</th>`+BET_TYPES.map(bt=>`<th>${abbr[bt]}</th>`).join("")+`</tr>`;
+    let rows=trackKeys.map(t=>{
+      const races=byTrack[t]?byTrack[t].races:0;
+      const cells=BET_TYPES.map(bt=>{
+        const d=trackBet[t][bt]; if(!d||!d.n) return `<td>-</td>`;
+        const hr=Math.round(d.hit/d.n*100);
+        const col=hr>=40?"plus":hr>=15?"mid":"minus";
+        return `<td class="${col}">${hr}</td>`;
+      }).join("");
+      return `<tr><td>${t}</td><td>${races}</td>${cells}</tr>`;
+    }).join("");
+    html+=`<div class="sec"><div class="sec-h">場別 × 券種別 的中率（%）</div>
+      <div style="overflow-x:auto"><table class="matrix">${head}${rows}</table></div>
+      <div class="note">数字＝その場・その券種の的中率%。緑40%以上／黄15%以上／赤15%未満。当てやすい場・券種の組み合わせが見える。</div></div>`;
+  }
+
+  // 券種別 回収率（配当から逆算）
+  const recRows=RTYPES.map(t=>{
+    const x=typeRec[t]; if(!x.inv) return "";
+    const r=Math.round(x.ret/x.inv*100);
+    const col=r>=100?"plus":r>=80?"mid":"minus";
+    return `<tr><td>${t}</td><td>${x.hit}/${x.races}</td><td>${yen(x.inv)}</td><td>${yen(x.ret)}</td><td class="${col}">${r}%</td></tr>`;
+  }).filter(Boolean).join("");
+  if(recRows){
+    html+=`<div class="sec"><div class="sec-h">券種別 回収率（配当から逆算）</div>
+      <div style="overflow-x:auto"><table>
+      <tr><th>券種</th><th>的中/R</th><th>投資</th><th>回収</th><th>回収率</th></tr>${recRows}</table></div>
+      <div class="note">実際の◎軸/○軸流し（1点100円）で各券種を買った場合の回収率。配当(yen)から逆算した推計値。投資額を正確に記録していない過去データのため目安。回収率の低い券種＝買うほど損。</div></div>`;
+  }
+
+  // 信頼度帯別 的中率（firmO保存済みレースのみ）
+  if(firmSaved>0){
+    const fbRows=Object.keys(firmBands).map(b=>{
+      const x=firmBands[b]; if(!x.n) return "";
+      const hr=Math.round(x.hit/x.n*100);
+      const col=hr>=50?"plus":hr>=30?"mid":"minus";
+      const o3p=x.oRun?Math.round(x.o3/x.oRun*100):0;
+      return `<tr><td>${b}</td><td>${x.n}</td><td class="${col}">${hr}%</td><td>${o3p}%</td></tr>`;
+    }).filter(Boolean).join("");
+    html+=`<div class="sec"><div class="sec-h">信頼度帯別 的中率（狙い目の検証）</div><table>
+      <tr><th>信頼度</th><th>R</th><th>推奨的中率</th><th>◎複勝率</th></tr>${fbRows}</table>
+      <div class="note">信頼度60以上＝予想画像で「狙い目」表示のレース。対象${firmSaved}R（信頼度の保存を始めた日以降のみ）。40未満＝「見送り」（買い目・成績集計から除外）。狙い目/見送り判定が正しいかをここで検証できる。</div></div>`;
+
+    // 信頼度キャリブレーション検証（信頼度の値 vs 実際の◎複勝率が一致するか）
+    if(firmRows.length>=20){
+      // 10刻みで区切り、各帯の中央値と実複勝率を比較
+      const bins=[[0,20],[20,30],[30,40],[40,50],[50,60],[60,70],[70,80],[80,200]];
+      const calRows=bins.map(([lo,hi])=>{
+        const sub=firmRows.filter(r=>r.f>=lo && r.f<hi && r.oRun);
+        if(sub.length<3) return null;   // サンプル少は除外
+        const o3=sub.filter(r=>r.o3).length;
+        const actual=Math.round(o3/sub.length*100);
+        const mid=Math.min(hi-5, Math.round((lo+Math.min(hi,100))/2));  // 帯の代表信頼度
+        const gap=actual-mid;
+        // ズレの色: ±10以内=OK, それ以上=要補正
+        const gcol = Math.abs(gap)<=10?"plus":Math.abs(gap)<=20?"mid":"minus";
+        const label = lo===0?"〜20":hi>=200?"80〜":`${lo}〜${hi}`;
+        return {label, n:sub.length, mid, actual, gap, gcol};
+      }).filter(Boolean);
+      if(calRows.length){
+        const rowsHtml=calRows.map(r=>
+          `<tr><td>${r.label}</td><td>${r.n}</td><td>${r.actual}%</td>
+           <td class="${r.gcol}">${r.gap>=0?"+":""}${r.gap}</td></tr>`).join("");
+        // 全体の傾向: 平均ズレ
+        const avgGap=Math.round(calRows.reduce((a,r)=>a+r.gap,0)/calRows.length);
+        const verdict = Math.abs(avgGap)<=8
+          ? `<span class="plus">概ね校正OK（平均ズレ${avgGap>=0?"+":""}${avgGap}）。信頼度の数字は実際の複勝率に近い。</span>`
+          : avgGap>8
+          ? `<span class="mid">実際の複勝率が信頼度より高め（平均+${avgGap}）。やや辛め評価＝狙い目の取りこぼしあり。閾値を下げる余地。</span>`
+          : `<span class="minus">実際の複勝率が信頼度より低め（平均${avgGap}）。やや甘め評価＝過信注意。閾値を上げる余地。</span>`;
+        html+=`<div class="sec"><div class="sec-h">信頼度キャリブレーション検証</div><table>
+          <tr><th>信頼度帯</th><th>◎数</th><th>実◎複勝率</th><th>ズレ</th></tr>${rowsHtml}</table>
+          <div class="note">「ズレ」＝実複勝率−帯の代表信頼度。0に近いほど信頼度の数字が正確。プラス＝実際はもっと走ってる（辛め評価）、マイナス＝過信。<br>${verdict}</div></div>`;
+      }
+    }
+
+    // 段階別 成績比較（全レース→推奨→狙い目→勝負）
+    if(tierAgg.all.races>0){
+      const tierRow=(t)=>{
+        if(!t.races) return "";
+        const rr=t.inv>0?Math.round(t.ret/t.inv*100):0;
+        const pf=t.ret-t.inv;
+        const hr=Math.round(t.hitRaces/t.races*100);
+        const o3=t.oRun?Math.round(t.oP3/t.oRun*100):0;
+        const rcol=rr>=100?"plus":rr>=80?"mid":"minus";
+        return `<tr><td><b>${t.label}</b></td><td>${t.races}</td><td>${hr}%</td><td>${o3}%</td>
+          <td class="${rcol}"><b>${rr}%</b></td><td class="${pf>=0?'plus':'minus'}">${pf>=0?"+":""}${Math.round(pf/1000)}k</td></tr>`;
+      };
+      const trs=[tierAgg.all,tierAgg.rec,tierAgg.aim,tierAgg.battle].map(tierRow).join("");
+      html+=`<div class="sec"><div class="sec-h">段階別 成績比較</div><table>
+        <tr><th>区分</th><th>R数</th><th>的中率</th><th>◎複勝</th><th>回収率</th><th>収支</th></tr>${trs}</table>
+        <div class="note">自信度を上げるほど（全レース→推奨→狙い目→★勝負）成績が良くなるかを検証。回収率・◎複勝率が右肩上がりなら、絞り込みが機能している証拠。各区分は◎軸/○軸の全券種1点${U}円換算。</div></div>`;
+    }
+
+    // 狙い目だけの成績サマリー
+    if(aimAgg.races>0){
+      const aimRate=aimAgg.inv>0?Math.round(aimAgg.ret/aimAgg.inv*100):0;
+      const aimProf=aimAgg.ret-aimAgg.inv;
+      const aimHitR=Math.round(aimAgg.hitRaces/aimAgg.races*100);
+      const aimO3=aimAgg.oRun?Math.round(aimAgg.oP3/aimAgg.oRun*100):0;
+      const rcol=aimRate>=100?"plus":aimRate>=80?"mid":"minus";
+      const pcol=aimProf>=0?"plus":"minus";
+      html+=`<div class="sec sec-aim"><div class="sec-h" style="color:#f0654a">★ 狙い目だけの成績（信頼度60以上）</div>
+        <table>
+          <tr><th>対象</th><td>${aimAgg.races}レース</td></tr>
+          <tr><th>的中レース率</th><td>${aimAgg.hitRaces}/${aimAgg.races}（${aimHitR}%）</td></tr>
+          <tr><th>◎複勝率</th><td>${aimO3}%</td></tr>
+          <tr><th>回収率（全券種）</th><td class="${rcol}">${aimRate}%</td></tr>
+          <tr><th>収支</th><td class="${pcol}">${aimProf>=0?"+":""}${aimProf.toLocaleString()}円（${aimAgg.inv.toLocaleString()}→${aimAgg.ret.toLocaleString()}）</td></tr>
+        </table>
+        <div class="note">狙い目（信頼度60以上）に絞った時の成績。全レース買う場合との差を見れば、狙い目を厳選する価値があるか分かる。投資額は◎軸◯軸全券種を1点100円で買った仮想値。</div></div>`;
+
+      // 狙い目だけの場別収支
+      const aimTracks=Object.keys(aimByTrack).filter(t=>aimByTrack[t].races>0)
+        .sort((a,b)=>{ const ra=aimByTrack[a].inv?aimByTrack[a].ret/aimByTrack[a].inv:0; const rb=aimByTrack[b].inv?aimByTrack[b].ret/aimByTrack[b].inv:0; return rb-ra; });
+      if(aimTracks.length>0){
+        const trows=aimTracks.map(t=>{
+          const x=aimByTrack[t];
+          const rr=x.inv>0?Math.round(x.ret/x.inv*100):0;
+          const prof=x.ret-x.inv;
+          const hr=Math.round(x.hitRaces/x.races*100);
+          const o3=x.oRun?Math.round(x.oP3/x.oRun*100):0;
+          const rc=rr>=100?"plus":rr>=80?"mid":"minus";
+          const pc=prof>=0?"plus":"minus";
+          return `<tr><td>${t}</td><td>${x.races}R</td><td>${hr}%</td><td>${o3}%</td><td class="${rc}">${rr}%</td><td class="${pc}">${prof>=0?"+":""}${prof.toLocaleString()}</td></tr>`;
+        }).join("");
+        html+=`<div class="sec sec-aim"><div class="sec-h" style="color:#f0654a">★ 狙い目の競馬場別 収支（信頼度60以上）</div>
+          <table><tr><th>競馬場</th><th>R</th><th>的中率</th><th>◎複勝</th><th>回収率</th><th>収支</th></tr>${trows}</table>
+          <div class="note">狙い目だけを競馬場ごとに集計。得意・苦手な場が分かる。回収率順に並べ。レース数が少ない場は変動が大きいので参考程度に。</div></div>`;
+      }
+    }
+
+    // 閾値スイープ（バックテスト）: 「N点以上だけ買う」と的中率・◎複勝率がどう変わるか
+    if(firmRows.length>=10){
+      const sweepRows=[];
+      let best={th:0,score:-1};
+      for(let th=0; th<=70; th+=5){
+        const sub=firmRows.filter(r=>r.f>=th);
+        if(!sub.length) continue;
+        const n=sub.length;
+        const hit=sub.filter(r=>r.hit).length;
+        const oRunN=sub.filter(r=>r.oRun).length;
+        const o3=sub.filter(r=>r.o3).length;
+        const hr=Math.round(hit/n*100);
+        const o3p=oRunN?Math.round(o3/oRunN*100):0;
+        const cover=Math.round(n/firmRows.length*100);  // 全体の何%を買うことになるか
+        // バランススコア: 的中率×カバー率の積（高的中だが買えるレースが少なすぎないか）
+        const balance=hr*Math.sqrt(cover/100);
+        if(balance>best.score && cover>=20){ best={th,score:balance,hr,cover}; }
+        const col=hr>=50?"plus":hr>=30?"mid":"minus";
+        sweepRows.push(`<tr><td>${th}点以上</td><td>${n} <span style="color:var(--muted);font-size:10px">(${cover}%)</span></td><td class="${col}">${hr}%</td><td>${o3p}%</td></tr>`);
+      }
+      html+=`<div class="sec"><div class="sec-h">見送り閾値シミュレーション（バックテスト）</div><table>
+        <tr><th>買う範囲</th><th>R（買える割合）</th><th>推奨的中率</th><th>◎複勝率</th></tr>${sweepRows.join("")}</table>
+        <div class="note">「N点以上だけ買う」と仮定した時の成績。閾値を上げるほど的中率は上がるが、買えるレースが減る（カバー率↓）。${best.th?`<b style="color:var(--plus)">この期間のデータでは${best.th}点以上（的中${best.hr}%・全体の${best.cover}%をカバー）がバランス良好。</b>`:""}現在の見送り閾値は40点。データが増えたらこの表で最適値を見直せる。</div></div>`;
+    }
+  }
+
+  if(!filterActive){
+    // 日別推移グラフ
+    const dayKeys=Object.keys(days).sort();
+    html+=`<div class="sec"><div class="sec-h">回収率の推移（累積）</div><div class="chartwrap">${lineChartCumulative(dayKeys,days)}</div>
+      <div class="note">横軸=日付 / 縦軸=その日までの累積回収率%。100%が損益分岐。</div></div>`;
+  }
+
+  // 場別 成績（的中率は常に・回収率はフィルタ無し時のみ）
+  const trackEntries=Object.entries(byTrack).sort((a,b)=>(b[1].races||0)-(a[1].races||0));
+  if(trackEntries.length){
+    if(!filterActive){
+      const trackRows=trackEntries.map(([t,v])=>{
+        const r=v.inv>0?Math.round(v.ret/v.inv*100):0;
+        const hr=v.races>0?Math.round(v.hit/v.races*100):0;
+        return `<tr><td>${t}</td><td>${v.races}</td><td class="${hr>=50?'plus':hr>=30?'mid':'minus'}">${hr}%</td><td>${yen(v.inv)}</td><td>${yen(v.ret)}</td><td class="${pctClass(r)}">${r}%</td></tr>`;
+      }).join("");
+      html+=`<div class="sec"><div class="sec-h">場別 成績</div><table>
+        <tr><th>場</th><th>R</th><th>的中率</th><th>投資</th><th>回収</th><th>回収率</th></tr>${trackRows}</table>
+        <div class="note">的中率＝◎軸/○軸どちらかで1点でも当たったレースの割合。</div></div>`;
+    } else {
+      const trackRows=trackEntries.map(([t,v])=>{
+        const hr=v.races>0?Math.round(v.hit/v.races*100):0;
+        return `<tr><td>${t}</td><td>${v.races}</td><td>${v.hit}</td><td class="${hr>=50?'plus':hr>=30?'mid':'minus'}">${hr}%</td></tr>`;
+      }).join("");
+      html+=`<div class="sec"><div class="sec-h">場別 的中率（${rtLabel}）</div><table>
+        <tr><th>場</th><th>対象R</th><th>的中</th><th>的中率</th></tr>${trackRows}</table></div>`;
+    }
+  }
+
+  const _rtLbl={"":"","jraMain":"JRAメイン(11R)のみ","finalR":"各場の最終Rのみ","kochiFinal":"高知ファイナルのみ"}[rt]||"";
+  const _rtWarn=_rtLbl?`<div class="rt-warn">⚠ レース種別フィルタ中：<b>${_rtLbl}</b>（集計 ${raceCount}R）。全レースを見るには上の「レース」を<b>全レース</b>に。</div>`:"";
+  $("#content").innerHTML=_rtWarn+html;
+  updateFoot();
+}
+
+/* 累積回収率の折れ線（SVG） */
+function lineChartCumulative(dayKeys, days){
+  if(!dayKeys.length) return '<div class="empty">データなし</div>';
+  let cumInv=0, cumRet=0; const pts=[];
+  dayKeys.forEach(d=>{ cumInv+=days[d].inv; cumRet+=days[d].ret; pts.push(cumInv>0?cumRet/cumInv*100:0); });
+  const W=700,H=200,pad=34;
+  const maxV=Math.max(120, Math.ceil(Math.max(...pts)/20)*20);
+  const minV=Math.min(80, Math.floor(Math.min(...pts)/20)*20);
+  const xj=i=> pad + (pts.length<=1? 0 : i*(W-pad*2)/(pts.length-1));
+  const yj=v=> H-pad - (v-minV)/(maxV-minV)*(H-pad*2);
+  // 100%ライン
+  const y100=yj(100);
+  let path=""; pts.forEach((v,i)=>{ path+=(i?"L":"M")+xj(i).toFixed(1)+","+yj(v).toFixed(1)+" "; });
+  const col=pts[pts.length-1]>=100?"#73c95a":pts[pts.length-1]>=80?"#e8a838":"#d8423a";
+  let dots=pts.map((v,i)=>`<circle cx="${xj(i).toFixed(1)}" cy="${yj(v).toFixed(1)}" r="2.5" fill="${col}"/>`).join("");
+  // x軸ラベル（最大6個）
+  let xl=""; const step=Math.max(1,Math.ceil(dayKeys.length/6));
+  for(let i=0;i<dayKeys.length;i+=step){ const d=dayKeys[i]; const lbl=d.slice(4,6)+"/"+d.slice(6,8);
+    xl+=`<text x="${xj(i).toFixed(1)}" y="${H-10}" fill="var(--muted)" font-size="10" text-anchor="middle" font-family="Space Mono">${lbl}</text>`; }
+  return `<svg viewBox="0 0 ${W} ${H}">
+    <line x1="${pad}" y1="${y100.toFixed(1)}" x2="${W-pad}" y2="${y100.toFixed(1)}" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <text x="${pad-4}" y="${y100.toFixed(1)-4}" fill="var(--muted)" font-size="9" text-anchor="end" font-family="Space Mono">100%</text>
+    <text x="${pad-4}" y="${yj(maxV).toFixed(1)+8}" fill="var(--muted)" font-size="9" text-anchor="end" font-family="Space Mono">${maxV}</text>
+    <text x="${pad-4}" y="${yj(minV).toFixed(1)}" fill="var(--muted)" font-size="9" text-anchor="end" font-family="Space Mono">${minV}</text>
+    <path d="${path}" fill="none" stroke="${col}" stroke-width="2"/>${dots}${xl}
+  </svg>`;
+}
+
+function updateFoot(){
+  $("#foot").textContent=`DATA: kaiko.php (サーバー蓄積) / 全${RAW.length}レコード / 答え合わせのたびに自動保存`;
+}
+
+function roundRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+/* ===== 追加: 画像ツイート＆三連単高配当（SW TURF LAB 回顧） ===== */
+function toast(msg){ try{ let d=document.createElement("div"); d.textContent=msg;
+  d.style.cssText="position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:#16181d;color:#e9ebef;border:1px solid #2a2e36;padding:10px 16px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,.4)";
+  document.body.appendChild(d); setTimeout(()=>{d.style.transition="opacity .4s";d.style.opacity="0";},1800); setTimeout(()=>d.remove(),2400);
+}catch(e){} }
+async function shareCanvasTweet(cv, filename, text){
+  const blob=await new Promise(res=>cv.toBlob(res,"image/png"));
+  if(!blob){ swAlert("画像の生成に失敗しました"); return; }
+  const file=new File([blob], filename, {type:"image/png"});
+  try{ if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], text}); return; } }
+  catch(e){ if(e&&e.name==="AbortError") return; }
+  let copied=false;
+  try{ if(navigator.clipboard && window.ClipboardItem){ await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]); copied=true; } }catch(_){}
+  const xurl="https://twitter.com/intent/tweet?text="+encodeURIComponent(text);
+  if(copied){ toast("画像コピー済→X画面でペーストして投稿"); window.open(xurl,"_blank"); return; }
+  toast("画像を保存→Xで添付してください"); try{ await saveCanvasImg(cv, filename); }catch(_){}
+  window.open(xurl,"_blank");
+}
+function _maxRof(rec){ let m=0; (rec.races||[]).forEach(r=>{ if(r.no>m)m=r.no; }); return m; }
+function _rtMatch(rec,r,maxR){ const rt=$("#fRaceType")?$("#fRaceType").value:""; if(!rt)return true;
+  if(rt==="jraMain")return rec.mode==="jra"&&r.no===11;
+  if(rt==="finalR")return r.no===maxR&&maxR>0;
+  if(rt==="kochiFinal")return rec.track==="高知"&&r.no===maxR&&maxR>0; return true; }
+/* フィルタ(mode/期間/レース種別)準拠で三連単的中を収集→配当降順 */
+function collectTrifecta(){
+  const recs=filtered(); const out=[];
+  recs.forEach(rec=>{ const maxR=_maxRof(rec);
+    (rec.races||[]).forEach(r=>{ if(r.skip||!r.decided)return; if(!_rtMatch(rec,r,maxR))return;
+      (r.hits||[]).forEach(h=>{ if(h.type&&h.type.indexOf("3連単")>=0){
+        out.push({date:rec.date||"", track:rec.track||"", no:r.no, axis:(h.type.indexOf("○")>=0?"○":"◎"), combo:h.combo||"", yen:h.yen||0});
+      }});
+    });
+  });
+  out.sort((a,b)=>b.yen-a.yen);
+  return out;
+}
+function _md(d){ return (d&&d.length===8)?(d.slice(4,6)+"/"+d.slice(6,8)):(d||""); }
+function drawTrifectaImg(list, lbl){
+  const C={bg:"#0c0d10",panel:"#16181d",line:"#2a2e36",txt:"#e9ebef",sub:"#9aa0aa",gold:"#ffcc44",red:"#ff6b6b"};
+  const rows=list.slice(0,16); const W=760, top=150, rh=46, H=top+rows.length*rh+70;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  x.fillStyle=C.txt; x.font="800 30px 'Space Mono','Noto Sans JP',sans-serif"; x.fillText("三連単 高配当 TOP", 28, 50);
+  x.fillStyle=C.sub; x.font="600 17px 'Space Mono','Noto Sans JP',sans-serif"; x.fillText(`${lbl}／◎軸・○軸流し`, 28, 80);
+  // ヘッダ
+  x.fillStyle=C.sub; x.font="700 15px 'Space Mono','Noto Sans JP',sans-serif";
+  x.fillText("#", 30, top-14); x.fillText("日付", 70, top-14); x.fillText("場 R", 160, top-14);
+  x.fillText("軸", 250, top-14); x.fillText("組合せ", 300, top-14); x.textAlign="right"; x.fillText("払戻", W-28, top-14); x.textAlign="left";
+  x.strokeStyle=C.line; x.beginPath(); x.moveTo(24,top-4); x.lineTo(W-24,top-4); x.stroke();
+  rows.forEach((it,i)=>{ const y=top+i*rh+30; const big=it.yen>=10000;
+    if(big){ x.fillStyle="rgba(255,204,68,.08)"; roundRect(x,20,y-26,W-40,rh-6,8); x.fill(); }
+    x.fillStyle=big?C.gold:C.txt; x.font="700 19px 'Space Mono','Noto Sans JP',sans-serif";
+    x.fillText(String(i+1), 30, y); x.fillStyle=C.txt; x.fillText(_md(it.date), 70, y);
+    x.fillText(`${it.track}${it.no}R`, 160, y); x.fillText(it.axis, 252, y);
+    x.font="700 18px 'Space Mono','Noto Sans JP',sans-serif"; x.fillText(it.combo, 300, y);
+    x.textAlign="right"; x.fillStyle=big?C.gold:C.txt; x.font="800 20px 'Space Mono'";
+    x.fillText(it.yen.toLocaleString()+"円", W-28, y); x.textAlign="left";
+  });
+  x.fillStyle=C.sub; x.font="600 14px 'Space Mono','Noto Sans JP',sans-serif"; x.textAlign="center";
+  x.fillText("金=万馬券　1点100円換算　盛らない、データだけ。 SW TURF LAB", W/2, H-26); x.textAlign="left";
+
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6); }catch(_e){}
+  return cv;
+}
+function showTrifectaTop(){
+  const list=collectTrifecta(); const lbl=(($("#fMode").value==="jra"?"JRA ":$("#fMode").value==="nar"?"地方 ":"")+(rangeLabel()||"全期間"));
+  const wrap=$("#content"); if(!wrap) return;
+  if(!list.length){ wrap.innerHTML=`<div class="sec"><button class="reload" id="triBack">← 集計に戻る</button><div class="empty" style="margin-top:14px">${lbl}：三連単の的中なし</div></div>`; $("#triBack").onclick=render; return; }
+  const top=list[0]; const cnt=list.length; const sum=list.reduce((a,b)=>a+b.yen,0);
+  let rowsH=list.slice(0,40).map((it,i)=>`<tr${it.yen>=10000?' style="color:#ffcc44"':''}><td>${i+1}</td><td>${_md(it.date)}</td><td>${it.track}${it.no}R</td><td>${it.axis}</td><td style="font-family:'Space Mono'">${it.combo}</td><td style="text-align:right;font-weight:800">${it.yen.toLocaleString()}円</td></tr>`).join("");
+  wrap.innerHTML=`<div class="sec">
+    <button class="reload" id="triBack">← 集計に戻る</button>
+    <button class="reload" id="triImg" style="background:#c0392b">画像保存</button>
+    <button class="reload" id="triTw" style="background:#1d9bf0">📤 画像でツイート</button>
+    <div class="sec-h" style="margin-top:12px">三連単 高配当 ｜ ${lbl}</div>
+    <div class="note">的中 ${cnt}本／最高 ${top.yen.toLocaleString()}円（${top.track}${top.no}R）</div>
+    <div style="overflow-x:auto"><table class="kt" style="width:100%;border-collapse:collapse;font-size:14px;margin-top:8px">
+    <thead><tr style="color:#9aa0aa;text-align:left"><th>#</th><th>日付</th><th>場R</th><th>軸</th><th>組合せ</th><th style="text-align:right">払戻</th></tr></thead>
+    <tbody>${rowsH}</tbody></table></div></div>`;
+  $("#triBack").onclick=render;
+  const mkImg=()=>drawTrifectaImg(list, lbl);
+  $("#triImg").onclick=()=>saveCanvasImg(mkImg(), `三連単高配当_${rangeLabel()}.png`);
+  $("#triTw").onclick=()=>{ const t=`【SW TURF LAB 回顧】${lbl}\n三連単 高配当 TOP\n最高 ${top.yen.toLocaleString()}円（${top.track}${top.no}R）・的中${cnt}本\n盛らない、データだけ。\n#競馬予想 #SWTURFLAB`; shareCanvasTweet(mkImg(), `三連単高配当_${rangeLabel()}.png`, t); };
+}
+function drawTweetSummary(){
+  const s=STATS; const C={bg1:"#0a0e16",bg2:"#121826",txt:"#e9ebef",sub:"#9aa0aa",gold:"#f5b942",coral:"#f0654a",grn:"#43d17a",red:"#ff6b6b",line:"#262d3a"};
+  const lbl=(($("#fMode").value==="jra"?"JRA ":$("#fMode").value==="nar"?"地方 ":"")+(rangeLabel()||"全期間"));
+  const W=760,H=420; const cv=document.createElement("canvas"); cv.width=W;cv.height=H; const x=cv.getContext("2d");
+  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
+  x.fillStyle=bg; x.fillRect(0,0,W,H);
+  // 放射グロー＋斜めスピードライン
+  const rgl=x.createRadialGradient(120,60,10,120,60,420);
+  rgl.addColorStop(0,"rgba(245,185,66,0.10)"); rgl.addColorStop(1,"rgba(245,185,66,0)");
+  x.fillStyle=rgl; x.fillRect(0,0,W,180);
+  x.save(); x.globalAlpha=0.05; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+  for(let _sx=-120;_sx<W+120;_sx+=40){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+50,105); x.stroke(); }
+  x.restore();
+  // タイトル（左アクセント＋グラデ文字）
+  const hg=x.createLinearGradient(20,0,180,0); hg.addColorStop(0,C.gold); hg.addColorStop(1,C.coral);
+  x.fillStyle=hg; x.fillRect(20,30,7,36);
+  x.font="800 32px 'Space Mono','Noto Sans JP',sans-serif";
+  const tgd=x.createLinearGradient(0,28,0,60); tgd.addColorStop(0,"#ffffff"); tgd.addColorStop(1,"#b9c6de");
+  x.save(); x.shadowColor="rgba(245,185,66,0.35)"; x.shadowBlur=14;
+  x.fillStyle=tgd; x.fillText("回顧 / 実績まとめ", 38, 58); x.restore();
+  x.fillStyle=C.sub; x.font="600 19px 'Space Mono','Noto Sans JP',sans-serif"; x.fillText(lbl, 38, 88);
+  // ヘアライン
+  const hlg=x.createLinearGradient(20,0,W-20,0);
+  hlg.addColorStop(0,C.gold); hlg.addColorStop(0.5,"rgba(245,185,66,0.12)"); hlg.addColorStop(1,"rgba(245,185,66,0)");
+  x.fillStyle=hlg; x.fillRect(20,102,W-40,2);
+  const rate=Math.round(s.rate||0), hr=Math.round(s.hitRate||0);
+  const card=(cx,cy,label,val,col)=>{ x.fillStyle=C.sub; x.font="600 16px \'Space Mono\',\'Noto Sans JP\'"; x.fillText(label, cx, cy);
+    x.fillStyle=col||C.txt; x.font="800 40px \'Space Mono\'"; x.fillText(val, cx, cy+44); };
+  card(40,150,"回収率",(rate)+"%", rate>=100?C.grn:C.red);
+  card(280,150,"的中率",hr+"%",C.txt);
+  card(520,150,"対象R",String(s.raceCount||0),C.txt);
+  card(40,250,"◎勝率",Math.round(s.oWinPct||0)+"%",C.txt);
+  card(280,250,"◎複勝率",Math.round(s.oP3Pct||0)+"%",C.txt);
+  const prof=(s.ret||0)-(s.inv||0);
+  card(520,250,"収支",(prof>=0?"+":"")+prof.toLocaleString(),prof>=0?C.grn:C.red);
+  x.fillStyle=C.sub; x.font="600 15px \'Space Mono\',\'Noto Sans JP\'"; x.fillText("◎軸/○軸 全券種 1点100円換算　盛らない、データだけ。", 30, H-56);
+  x.font="800 20px \'Space Mono\'"; x.fillStyle=C.txt; x.textAlign="right"; x.fillText("SW TURF LAB", W-24, H-26); x.textAlign="left";
+  const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,C.gold); fgb.addColorStop(1,C.coral);
+  x.fillStyle=fgb; x.fillRect(0,H-8,W,8);   // ブランドバー
+  return cv;
+}
+function tweetSummary(){
+  if(!STATS){ swAlert("先に集計を表示してください（更新を押す）"); return; }
+  const s=STATS; const lbl=(($("#fMode").value==="jra"?"JRA ":$("#fMode").value==="nar"?"地方 ":"")+(rangeLabel()||"全期間"));
+  const rate=Math.round(s.rate||0), hr=Math.round(s.hitRate||0); const prof=(s.ret||0)-(s.inv||0);
+  const t=`【SW TURF LAB 回顧】${lbl}\n回収率 ${rate}% ／ 的中率 ${hr}%（${s.raceCount||0}R）\n◎勝率 ${Math.round(s.oWinPct||0)}% 複勝率 ${Math.round(s.oP3Pct||0)}%\n収支 ${(prof>=0?"+":"")+prof.toLocaleString()}円\n盛らない、データだけ。\n#競馬予想 #SWTURFLAB`;
+  shareCanvasTweet(drawTweetSummary(), `回顧まとめ_${rangeLabel()}.png`, t);
+}
+
+function drawSummaryImage(){
+  if(!STATS){ return; }
+  const s=STATS;
+  const C={ bg:"#050505", panel:"#16181d", line:"#2a2e36", txt:"#f0f0f0", muted:"#868d9a",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", accent:"#46b8e8" };
+  const W=1080, pad=48;
+  // 場別行数
+  const trackEntries=Object.entries(s.byTrack).sort((a,b)=>b[1].inv-a[1].inv);
+  // 累積収支グラフ用の日次データ
+  const dayKeys=Object.keys(s.days||{}).sort();
+  const chartH = dayKeys.length>=2 ? 240 : 0;
+  const H=170 + 220 + 60 + 220 + 170 + trackEntries.length*40 + chartH + 90;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  x.fillStyle=C.accent; x.fillRect(pad,46,8,70);
+  x.fillStyle=C.txt; x.font="700 56px 'Saira Condensed','Noto Sans JP',sans-serif";
+  x.fillText("通算実績", pad+24, 100);
+  x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  const modeLbl=$("#fMode").value==="jra"?"JRA":$("#fMode").value==="nar"?"地方":"全モード";
+  const rangeLbl=rangeLabel();
+  x.fillText(`SW TURF LAB ／ ${modeLbl}・${rangeLbl}　${s.dayCount}日 ${s.raceCount}R`, pad+24, 138);
+  // 連勝ストリーク・チップ（右上）
+  if(s.streak && (s.streak.curHit>=2 || s.streak.curPlus>=2)){
+    const st=s.streak;
+    const label = st.curHit>=2 ? `🔥 ${st.curHit}日連続的中中` : `📈 ${st.curPlus}日連続プラス中`;
+    x.font="700 28px 'Noto Sans JP',sans-serif";
+    const sw=x.measureText(label).width+44;
+    const sx=W-pad-sw, sy=58;
+    roundRect(x, sx, sy, sw, 48, 24);
+    const sg=x.createLinearGradient(sx,0,sx+sw,0); sg.addColorStop(0,"#f5b942"); sg.addColorStop(1,"#f0654a");
+    x.fillStyle=sg; x.fill();
+    x.fillStyle="#1a1206"; x.textAlign="center"; x.fillText(label, sx+sw/2, sy+33); x.textAlign="left";
+  }
+  // 大カード3つ（回収率・収支・的中率）
+  let y=180;
+  const bigCard=(cx,cw,lbl,val,col,sub)=>{
+    x.fillStyle=C.panel; roundRect(x,cx,y,cw,150,14); x.fill(); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
+    x.font="600 20px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(lbl, cx+22, y+38);
+    x.font="700 60px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=col;
+    x.fillText(val, cx+22, y+102);
+    if(sub){ x.font="500 19px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText(sub, cx+22, y+134); }
+  };
+  const gap=20, cw=(W-pad*2-gap*2)/3;
+  bigCard(pad, cw, "通算回収率", s.rate+"%", s.rate>=100?C.plus:s.rate>=80?C.mid:C.minus, `${s.inv.toLocaleString()}→${s.ret.toLocaleString()}円`);
+  bigCard(pad+cw+gap, cw, "収支", (s.prof>=0?"+":"")+Math.round(s.prof).toLocaleString(), s.prof>=0?C.plus:C.minus, "円");
+  bigCard(pad+(cw+gap)*2, cw, "推奨的中率", s.hitRate+"%", C.txt, `${s.hitRaceCount}/${s.raceCount}R`);
+  y+=150+50;
+  // ◎成績2つ
+  x.font="700 22px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("◎ 成績", pad, y); y+=20;
+  const cw2=(W-pad*2-gap)/2;
+  const oCard=(cx,lbl,val,sub)=>{
+    x.fillStyle=C.panel; roundRect(x,cx,y,cw2,110,12); x.fill(); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
+    x.font="600 18px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(lbl, cx+20, y+34);
+    x.font="700 46px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(val, cx+20, y+86);
+    x.font="500 18px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.textAlign="right"; x.fillText(sub, cx+cw2-20, y+86); x.textAlign="left";
+  };
+  oCard(pad, "◎ 勝率", s.oWinPct+"%", `${s.oWin}/${s.oRun}`);
+  oCard(pad+cw2+gap, "◎ 複勝率", s.oP3Pct+"%", `${s.oP3}/${s.oRun}`);
+  y+=110+40;
+  // JRA / 地方 別 回収率
+  { const ms=s.modeSplit||{jra:{},nar:{}}; const mr=m=>((m&&m.inv>0)?Math.round(m.ret/m.inv*100):0);
+    x.font="700 22px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText("JRA / 地方 別 回収率", pad, y); y+=20;
+    const mCard=(cx,lbl,m)=>{ m=m||{}; const rr=mr(m); const col=rr>=100?C.plus:rr>=80?C.mid:C.minus; const pf=Math.round((((m.ret||0)-(m.inv||0)))/1000);
+      x.fillStyle=C.panel; roundRect(x,cx,y,cw2,110,12); x.fill(); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
+      x.font="600 18px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(lbl, cx+20, y+34);
+      x.font="700 46px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=col; x.fillText(rr+"%", cx+20, y+86);
+      x.font="500 17px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.textAlign="right"; x.fillText(`${m.races||0}R ${pf>=0?"+":""}${pf}k円`, cx+cw2-20, y+86); x.textAlign="left"; };
+    mCard(pad, "JRA", ms.jra); mCard(pad+cw2+gap, "地方", ms.nar); y+=110+40;
+  }
+  // 場別
+  x.font="700 22px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText("場別 回収率", pad, y); y+=30;
+  trackEntries.forEach(([t,v])=>{
+    const rr=v.inv>0?Math.round(v.ret/v.inv*100):0; const col=rr>=100?C.plus:rr>=80?C.mid:C.minus;
+    x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(t, pad, y+24);
+    x.font="600 18px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(`${v.races}R`, pad+160, y+24);
+    x.font="700 26px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="right"; x.fillText(rr+"%", pad+360, y+24);
+    x.font="600 18px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(`${v.inv.toLocaleString()}→${v.ret.toLocaleString()}円`, W-pad, y+24); x.textAlign="left";
+    x.strokeStyle=C.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad,y+32); x.lineTo(W-pad,y+32); x.stroke();
+    y+=40;
+  });
+  // 累積収支グラフ（実績の証明・折れ線）
+  if(dayKeys.length>=2){
+    y+=24;
+    x.font="700 22px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+    x.fillText("累積収支の推移", pad, y); y+=20;
+    const gx=pad, gy=y, gw=W-pad*2, gh=170;
+    x.fillStyle=C.panel; roundRect(x,gx,gy,gw,gh,12); x.fill(); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
+    // 累積収支(円)を計算
+    let cum=0; const pts=dayKeys.map(d=>{ cum+=(s.days[d].ret-s.days[d].inv); return cum; });
+    const maxV=Math.max(...pts, 0), minV=Math.min(...pts, 0);
+    const range=(maxV-minV)||1;
+    const ipad=24;
+    const xj=i=> gx+ipad + (pts.length<=1?0: i*(gw-ipad*2)/(pts.length-1));
+    const yj=v=> gy+ipad + (maxV-v)/range*(gh-ipad*2);
+    // 0ライン
+    const y0=yj(0);
+    x.strokeStyle="#3a4151"; x.lineWidth=1; x.setLineDash([4,4]);
+    x.beginPath(); x.moveTo(gx+ipad,y0); x.lineTo(gx+gw-ipad,y0); x.stroke(); x.setLineDash([]);
+    x.font="500 15px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText("±0", gx+gw-ipad-30, y0-6);
+    // 折れ線（最終がプラスなら緑）
+    const finalProf=pts[pts.length-1];
+    const lcol=finalProf>=0?C.plus:C.minus;
+    // 塗り
+    x.beginPath(); x.moveTo(xj(0), y0);
+    pts.forEach((v,i)=>x.lineTo(xj(i), yj(v)));
+    x.lineTo(xj(pts.length-1), y0); x.closePath();
+    x.fillStyle=finalProf>=0?"rgba(115,201,90,.10)":"rgba(216,66,58,.10)"; x.fill();
+    // 線
+    x.beginPath(); pts.forEach((v,i)=>{ const fx=xj(i),fy=yj(v); i?x.lineTo(fx,fy):x.moveTo(fx,fy); });
+    x.strokeStyle=lcol; x.lineWidth=3; x.stroke();
+    // 終点ドット＋最終値
+    const ex=xj(pts.length-1), ey=yj(finalProf);
+    x.beginPath(); x.arc(ex,ey,5,0,7); x.fillStyle=lcol; x.fill();
+    x.font="700 22px 'Space Mono',monospace"; x.fillStyle=lcol; x.textAlign="right";
+    x.fillText(`${finalProf>=0?"+":""}${finalProf.toLocaleString()}円`, gx+gw-ipad, gy+ipad+4); x.textAlign="left";
+    // 日付ラベル（両端）
+    x.font="500 14px 'Space Mono',monospace"; x.fillStyle=C.muted;
+    const fmt=(d)=>d.slice(4,6)+"/"+d.slice(6,8);
+    x.fillText(fmt(dayKeys[0]), gx+ipad, gy+gh-8);
+    x.textAlign="right"; x.fillText(fmt(dayKeys[dayKeys.length-1]), gx+gw-ipad, gy+gh-8); x.textAlign="left";
+    y+=gh+10;
+  }
+  x.font="500 19px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("◎軸/○軸流し・100円単位／盛らない、データだけ。", pad, H-34);
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6); }catch(_e){}
+  cv.toBlob(async(blob)=>{
+    if(!blob){ return; }
+    const filename=`通算実績_${rangeLabel()}.png`;
+    try{
+      if(navigator.canShare){
+        const file=new File([blob], filename, {type:"image/png"});
+        if(navigator.canShare({files:[file]})){ await navigator.share({files:[file]}); return; }
+      }
+    }catch(e){ if(e&&e.name==="AbortError") return; }
+    const u=URL.createObjectURL(blob); const a=document.createElement("a");
+    if("download" in a){ a.href=u; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(u),4000); return; }
+    window.open(u,"_blank"); setTimeout(()=>URL.revokeObjectURL(u),8000);
+  },"image/png");
+}
+
+$("#themeBtn").onclick=()=>{ const c=document.documentElement.getAttribute('data-theme')||'dark'; const n=c==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',n); try{localStorage.setItem('sw_kaiko_theme',n);}catch(e){} };
+$("#reloadBtn").onclick=load;
+$("#imgBtn").onclick=drawSummaryImage;
+$("#imgBtn2").onclick=drawMatrixImage;
+$("#imgBtn3").onclick=drawAimImage;
+$("#imgBtn4").onclick=drawFirmImage;
+$("#imgBtn5").onclick=drawTypeRecImage;
+$("#imgBtn6").onclick=drawPeriodSummary;
+$("#imgBtn7").onclick=drawTierImageKaiko; $("#imgBtnTri").onclick=showTrifectaTop; $("#imgBtnTw").onclick=tweetSummary;
+$("#imgBtnFc").onclick=showFactorCheck;
+$("#imgBtnRno").onclick=showRaceNoCheck;
+/* R別的中: ◎のレース番号別 複勝率・勝率（＋前半/後半比較） */
+function showRaceNoCheck(){
+  const recs=filtered();
+  const byNo={};   // no -> {n, p3, win, inv, ret}
+  recs.forEach(r=>{
+    const o=(r.marks||[]).find(m=>m.mk==="◎"); if(!o||o.rank==null) return;
+    const no=r.no; if(typeof no!=="number"||no<1) return;
+    const d=byNo[no]||(byNo[no]={n:0,p3:0,win:0,inv:0,ret:0});
+    d.n++; if(o.rank<=3)d.p3++; if(o.rank===1)d.win++;
+    try{ d.inv+=calcInv(r.marks)||0; }catch(_){}
+    (r.hits||[]).forEach(h=>{ d.ret+=(h.yen||0); });
+  });
+  const nos=Object.keys(byNo).map(Number).sort((a,b)=>a-b);
+  if(!nos.length){ const w=$("#content"); if(w) w.innerHTML='<div style="padding:16px;color:#999">◎の着順付きデータがまだありません（答え合わせ後に溜まります）。</div>'; return; }
+  const pct=(a,b)=>b?(100*a/b).toFixed(0)+"%":"-";
+  const roi=(ret,inv)=>inv>0?(100*ret/inv).toFixed(0)+"%":"-";
+  const roiCol=(ret,inv)=>{ if(inv<=0)return "#888"; const v=100*ret/inv; return v>=100?"#3ec46e":v>=80?"#e0b34a":"#e0785a"; };
+  const td="border:1px solid #333;padding:5px";const th="border:1px solid #333;padding:5px;background:#1a1a1a";
+  const ts="border-collapse:collapse;width:100%;font-size:13px;text-align:center";
+  let rows="";
+  for(const no of nos){ const d=byNo[no];
+    rows+=`<tr><td style="${td}">${no}R</td><td style="${td}">${d.n}</td><td style="${td}">${pct(d.p3,d.n)}</td><td style="${td}">${pct(d.win,d.n)}</td><td style="${td};color:${roiCol(d.ret,d.inv)};font-weight:700">${roi(d.ret,d.inv)}</td></tr>`; }
+  const sum=(f)=>{let a={n:0,p3:0,win:0,inv:0,ret:0};for(const no of nos){if(f(no)){const d=byNo[no];a.n+=d.n;a.p3+=d.p3;a.win+=d.win;a.inv+=d.inv;a.ret+=d.ret;}}return a;};
+  const early=sum(n=>n<=6), late=sum(n=>n>=7);
+  const lbl=(($("#fMode").value==="jra"?"JRA ":$("#fMode").value==="nar"?"地方 ":"")+((typeof rangeLabel==="function"&&rangeLabel())||"全期間"));
+  const html=`<div style="padding:14px">
+    <h3 style="margin:0 0 4px">🔢 R別 ◎的中率・回収率 <span style="font-size:12px;color:#888">${lbl}</span></h3>
+    <p style="font-size:12px;color:#999;margin:2px 0 10px">◎のレース番号別。回収率は買い目まとめ（全券種・◎○軸）ベース。「後半Rが当たりやすい/回収が良い」説の検証に。</p>
+    <table style="${ts}"><thead><tr><th style="${th}">R</th><th style="${th}">R数</th><th style="${th}">◎複勝率</th><th style="${th}">◎勝率</th><th style="${th}">回収率</th></tr></thead><tbody>${rows}</tbody></table>
+    <table style="${ts};margin-top:12px"><thead><tr><th style="${th}">区分</th><th style="${th}">R数</th><th style="${th}">◎複勝率</th><th style="${th}">◎勝率</th><th style="${th}">回収率</th></tr></thead><tbody>
+    <tr><td style="${td}">前半 1-6R</td><td style="${td}">${early.n}</td><td style="${td}">${pct(early.p3,early.n)}</td><td style="${td}">${pct(early.win,early.n)}</td><td style="${td};color:${roiCol(early.ret,early.inv)};font-weight:700">${roi(early.ret,early.inv)}</td></tr>
+    <tr><td style="${td}">後半 7R+</td><td style="${td}">${late.n}</td><td style="${td}">${pct(late.p3,late.n)}</td><td style="${td}">${pct(late.win,late.n)}</td><td style="${td};color:${roiCol(late.ret,late.inv)};font-weight:700">${roi(late.ret,late.inv)}</td></tr>
+    </tbody></table>
+    <p style="font-size:11px;color:#666;margin-top:10px">※答え合わせ済みの◎が対象。回収率=払戻(hits)÷投資(calcInv)。100%超=緑。溜まるほど確度UP。</p>
+  </div>`;
+  const wrap=$("#content"); if(wrap) wrap.innerHTML=html;
+}
+/* 効き目検証: ◎を当地/騎手当地の強さで層別 → 実際の◎複勝率を出す（自己検証） */
+function showFactorCheck(){
+  const recs=filtered();
+  const mk=()=>({"人気1-3":{強:[0,0],弱:[0,0],無:[0,0]},"人気4-6":{強:[0,0],弱:[0,0],無:[0,0]},"人気7+":{強:[0,0],弱:[0,0],無:[0,0]}});
+  const L=mk(), J=mk();
+  const popBand=p=>p==null?null:(p<=3?"人気1-3":p<=6?"人気4-6":"人気7+");
+  recs.forEach(r=>{
+    (r.marks||[]).forEach(m=>{
+      if(m.rank==null) return; const pb=popBand(m.pop); if(!pb) return;
+      let lb="無"; if(m.local&&m.local.n>=3){ lb=(m.local.p3/m.local.n>=0.45)?"強":"弱"; }
+      L[pb][lb][0]++; if(m.rank<=3)L[pb][lb][1]++;
+      let jb="無"; if(m.jkloc&&m.jkloc.p3R!=null){ jb=(m.jkloc.p3R>=40)?"強":"弱"; }
+      J[pb][jb][0]++; if(m.rank<=3)J[pb][jb][1]++;
+    });
+  });
+  const cell=(d)=>d[0]?`${(100*d[1]/d[0]).toFixed(0)}%<span style="color:#777;font-size:10px"> n${d[0]}</span>`:'<span style="color:#555">-</span>';
+  const td="border:1px solid #333;padding:5px";const th="border:1px solid #333;padding:5px;background:#1a1a1a";
+  const ts="border-collapse:collapse;width:100%;font-size:12px;text-align:center";
+  const matrix=(M,strongLbl)=>{
+    let rows="";
+    for(const pb of ["人気1-3","人気4-6","人気7+"]){
+      const s=M[pb]["強"],w=M[pb]["弱"];
+      const lift=(s[0]>=10&&w[0]>=10)?((100*s[1]/s[0]-100*w[1]/w[0])):null;
+      const lc=lift==null?"":lift>=3?'color:#2ecc71':lift<=-3?'color:#e74c3c':'color:#999';
+      rows+=`<tr><td style="${td};text-align:left">${pb}</td><td style="${td}">${cell(M[pb]["強"])}</td><td style="${td}">${cell(M[pb]["弱"])}</td><td style="${td}">${cell(M[pb]["無"])}</td><td style="${td};${lc}">${lift==null?"-":(lift>=0?"+":"")+lift.toFixed(0)}</td></tr>`;
+    }
+    return `<table style="${ts}"><thead><tr><th style="${th}">人気帯</th><th style="${th}">${strongLbl}強</th><th style="${th}">弱</th><th style="${th}">無</th><th style="${th}">強−弱</th></tr></thead><tbody>${rows}</tbody></table>`;
+  };
+  const lbl=(($("#fMode").value==="jra"?"JRA ":$("#fMode").value==="nar"?"地方 ":"")+((typeof rangeLabel==="function"&&rangeLabel())||"全期間"));
+  const html=`<div style="padding:14px">
+    <h3 style="margin:0 0 4px">📊 効き目検証（人気統制）<span style="font-size:12px;color:#888">${lbl}</span></h3>
+    <p style="font-size:12px;color:#999;margin:2px 0 10px">各マークを人気帯×当地強弱で分けた複勝率。同じ人気帯で「強−弱」がプラスなら、当地が人気を超えて効いてる証拠（交絡でなく本物）。</p>
+    <div style="font-size:12px;color:#ccc;margin:6px 0 3px">■ 馬の当地実績</div>${matrix(L,"当地")}
+    <div style="font-size:12px;color:#ccc;margin:12px 0 3px">■ 騎手の当地実績</div>${matrix(J,"騎手")}
+    <p style="font-size:11px;color:#666;margin-top:10px">※当地トグルONで走らせた予想が対象。緑=効いてる/赤=逆。データが溜まるほど確度UP。</p>
+  </div>`;
+  const wrap=$("#content"); if(wrap) wrap.innerHTML=html;
+}
+/* 段階別成績画像（長期集計版。tierAggを使用） */
+function drawTierImageKaiko(){
+  if(!STATS||!STATS.tierAgg||!STATS.tierAgg.all.races){ swAlert("データがありません。"); return; }
+  const ta=STATS.tierAgg;
+  const tiers=[ta.all,ta.rec,ta.aim,ta.battle].filter(t=>t.races>0).map(t=>{
+    const rate=t.inv>0?Math.round(t.ret/t.inv*100):0;
+    return { key:({"全レース":"all","推奨":"rec","狙い目":"aim","★勝負":"battle"})[t.label],
+      label:t.label, races:t.races, hitPct:Math.round(t.hitRaces/t.races*100),
+      o3Pct:t.oRun?Math.round(t.oP3/t.oRun*100):0, rate, prof:t.ret-t.inv };
+  });
+  const C={ bg:"#050505", panel:"#16181d", line:"#2a2e36", txt:"#f0f0f0", muted:"#868d9a",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", accent:"#d8423a" };
+  const W=1080, pad=56;
+  const rowH=150, headH=210, hdrRow=56;
+  const H=headH + hdrRow + tiers.length*rowH + 90;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const bgg=x.createLinearGradient(0,0,0,H); bgg.addColorStop(0,"#0a0e16"); bgg.addColorStop(1,"#121826");
+  x.fillStyle=bgg; x.fillRect(0,0,W,H);
+  // 放射グロー＋斜めスピードライン（実績＝金）
+  const rgl=x.createRadialGradient(pad+140,86,20,pad+140,86,520);
+  rgl.addColorStop(0,"rgba(245,185,66,0.10)"); rgl.addColorStop(1,"rgba(245,185,66,0)");
+  x.fillStyle=rgl; x.fillRect(0,0,W,240);
+  x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+  for(let _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+  x.restore();
+  const abg=x.createLinearGradient(0,52,0,124); abg.addColorStop(0,"#f5b942"); abg.addColorStop(1,"#f0654a");
+  x.fillStyle=abg; x.fillRect(pad,52,8,72);
+  x.font="700 56px 'Saira Condensed','Noto Sans JP',sans-serif";
+  const tgd=x.createLinearGradient(0,56,0,108); tgd.addColorStop(0,"#ffffff"); tgd.addColorStop(1,"#b9c6de");
+  x.save(); x.shadowColor="rgba(245,185,66,0.35)"; x.shadowBlur=16;
+  x.fillStyle=tgd; x.fillText("段階別 成績", pad+26, 104); x.restore();
+  x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  const modeLbl=$("#fMode").value==="jra"?"JRA":$("#fMode").value==="nar"?"地方":"全";
+  const rangeLbl=rangeLabel()||"";
+  x.fillText(`SW TURF LAB ／ ${modeLbl}・${rangeLbl}　${STATS.dayCount}日 ${STATS.raceCount}R`, pad+26, 146);
+  x.font="500 21px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("自信度を上げるほど成績が上がるか", pad+26, 180);
+  let y=headH;
+  const cols=[ {t:"区分", x:pad, a:"left"}, {t:"的中率", x:pad+330, a:"center"},
+               {t:"◎複勝", x:pad+495, a:"center"}, {t:"回収率", x:pad+670, a:"center"}, {t:"収支", x:W-pad, a:"right"} ];
+  x.font="600 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  cols.forEach(c=>{ x.textAlign=c.a; x.fillText(c.t, c.x, y+20); });
+  x.textAlign="left"; y+=hdrRow;
+  const tierColor={all:"#868d9a", rec:"#46b8e8", aim:"#d8423a", battle:"#f0654a"};
+  tiers.forEach((t,i)=>{
+    const ry=y+i*rowH;
+    if(t.key==="battle"){ const g=x.createLinearGradient(pad,ry,W-pad,ry); g.addColorStop(0,"rgba(245,185,66,.10)"); g.addColorStop(1,"rgba(240,101,74,.05)"); x.fillStyle=g; }
+    else x.fillStyle=i%2===0?"#0e1014":C.panel;
+    roundRect(x,pad-12,ry+8,W-pad*2+24,rowH-16,14); x.fill();
+    if(t.key==="battle"){ x.strokeStyle="rgba(245,185,66,.4)"; x.lineWidth=2; x.stroke(); }
+    x.fillStyle=tierColor[t.key]||C.muted; roundRect(x,pad,ry+rowH/2-22,6,44,3); x.fill();
+    x.font="700 34px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(t.label, pad+22, ry+rowH/2+2);
+    x.font="500 19px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(`${t.races}R`, pad+22, ry+rowH/2+30);
+    x.font="700 38px 'Space Mono',monospace"; x.fillStyle=C.txt; x.textAlign="center";
+    x.fillText(t.hitPct+"%", pad+330, ry+rowH/2+10);
+    x.fillStyle=C.muted; x.fillText(t.o3Pct+"%", pad+495, ry+rowH/2+10);
+    const rcol=t.rate>=100?C.plus:t.rate>=80?C.mid:C.minus;
+    x.font="800 48px 'Saira Condensed',sans-serif"; x.fillStyle=rcol; x.fillText(t.rate+"%", pad+670, ry+rowH/2+14);
+    x.font="700 30px 'Space Mono',monospace"; x.fillStyle=t.prof>=0?C.plus:C.minus; x.textAlign="right";
+    x.fillText(`${t.prof>=0?"+":""}${Math.round(t.prof/1000)}k`, W-pad, ry+rowH/2+10);
+    x.textAlign="left";
+  });
+  x.font="500 20px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.textAlign="center";
+  x.fillText("◎/○軸の全券種1点100円換算　盛らない、データだけ。", W/2, H-34);
+  x.textAlign="left";
+  x.font="700 20px 'Space Mono',monospace"; x.fillStyle=C.txt; x.textAlign="right";
+  x.fillText("SW TURF LAB", W-pad, H-32); x.textAlign="left";
+  const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,"#f5b942"); fgb.addColorStop(1,"#f0654a");
+  x.fillStyle=fgb; x.fillRect(0,H-6,W,6);   // ブランドバー（金）
+  saveCanvasImg(cv, `段階別成績_${rangeLabel()}.png`);
+}
+/* 期間まとめ画像（日次収支カレンダー＋サマリー。定期投稿用） */
+function drawPeriodSummary(){
+  if(!STATS||!STATS.days){ return; }
+  const s=STATS;
+  const dayKeys=Object.keys(s.days).sort();
+  if(!dayKeys.length){ swAlert("データがありません。"); return; }
+  const C={ bg:"#050505", panel:"#16181d", line:"#2a2e36", txt:"#f0f0f0", muted:"#868d9a",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", accent:"#e8a838" };
+  const W=1080, pad=48;
+  // 日次データを配列化
+  const daily=dayKeys.map(d=>{ const x=s.days[d]; const prof=(x.ret||0)-(x.inv||0); return {d, prof, hit:(x.ret||0)>0}; });
+  const rangeLbl=rangeLabel()||"期間";
+  const modeLbl=$("#fMode").value==="jra"?"JRA":$("#fMode").value==="nar"?"地方":"全";
+  // カレンダーグリッド（週=7列）。最大埋まる行数で高さ決定
+  const cell=120, gap=12, cols=7;
+  const rows=Math.ceil(daily.length/cols);
+  const calH=rows*(cell+gap);
+  const H=170 + 250 + 80 + calH + 90;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  // ヘッダ
+  x.fillStyle=C.accent; x.fillRect(pad,46,8,70);
+  x.fillStyle=C.txt; x.font="700 52px 'Saira Condensed','Noto Sans JP',sans-serif";
+  x.fillText(`${rangeLbl}のまとめ`, pad+24, 96);
+  x.font="600 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText(`SW TURF LAB ／ ${modeLbl}　${s.dayCount}日 ${s.raceCount}R`, pad+24, 132);
+  // サマリーカード（回収率・収支・的中率）
+  let y=180;
+  const gp=20, cw=(W-pad*2-gp*2)/3;
+  const card=(cx,lbl,val,col,sub)=>{
+    x.fillStyle=C.panel; roundRect(x,cx,y,cw,150,14); x.fill(); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
+    x.font="600 19px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(lbl, cx+20, y+36);
+    x.font="700 58px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=col; x.fillText(val, cx+20, y+104);
+    if(sub){ x.font="500 17px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText(sub, cx+20, y+134); }
+  };
+  const plusDays=daily.filter(d=>d.prof>=0).length;
+  card(pad, "回収率", s.rate+"%", s.rate>=100?C.plus:s.rate>=80?C.mid:C.minus, `${s.inv.toLocaleString()}→${s.ret.toLocaleString()}`);
+  card(pad+cw+gp, "収支", (s.prof>=0?"+":"")+Math.round(s.prof/1000)+"k", s.prof>=0?C.plus:C.minus, "円");
+  card(pad+(cw+gp)*2, "勝ち越し", `${plusDays}/${daily.length}`, plusDays*2>=daily.length?C.plus:C.minus, "プラス収支の日数");
+  y+=150+50;
+  // 日次カレンダー（草風）
+  x.font="700 24px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText("日別収支", pad, y); y+=20;
+  const maxAbs=Math.max(1, ...daily.map(d=>Math.abs(d.prof)));
+  const gw=(W-pad*2-gap*(cols-1))/cols;
+  daily.forEach((dd,i)=>{
+    const r=Math.floor(i/cols), c=i%cols;
+    const cx=pad+c*(gw+gap), cy=y+r*(cell+gap);
+    // 収支の大きさで色の濃さ
+    const intensity=Math.min(1, Math.abs(dd.prof)/maxAbs*0.85+0.15);
+    let col;
+    if(dd.prof>0) col=`rgba(115,201,90,${intensity})`;
+    else if(dd.prof<0) col=`rgba(216,66,58,${intensity})`;
+    else col="rgba(134,141,154,.3)";
+    roundRect(x,cx,cy,gw,cell,12); x.fillStyle=col; x.fill();
+    x.strokeStyle=C.line; x.lineWidth=1; x.stroke();
+    // 日付（M/D）
+    const md=dd.d.slice(4,6)+"/"+dd.d.slice(6,8);
+    x.font="600 17px 'Space Mono',monospace"; x.fillStyle=dd.prof!==0?"#0a0a0a":C.muted; x.textAlign="center";
+    x.fillText(md, cx+gw/2, cy+30);
+    // 収支
+    x.font="700 23px 'Space Mono',monospace"; x.fillStyle=dd.prof!==0?"#0a0a0a":C.muted;
+    const pf=dd.prof>=0?"+"+Math.round(dd.prof/1000):Math.round(dd.prof/1000);
+    x.fillText(pf+"k", cx+gw/2, cy+cell/2+18);
+    x.textAlign="left";
+  });
+  y+=calH+10;
+  x.font="500 19px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.textAlign="center";
+  x.fillText("緑＝プラス収支／赤＝マイナス　濃いほど大きい　盛らない、データだけ。", W/2, H-34);
+  x.textAlign="left";
+
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6); }catch(_e){}
+  saveCanvasImg(cv, `期間まとめ_${rangeLabel()}.png`);
+}
+// 共有: canvasをPNG保存（iOS Web Share対応）
+function saveCanvasImg(cv, filename){
+  cv.toBlob(async(blob)=>{
+    if(!blob){ return; }
+    try{
+      if(navigator.canShare){
+        const file=new File([blob], filename, {type:"image/png"});
+        if(navigator.canShare({files:[file]})){ await navigator.share({files:[file]}); return; }
+      }
+    }catch(_){}
+    const u=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=u; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    window.open(u,"_blank"); setTimeout(()=>URL.revokeObjectURL(u),8000);
+  });
+}
+function imgHeader(x,C,W,pad,title,accent){
+  x.fillStyle=accent; x.fillRect(pad,46,8,70);
+  x.fillStyle=C.txt; x.font="700 52px 'Saira Condensed','Noto Sans JP',sans-serif";
+  x.fillText(title, pad+24, 96);
+  x.font="600 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  const modeLbl=$("#fMode").value==="jra"?"JRA":$("#fMode").value==="nar"?"地方":"全モード";
+  const rangeLbl=rangeLabel();
+  x.fillText(`SW TURF LAB ／ ${modeLbl}・${rangeLbl}　${STATS.dayCount}日 ${STATS.raceCount}R`, pad+24, 132);
+}
+
+// ① 狙い目だけの実績カード
+function drawAimImage(){
+  if(!STATS||!STATS.aimAgg||!STATS.aimAgg.races){ return; }
+  const s=STATS, a=s.aimAgg;
+  const C={ bg:"#0a0608", panel:"#1a1216", line:"#3a2a2e", txt:"#f0f0f0", muted:"#a88f95",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", coral:"#f0654a" };
+  const W=1080, pad=48;
+  const tracks=Object.entries(s.aimByTrack||{}).filter(([,v])=>v.races>0)
+    .sort((x,y)=>{ const rx=x[1].inv?x[1].ret/x[1].inv:0, ry=y[1].inv?y[1].ret/y[1].inv:0; return ry-rx; });
+  const H=160 + 200 + 60 + (tracks.length? 50+tracks.length*46 : 0) + 80;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  imgHeader(x,C,W,pad,"狙い目だけの実績",C.coral);
+  const rate=a.inv>0?Math.round(a.ret/a.inv*100):0;
+  const prof=a.ret-a.inv;
+  const hitR=Math.round(a.hitRaces/a.races*100);
+  const o3=a.oRun?Math.round(a.oP3/a.oRun*100):0;
+  let y=180;
+  const gap=20, cw=(W-pad*2-gap*2)/3;
+  const bigCard=(cx,lbl,val,col,sub)=>{
+    x.fillStyle=C.panel; roundRect(x,cx,y,cw,150,14); x.fill(); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
+    x.font="600 19px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(lbl, cx+20, y+36);
+    x.font="700 56px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=col; x.fillText(val, cx+20, y+100);
+    if(sub){ x.font="500 18px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText(sub, cx+20, y+132); }
+  };
+  bigCard(pad, "狙い目 回収率", rate+"%", rate>=100?C.plus:rate>=80?C.mid:C.minus, `${a.inv.toLocaleString()}→${a.ret.toLocaleString()}円`);
+  bigCard(pad+cw+gap, "収支", (prof>=0?"+":"")+prof.toLocaleString(), prof>=0?C.plus:C.minus, "円");
+  bigCard(pad+(cw+gap)*2, "的中率", hitR+"%", C.txt, `${a.hitRaces}/${a.races}R ・ ◎複勝${o3}%`);
+  y+=150+50;
+  if(tracks.length){
+    x.font="700 22px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText("狙い目 場別 回収率", pad, y); y+=30;
+    tracks.forEach(([t,v])=>{
+      const rr=v.inv>0?Math.round(v.ret/v.inv*100):0; const col=rr>=100?C.plus:rr>=80?C.mid:C.minus;
+      const pf=v.ret-v.inv;
+      x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(t, pad, y+24);
+      x.font="600 17px 'Space Mono',monospace"; x.fillStyle=C.muted; x.fillText(`${v.races}R`, pad+150, y+24);
+      x.font="700 26px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="right"; x.fillText(rr+"%", pad+340, y+24);
+      x.font="600 18px 'Space Mono',monospace"; x.fillStyle=pf>=0?C.plus:C.minus; x.fillText(`${pf>=0?"+":""}${pf.toLocaleString()}円`, W-pad, y+24); x.textAlign="left";
+      x.strokeStyle=C.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad,y+32); x.lineTo(W-pad,y+32); x.stroke();
+      y+=46;
+    });
+  }
+  x.font="500 19px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("狙い目＝信頼度60以上で自信を持って推したレース／盛らない、データだけ。", pad, H-30);
+
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6);
+    x.font="700 20px 'Space Mono',monospace"; x.fillStyle="#a8b0bf"; x.textAlign="right";
+    x.fillText("SW TURF LAB", W-((typeof pad!=="undefined"?pad:60)), H-26); x.textAlign="left"; }catch(_e){}
+  saveCanvasImg(cv, `狙い目実績_${rangeLabel()}.png`);
+}
+
+// ② 信頼度帯別の的中率（狙い目の信頼性の証明）
+function drawFirmImage(){
+  if(!STATS||!STATS.firmRows||STATS.firmRows.length<5){ return; }
+  const s=STATS; const rows=s.firmRows;
+  const C={ bg:"#080610", panel:"#161222", line:"#2e2a3e", txt:"#f0f0f0", muted:"#9088a8",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", purp:"#9b6cf0" };
+  const W=1080, pad=48;
+  // 帯別集計
+  const bands=[
+    {lbl:"信頼度 60以上（狙い目）", min:60, max:200, col:"#d8423a"},
+    {lbl:"信頼度 50〜59", min:50, max:60, col:"#e8a838"},
+    {lbl:"信頼度 40〜49", min:40, max:50, col:"#46b8e8"},
+    {lbl:"信頼度 40未満（見送り）", min:0, max:40, col:"#868d9a"},
+  ].map(b=>{
+    const sub=rows.filter(r=>r.f>=b.min&&r.f<b.max);
+    const n=sub.length;
+    const hit=sub.filter(r=>r.hit).length;
+    const oR=sub.filter(r=>r.oRun).length, o3=sub.filter(r=>r.o3).length;
+    return {...b, n, hitR:n?Math.round(hit/n*100):0, o3:oR?Math.round(o3/oR*100):0};
+  }).filter(b=>b.n>0);
+  const H=160 + 40 + bands.length*120 + 80;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  imgHeader(x,C,W,pad,"信頼度別 的中率",C.purp);
+  let y=190;
+  const barMax=W-pad*2-260;
+  bands.forEach(b=>{
+    x.font="700 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt;
+    x.fillText(b.lbl, pad, y);
+    x.font="600 18px 'Space Mono',monospace"; x.fillStyle=C.muted; x.textAlign="right";
+    x.fillText(`${b.n}R`, W-pad, y); x.textAlign="left";
+    // 的中率バー
+    y+=18;
+    x.fillStyle=C.panel; roundRect(x,pad,y,barMax,32,8); x.fill();
+    const fw=Math.max(8, barMax*b.hitR/100);
+    x.fillStyle=b.col; roundRect(x,pad,y,fw,32,8); x.fill();
+    x.font="700 22px 'Space Mono',monospace"; x.fillStyle=C.txt;
+    x.fillText(`的中 ${b.hitR}%`, pad+barMax+16, y+25);
+    // ◎複勝率バー
+    y+=42;
+    x.fillStyle=C.panel; roundRect(x,pad,y,barMax,24,7); x.fill();
+    const fw2=Math.max(6, barMax*b.o3/100);
+    x.fillStyle=b.col; x.globalAlpha=.55; roundRect(x,pad,y,fw2,24,7); x.fill(); x.globalAlpha=1;
+    x.font="600 18px 'Space Mono',monospace"; x.fillStyle=C.muted;
+    x.fillText(`◎複勝 ${b.o3}%`, pad+barMax+16, y+19);
+    y+=60;
+  });
+  x.font="500 19px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("信頼度が高い帯ほど的中率が上がる＝狙い目の信頼性。盛らない、データだけ。", pad, H-30);
+
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6);
+    x.font="700 20px 'Space Mono',monospace"; x.fillStyle="#a8b0bf"; x.textAlign="right";
+    x.fillText("SW TURF LAB", W-((typeof pad!=="undefined"?pad:60)), H-26); x.textAlign="left"; }catch(_e){}
+  saveCanvasImg(cv, `信頼度別_${rangeLabel()}.png`);
+}
+
+// ③ 券種別回収率
+function drawTypeRecImage(){
+  if(!STATS||!STATS.typeRec){ return; }
+  const s=STATS;
+  const C={ bg:"#050505", panel:"#16181d", line:"#2a2e36", txt:"#f0f0f0", muted:"#868d9a",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", green:"#5aa86c" };
+  const types=(s.RTYPES||[]).map(t=>{ const x=s.typeRec[t]; return x&&x.inv? {t, ...x, rate:Math.round(x.ret/x.inv*100)}:null; }).filter(Boolean);
+  if(!types.length){ return; }
+  const W=1080, pad=48;
+  const rowH=54;
+  const H=160 + 50 + types.length*rowH + 70;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  imgHeader(x,C,W,pad,"券種別 回収率",C.green);
+  let y=180;
+  // ヘッダ
+  x.font="600 18px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("券種", pad, y); x.textAlign="center"; x.fillText("的中", pad+360, y);
+  x.textAlign="right"; x.fillText("回収率", W-pad-220, y); x.fillText("収支", W-pad, y); x.textAlign="left";
+  y+=20;
+  const maxRate=Math.max(120, ...types.map(t=>t.rate));
+  types.forEach((t,i)=>{
+    const ry=y+i*rowH;
+    if(i%2===0){ x.fillStyle="#101216"; x.fillRect(pad-8,ry,W-pad*2+16,rowH); }
+    x.font="700 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(t.t, pad, ry+34);
+    x.font="500 18px 'Space Mono',monospace"; x.fillStyle=C.muted; x.textAlign="center"; x.fillText(`${t.hit}/${t.races}`, pad+360, ry+33); x.textAlign="left";
+    // 回収率バー（背景）
+    const bx=pad+440, bw=W-pad-bx-230;
+    x.fillStyle=C.panel; roundRect(x,bx,ry+12,bw,28,7); x.fill();
+    const col=t.rate>=100?C.plus:t.rate>=80?C.mid:C.minus;
+    const fw=Math.max(6, bw*Math.min(t.rate,maxRate)/maxRate);
+    x.fillStyle=col; roundRect(x,bx,ry+12,fw,28,7); x.fill();
+    x.font="700 24px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="right";
+    x.fillText(t.rate+"%", W-pad-180, ry+34);
+    const pf=t.ret-t.inv;
+    x.font="600 18px 'Space Mono',monospace"; x.fillStyle=pf>=0?C.plus:C.minus;
+    x.fillText(`${pf>=0?"+":""}${pf.toLocaleString()}`, W-pad, ry+34); x.textAlign="left";
+  });
+  x.font="500 18px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("◎軸/○軸流し・1点100円の仮想集計／どの券種が稼げるか一目で分かる。", pad, H-26);
+
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6);
+    x.font="700 20px 'Space Mono',monospace"; x.fillStyle="#a8b0bf"; x.textAlign="right";
+    x.fillText("SW TURF LAB", W-((typeof pad!=="undefined"?pad:60)), H-26); x.textAlign="left"; }catch(_e){}
+  saveCanvasImg(cv, `券種別回収率_${rangeLabel()}.png`);
+}
+function drawMatrixImage(){
+  if(!STATS){ return; }
+  const s=STATS;
+  const C={ bg:"#050505", panel:"#16181d", line:"#2a2e36", txt:"#f0f0f0", muted:"#868d9a",
+            plus:"#73c95a", minus:"#d8423a", mid:"#e8a838", accent:"#46b8e8" };
+  const BET=s.BET_TYPES||["単勝","複勝","ワイド","馬連","馬単","3連複","3連単"];
+  const tracks=Object.keys(s.trackBet||{}).filter(t=>{ const o=s.trackBet[t]; return BET.some(b=>o[b]&&o[b].n); });
+  if(!tracks.length){ return; }
+  const W=1080, pad=48;
+  const headH=160;
+  const c0=170;                       // 場名列の幅
+  const cw=(W-pad*2-c0)/BET.length;   // 各券種列
+  const rowH=58, hdrH=50;
+  const H=headH + hdrH + tracks.length*rowH + 90;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const _bgg=x.createLinearGradient(0,0,0,H); _bgg.addColorStop(0,"#0a0e16"); _bgg.addColorStop(1,"#121826"); x.fillStyle=_bgg; x.fillRect(0,0,W,H);
+  // ブランド演出: グロー＋斜めスピードライン
+  try{ var _pd=(typeof pad!=="undefined"?pad:60);
+    var _rgl=x.createRadialGradient(_pd+130,80,20,_pd+130,80,520);
+    _rgl.addColorStop(0,"rgba(245,185,66,0.09)"); _rgl.addColorStop(1,"rgba(245,185,66,0)");
+    x.fillStyle=_rgl; x.fillRect(0,0,W,Math.min(H,240));
+    x.save(); x.globalAlpha=0.045; x.strokeStyle="#9fb4dc"; x.lineWidth=1;
+    for(var _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+75,150); x.stroke(); }
+    x.restore(); }catch(_e){}
+
+  x.fillStyle=C.accent; x.fillRect(pad,46,8,70);
+  x.fillStyle=C.txt; x.font="700 52px 'Saira Condensed','Noto Sans JP',sans-serif";
+  x.fillText("場 × 券種 的中率", pad+24, 96);
+  x.font="600 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  const modeLbl=$("#fMode").value==="jra"?"JRA":$("#fMode").value==="nar"?"地方":"全モード";
+  const rangeLbl=rangeLabel();
+  x.fillText(`SW TURF LAB ／ ${modeLbl}・${rangeLbl}　${s.dayCount}日 ${s.raceCount}R`, pad+24, 132);
+  // ヘッダ行（券種名）
+  let hy=headH;
+  x.font="600 20px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("競馬場", pad, hy+30);
+  BET.forEach((b,i)=>{ x.textAlign="center"; x.fillText(b, pad+c0+cw*i+cw/2, hy+30); });
+  x.textAlign="left";
+  hy+=hdrH;
+  // 各場の行
+  tracks.forEach((t,ri)=>{
+    const ry=hy+ri*rowH;
+    if(ri%2===0){ x.fillStyle="#101216"; x.fillRect(pad-8,ry,W-pad*2+16,rowH); }
+    x.font="700 25px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt;
+    x.fillText(t, pad, ry+rowH/2+9);
+    BET.forEach((b,i)=>{
+      const d=s.trackBet[t][b];
+      const cxc=pad+c0+cw*i+cw/2;
+      if(!d||!d.n){ x.font="500 20px 'Space Mono',monospace"; x.fillStyle="#3a4151"; x.textAlign="center"; x.fillText("-", cxc, ry+rowH/2+8); x.textAlign="left"; return; }
+      const rate=Math.round(d.hit/d.n*100);
+      const col=rate>=40?C.plus:rate>=15?C.mid:C.minus;
+      // 的中率セル（背景の濃さで強調）
+      if(rate>=40){ x.fillStyle="rgba(115,201,90,.14)"; roundRect(x,pad+c0+cw*i+6,ry+8,cw-12,rowH-16,7); x.fill(); }
+      x.font="700 27px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="center";
+      x.fillText(rate+"%", cxc, ry+rowH/2+5);
+      x.font="500 14px 'Space Mono',monospace"; x.fillStyle=C.muted;
+      x.fillText(`${d.hit}/${d.n}`, cxc, ry+rowH/2+24);
+      x.textAlign="left";
+    });
+    x.strokeStyle=C.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad-8,ry+rowH); x.lineTo(W-pad+8,ry+rowH); x.stroke();
+  });
+  x.font="500 19px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  x.fillText("緑＝40%以上／黄＝15%以上／赤＝15%未満。得意な場×券種の組合せが一目で分かる。", pad, H-34);
+  // ブランドバー
+  try{ var _fgb=x.createLinearGradient(0,0,W,0); _fgb.addColorStop(0,"#f5b942"); _fgb.addColorStop(1,"#f0654a");
+    x.fillStyle=_fgb; x.fillRect(0,H-6,W,6); }catch(_e){}
+  cv.toBlob(async(blob)=>{
+    if(!blob){ return; }
+    const filename=`場券種別_${rangeLabel()}.png`;
+    try{
+      if(navigator.canShare){
+        const file=new File([blob], filename, {type:"image/png"});
+        if(navigator.canShare({files:[file]})){ await navigator.share({files:[file]}); return; }
+      }
+    }catch(_){}
+    const u=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=u; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    window.open(u,"_blank"); setTimeout(()=>URL.revokeObjectURL(u),8000);
+  });
+}
+$("#fMode").onchange=render;
+$("#fRange").onchange=()=>{ $("#fFrom").value=""; $("#fTo").value=""; render(); };
+$("#fFrom").onchange=()=>{ $("#fRange").value="all"; render(); };
+$("#fTo").onchange=()=>{ $("#fRange").value="all"; render(); };
+$("#fRaceType").onchange=render;
+load();
+</script>
+</body>
+</html>

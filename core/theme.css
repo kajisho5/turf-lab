@@ -1,0 +1,65 @@
+/* 配色 — ★backtest/theme.py が生成する。直接編集しない★
+   ライトが基本。ダークは data-theme="dark" で切り替える。
+   端末のダーク設定には自動追従しない（明示的に選ぶまでライト）。 */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #f4f6f9;
+  --line: #d3d8e0;
+  --txt: #16181d;
+  --mute: #575d68;
+  --dim: #5f6672;
+  --green: #127a45;
+  --red: #c62828;
+  --yellow: #8a6300;
+  --blue: #1461b8;
+  --purple: #6b3fb5;
+  --orange: #a2530a;
+  --stripe: #f2f5fa;
+  --hover: #e6ecf5;
+  --st1: #b3261e;
+  --st2: #8a4b00;
+  --st3: #1461b8;
+  --st4: #5f6672;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0e16;
+  --panel: #121826;
+  --line: #333333;
+  --txt: #ffffff;
+  --mute: #b3b3b3;
+  --dim: #999999;
+  --green: #51b883;
+  --red: #ff7171;
+  --yellow: #ffd43d;
+  --blue: #57b8ff;
+  --purple: #bb87ff;
+  --orange: #ff8d44;
+  --stripe: #161e2d;
+  --hover: #1e2739;
+  --st1: #ff8080;
+  --st2: #ffab5e;
+  --st3: #7cc4ff;
+  --st4: #a8b0bd;
+}
+
+/* ★表の共通スタイル★ 各ページで縞やソートを書くと必ず食い違うので、ここに置く。
+   .zebra を付けた表は自動で縞になり、th[data-sort] は押せる見出しになる。 */
+.zebra tbody tr:nth-child(even) > *, table.zebra tr:nth-child(even) > * {
+  background: var(--stripe);
+}
+.zebra tbody tr:hover > *, table.zebra tr:hover > * { background: var(--hover); }
+th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+th.sortable:hover { color: var(--txt); }
+th.sortable::after { content: " ⇅"; opacity: .45; font-size: 14px; }
+th.sortable[aria-sort="descending"]::after { content: " ▼"; opacity: 1; color: var(--accent, var(--blue)); }
+th.sortable[aria-sort="ascending"]::after { content: " ▲"; opacity: 1; color: var(--accent, var(--blue)); }
+
+/* 切り替えボタン */
+.themebtn {
+  appearance: none; border: 1px solid var(--line); background: var(--panel);
+  color: var(--mute); font: inherit; font-size: 16px; line-height: 1;
+  padding: 7px 10px; border-radius: 999px; cursor: pointer;
+}
+.themebtn:hover { border-color: var(--mute); }

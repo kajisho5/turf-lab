@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ODDS ANOMALY — 更新履歴</title>
+<style>
+  :root{
+    --bg:#07080a; --panel:#0d0f13; --panel2:#12151b; --line:#1d2129;
+    --txt:#e8eaed; --muted:#9aa0aa; --dim:#5a616d;
+    --red:#e8002a; --drop:#ff4b4b; --div:#9bff5e; --vel:#ffb13a; --rise:#4b9bff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+    line-height:1.7;font-size:15px;padding:0 0 60px;
+    padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  .wrap{max-width:680px;margin:0 auto;padding:0 18px}
+  header{padding:34px 0 22px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .logo{font-family:"Saira Condensed",sans-serif;font-weight:700;letter-spacing:.18em;font-size:13px;color:var(--muted)}
+  h1{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:30px;letter-spacing:.04em;margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13px}
+  .red{color:var(--red)}
+  .now{display:inline-block;margin-top:10px;background:var(--red);color:#fff;font-family:"Space Mono",monospace;
+    font-size:13px;padding:3px 12px;border-radius:6px;font-weight:700}
+  /* タイムライン */
+  .tl{position:relative;margin:24px 0 0;padding-left:30px}
+  .tl::before{content:"";position:absolute;left:9px;top:6px;bottom:0;width:2px;background:var(--line)}
+  .entry{position:relative;margin-bottom:22px}
+  .entry::before{content:"";position:absolute;left:-26px;top:5px;width:12px;height:12px;border-radius:50%;
+    background:var(--panel);border:2px solid var(--dim)}
+  .entry.feat::before{border-color:var(--vel);background:var(--vel)}
+  .entry.fix::before{border-color:var(--rise);background:var(--rise)}
+  .entry.big::before{border-color:var(--red);background:var(--red);box-shadow:0 0 0 4px rgba(232,0,42,.15)}
+  .ver{display:inline-block;font-family:"Space Mono",monospace;font-size:12px;font-weight:700;
+    background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 8px;margin-right:8px;color:var(--vel)}
+  .badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;
+    font-family:"Space Mono",monospace;margin-right:6px;vertical-align:middle}
+  .b-feat{background:rgba(255,177,58,.15);color:var(--vel);border:1px solid rgba(255,177,58,.3)}
+  .b-fix{background:rgba(75,155,255,.15);color:var(--rise);border:1px solid rgba(75,155,255,.3)}
+  .b-big{background:var(--red);color:#fff}
+  .etitle{font-weight:700;font-size:15px;margin:4px 0 2px;display:inline}
+  .edesc{color:var(--muted);font-size:13px;margin:4px 0 0}
+  .edesc code{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:0 5px;
+    font-family:"Space Mono",monospace;font-size:12px;color:var(--vel)}
+  .group-label{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:13px;color:var(--dim);
+    letter-spacing:.1em;margin:28px 0 4px;text-transform:uppercase}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 0;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .back{display:inline-block;margin:24px 0 0;color:var(--vel);text-decoration:none;font-size:14px}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">SEVENTHWELL</div>
+  <h1>ODDS ANOMALY <span class="red">/</span> 更新履歴</h1>
+  <div class="sub">オッズ異常検知・期待値ベッティングツールの開発記録</div>
+  <div class="now">CURRENT v72</div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--red)"></i>大型追加・重大修正</span>
+    <span><i class="dot" style="background:var(--vel)"></i>新機能</span>
+    <span><i class="dot" style="background:var(--rise)"></i>バグ修正</span>
+  </div>
+</header>
+
+<div class="tl">
+
+  <div class="group-label">最新</div>
+
+  <div class="entry feat">
+    <div><span class="ver">v72</span><span class="badge b-feat">新機能</span><span class="etitle">ばんえい（帯広）専用ロジックを追加。上がり3F・回り・血統など無意味な要素を除外し、着順実績・馬体重・斤量・騎手で評価</span></div>
+    <div><span class="ver">v71</span><span class="badge b-feat">新機能</span><span class="etitle">コース別の脚質・枠有利度を追加。各競馬場の傾向（浦和・川崎は内枠＆逃げ先行が有利等）を評価に反映</span></div>
+    <div><span class="ver">v70</span><span class="badge b-feat">新機能</span><span class="etitle">休養明け減点を追加。前走からの間隔が長い馬（半年以上の休み明け等）の評価を割引</span></div>
+    <div><span class="ver">v69</span><span class="badge b-fix">改善</span><span class="etitle">ヘッダのメニューを押しやすいチップ型に変更。スマホ表示を最適化（タップ領域拡大・文字サイズ調整）</span></div>
+    <div><span class="ver">v68</span><span class="badge b-feat">新機能</span><span class="etitle">調教師（厩舎）データを予想に追加。298厩舎の複勝率を収集し加点。南関の厩舎力差を反映（NAR検証で◎複勝率35%→40%）</span></div>
+    <div><span class="ver">v67</span><span class="badge b-feat">新機能</span><span class="etitle">降級ボーナスを追加。格上クラスで通用していた馬が格下に降りてきた時に加点（ワンチャンを評価）。大敗だけの格上経験は加点せず衰え馬を除外</span></div>
+    <div><span class="ver">v66</span><span class="badge b-feat">新機能</span><span class="etitle">クラス（格）補正を追加。前走が格上（交流重賞・GIなど）で負けた馬の評価を不当に下げないよう調整。格下圧勝の過信も抑制</span></div>
+    <div><span class="ver">v65</span><span class="badge b-feat">新機能</span><span class="etitle">予想スコアに騎手・血統データを追加（騎手の今年の複勝率＋父産駒の芝ダ適性。JRA検証で◎複勝率33%→47%）</span></div>
+    <div><span class="ver">v64</span><span class="badge b-feat">新機能</span><span class="etitle">回顧・実績ページを追加（答え合わせを自動で蓄積）</span></div>
+    <div class="edesc">「全場まとめて答え合わせ」をすると、その日の予想・着順・的中・回収率がサーバーに自動保存されるようになった。新しい「回顧・実績」ページ（ヘッダーリンク）で、貯まったデータを集計表示：通算回収率・収支・回収率の累積推移グラフ・推奨的中率・◎の勝率/複勝率・場別成績・的中券種の内訳。モードや期間（直近7/30/90日）で絞り込み可能。どの端末からも同じ実績が見える。新馬戦など予想対象外は集計から除外され、記録が濁らない。長期運用で正直な実績を積み上げるための土台。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v63</span><span class="badge b-feat">機能</span><span class="etitle">自前プロキシ(Cloudflare Worker)対応・取得の安定化</span></div>
+    <div class="edesc">取得プロキシURL欄に自前のCloudflare Workerを設定できるようにした（/raw?url= 形式の汎用中継）。設定すると最優先で使われ、公開プロキシの障害に左右されず安定して取得できる。設定は推奨馬まとめページとも共有される。プロキシ設定は端末に保存され、再読込しても保持される。Workerのコードは配布ファイルに同梱。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v62</span><span class="badge b-fix">改善</span><span class="etitle">取得安定化：プロキシ自動フォールバック</span></div>
+    <div class="edesc">レース一覧やオッズの取得に使う中継サーバー（プロキシ）が落ちると全機能が止まる問題に対応。複数のプロキシを用意し、1つが応答しない・空応答の場合は自動で次のプロキシに切り替えるようにした。成功したプロキシは記憶して次回優先。これにより特定プロキシの障害時もアプリが動き続ける。一覧が取得できない症状の多くはプロキシ側の一時障害が原因。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v61</span><span class="badge b-feat">新機能</span><span class="etitle">JRA重賞 傾向分析ページを追加</span></div>
+    <div class="edesc">主要GI20レースの過去11年（2015〜2025）の確定結果を集計した傾向分析ページを追加（ヘッダーの「重賞分析」リンク）。各重賞ごとに、枠番別複勝率・脚質傾向（逃げ/先行/差し/追込）・人気別成績・馬番別3着内・勝ち馬平均人気・上り最速馬の勝率を表示。データはnetkeiba確定値で、ページに直接埋め込んでいるため高速かつオフラインでも閲覧可能。傾向はコピーしてXに投稿できる。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v60</span><span class="badge b-fix">修正</span><span class="etitle">馬体重の誤表示を修正・ばんえい対応</span></div>
+    <div class="edesc">一部レースで馬体重欄にオッズなど無関係な数字（158や242など）が表示される不具合を修正。妥当な範囲外の値は採用しないようにした。範囲はサラブレッド（340〜600kg）に加え、ばんえい競馬の輓馬（900〜1200kg）もカバー。近走馬体重もばんえいの4桁体重に対応。なお地方競馬は出走表段階で当日馬体重が公開されないことが多く、その場合は体重欄が空になる（netkeiba側の仕様）。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v59</span><span class="badge b-fix">修正</span><span class="etitle">文字化け修正（文字コード自動判定）</span></div>
+    <div class="edesc">netkeibaが地方競馬の出走表をUTF-8配信に変更した影響で、馬名・レース名が文字化けする不具合を修正。EUC-JP固定だったデコード処理を、HTMLのcharset宣言とエンコーディング自動判定（EUC-JP/UTF-8/Shift_JIS）に変更。将来また配信形式が変わっても自動で対応する。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v58</span><span class="badge b-feat">新機能</span><span class="etitle">競馬ニュース・まとめページを追加</span></div>
+    <div class="edesc">ヘッダーに「ニュース」リンクを追加。netkeiba・スポナビ・各スポーツ紙の総合ニュース、netkeiba DB・JBISサーチ等のデータ/血統サイト、JRA・地方競馬の公式、コラムをカテゴリ別にまとめたリンク集ページ。タップで各サイトを開ける。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v57</span><span class="badge b-fix">改善</span><span class="etitle">取得設定を「詳細設定」に集約</span></div>
+    <div class="edesc">「レース選択 / 本日の開催」を常時表示にし、プロキシURL・race_ID・更新間隔などの技術設定は「詳細設定」の折りたたみに移動（普段は触らないため）。起動時の開催一覧の自動取得はそのまま維持。開催時間外など取得できない時は赤いエラーではなく案内表示にして、画面がうるさくならないようにした。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v56</span><span class="badge b-fix">改善</span><span class="etitle">画面整理・出走表を最上部に</span></div>
+    <div class="edesc">レース選択後の表示を整理。最重要の出走表を一番上に移動し、買い目・馬連ワイド・馬単・穴馬の4つの予想パネルを「買い目・期待値・狙い目」の折りたたみ1つにまとめた。常時積み上がっていたパネルが減り、出走表→異常検知→資金フローの順で見やすく。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v55</span><span class="badge b-feat">新機能</span><span class="etitle">LIVE映像リンク</span></div>
+    <div class="edesc">選択中レースの下にLIVE映像へのリンクを追加。地方は「地方競馬ライブ（映像専用版）」「楽天競馬LIVE」、中央は「JRAレース映像」「netkeiba LIVE」を表示。タップで各配信を開ける（視聴は各サイト側、無料/ログインは配信元の条件に従う）。※SPAT4等は外部からの直接投票連携が無いため投票機能は非搭載。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v54</span><span class="badge b-fix">改善</span><span class="etitle">レース一覧を場ごと折りたたみ</span></div>
+    <div class="edesc">開催場ごとにレース一覧を折りたたみ式に変更。場名・レース数・次の発走を見出しに表示し、タップで展開。直近に発走する場（または選択中レースの場）を自動で開く。複数場開催でも初期表示が数行に収まり、縦スクロールが大幅減。</div>
+  </div>
+
+  <div class="entry big">
+    <div><span class="ver">v53</span><span class="badge b-big">デザイン刷新</span><span class="etitle">出走表をSPAT4風の2段カードに</span></div>
+    <div class="edesc">出走表のレイアウトを公式アプリSPAT4に近い見やすい形に刷新。枠色を馬番の縦帯で表示し、馬名を大きく主役に、その下に性齢・馬体重(増減)・騎手・斤量をまとめて配置。オッズと人気は右端に独立。乗り替わり・ブリンカーのバッジも馬名横に整理。1行に詰め込んでいた従来より格段に読みやすく。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v52</span><span class="badge b-fix">修正</span><span class="etitle">締切時間を投票締切に補正</span></div>
+    <div class="edesc">これまで発走時刻をそのまま締切として表示していたが、実際の投票締切は発走前。ネット投票基準でJRA=発走1分前、NAR=発走2分前（SPAT4等）に補正。「まもなく締切◯分」が実際の投票締切までの時間を指すようになった。全Rウォッチの締切カウントも同様に補正。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v51</span><span class="badge b-feat">新機能</span><span class="etitle">近走の着順・馬体重 推移グラフ</span></div>
+    <div class="edesc">馬名タップで開く詳細に、近走（最大5走）の着順と馬体重を1枚のグラフで表示。着順は実線（上が1着）、馬体重は破線で、各点に着順・体重・増減を表示。成績の上昇/下降トレンドと馬体の増減が視覚的に掴める。馬柱の近走取得を4→5走に拡張。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v50</span><span class="badge b-feat">新機能</span><span class="etitle">馬体重・増減表示</span></div>
+    <div class="edesc">馬柱から馬体重と前走比の増減を取得。出走表に「体重(±)」を表示（増=赤・減=青）、馬詳細では今走体重に加え各近走の体重推移も表示。今走体重は当日発表後に反映（地方は当日朝）、未発表時は近走の推移のみ表示。大幅増減は調整・成長の手がかりになる。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v49</span><span class="badge b-fix">修正</span><span class="etitle">ライトテーマで背景が黒いまま</span></div>
+    <div class="edesc">テーマ変数をbody要素に付けていたため、html要素の背景（ページ最外周）がダークのままだった。html要素にテーマを適用するよう変更し、外周まで明るくなるよう修正。読込時のチラつき防止スクリプトと、iOSステータスバー色（theme-color）の連動も追加。</div>
+  </div>
+
+  <div class="entry big">
+    <div><span class="ver">v48</span><span class="badge b-big">デザイン刷新</span><span class="etitle">フラット化＋ダーク/ライト切替</span></div>
+    <div class="edesc">グラデーション・グロー・背景グリッド・スキャンライン・絵文字アイコンを全廃し、フラットでミニマルな見た目に統一。見出しの🛰🎯🔥等やオッズ異常タグの🔻🔺も記号なしのテキストに。ヘッダーに「テーマ」ボタンを追加し、ダーク（既定）とライトを手動切替（記憶される）。チャートもテーマ連動。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v47</span><span class="badge b-fix">改善</span><span class="etitle">縦長レイアウトを圧縮</span></div>
+    <div class="edesc">全Rウォッチ・トリプル馬単・一発逆転モードを1つの折りたたみセクションにまとめ、デフォルトで閉じるように。説明文を簡潔化し、パネル間の余白も詰めた。使う時だけ開く方式で、初期表示のスクロール量を大幅に削減。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v46</span><span class="badge b-fix">修正</span><span class="etitle">選択レースの強調＋重賞バッジ＋開催場サマリー</span></div>
+    <div class="edesc">①選択中のレースが「締切間近」レースと同じ黄枠で見分けづらかったのを、選択＝赤いグロー＋塗り、間近＝「間近」ラベルに分離。②地方の重賞（JpnⅠ〜Ⅲ・主要重賞名）をバッジ表示するよう判定を追加（JRAのIcon方式に加え名前ベース）。③レース選択の上に「本日の開催」バーを追加し、開催中の競馬場・レース数・次のレース・重賞の有無（★）が一目で分かるように。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v45</span><span class="badge b-fix">修正</span><span class="etitle">乗替・Bバッジが隠れる問題</span></div>
+    <div class="edesc">騎手名が長いと乗り替わりバッジが画面端で切れて見えなかった。馬名と騎手名を個別に省略するようレイアウトを再構成し、乗替・Bバッジは縮まない固定枠にして常に表示されるようにした。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v44</span><span class="badge b-feat">新機能</span><span class="etitle">ブリンカー（B）表示</span></div>
+    <div class="edesc">馬柱からブリンカー装着を検出し、出走表に青い「B」バッジを表示。馬詳細と◎の根拠にも反映。人気薄でのB装着は陣営の工夫＝変わり身の兆候として注目できる。※netkeibaの馬柱は過去のB有無を持たないため「初装着」の自動判定は不可、現装着の事実のみ正確に表示。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v43</span><span class="badge b-feat">新機能</span><span class="etitle">乗り替わり表示</span></div>
+    <div class="edesc">前走と今走の騎手を比較し、出走表に「乗替」バッジを表示。上位騎手への乗り替わりは<b>乗替↑（強化＝勝負気配）</b>、主戦・上位騎手が降りた場合は<b>乗替↓</b>と色分け。馬詳細では各近走の騎手名も表示し、誰が乗って結果を出したかが分かる。省略表記（浜中／浜中俊など）は同一視。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v42</span><span class="badge b-feat">新機能</span><span class="etitle">◎○▲△ の根拠タグ表示</span></div>
+    <div class="edesc">出走表で印が付いた馬の下に、なぜその印なのかを表示。近走good・連対回数・右/左回り得意・同距離実績・鋭い決め手（上り3F）・人気以上に走る・脚質・斤量などを根拠として明示。タップで開く詳細を見なくても判断軸が分かる。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v41</span><span class="badge b-fix">修正</span><span class="etitle">レース名の文字化け（一発逆転・トリプル）</span></div>
+    <div class="edesc">レース一覧から取った名前がマルチバイト境界で切れて化けていた。出馬表ページの完全なレース名を優先するよう変更。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v40</span><span class="badge b-feat">新機能</span><span class="etitle">📜 更新履歴ページ</span></div>
+    <div class="edesc">このページ。ヘッダーの「更新履歴」から開ける。オフラインでも閲覧可。</div>
+  </div>
+
+  <div class="entry big">
+    <div><span class="ver">v39</span><span class="badge b-big">改良</span><span class="etitle">一発逆転モードのロジック全面刷新</span></div>
+    <div class="edesc">高知ファイナル／佐賀リベンジャーズは全頭が近走着外続き。「3着内あり加点」は機能しないため廃止。着順を頭数で正規化した<b>相対評価</b>、出走馬内での<b>上り3F順位</b>、<b>人気を上回る激走歴</b>で差をつける方式に作り直した。1番人気級は荒れの主役になりにくいため減点、人気薄でも一発を秘めた馬を炙り出す。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v38</span><span class="badge b-fix">修正</span><span class="etitle">トリプル馬単・一発逆転の文字化け</span></div>
+    <div class="edesc">新機能のデータ取得が<code>EUC-JP</code>デコードをしておらず、馬名が全て文字化け（豆腐）していた。あわせて近走パースも壊れ、荒れスコアが全頭同点になっていた。<code>fetchDecoded</code>に統一して解消。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v37</span><span class="badge b-feat">新機能</span><span class="etitle">🔥 一発逆転モード</span></div>
+    <div class="edesc">高知ファイナル・佐賀リベンジャーズ専用。荒れ前提のレースに合わせ、中穴帯・一発の脚・展開を荒れスコア化。三連複ボックスと三連単軸マルチの両方を提示。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v36</span><span class="badge b-feat">新機能</span><span class="etitle">🎯 トリプル馬単</span></div>
+    <div class="edesc">南関（大井・船橋・浦和・川崎）と門別のトリプル馬単。対象場を選ぶと終盤3R（10〜12R）を自動取得し、各レースの軸1頭×相手で買い目を組む。近走実績＋市場支持の合算スコア。</div>
+  </div>
+
+  <div class="group-label">グラフ・cron</div>
+
+  <div class="entry fix">
+    <div><span class="ver">v35</span><span class="badge b-fix">修正</span><span class="etitle">オッズ推移グラフが見づらい</span></div>
+    <div class="edesc">全馬が同じ薄グレーの線でどれがどの馬か判別不能だった。<b>枠色で色分け</b>＋<b>全頭の終端に馬番ラベル</b>（重なりは自動回避）。選択・異常馬は太く強調。</div>
+  </div>
+
+  <div class="entry big">
+    <div><span class="ver">v34</span><span class="badge b-big">重大修正</span><span class="etitle">cronのJRA収集が全滅していた</span></div>
+    <div class="edesc">cronも<code>action=init</code>が抜けており、JRAのオッズ取得が常に空＝全Rウォッチに何も溜まらなかった。さらに解析の階層が逆（<code>odds.data</code>→正しくは<code>data.odds</code>）だった。両方修正＋帯広(65)をcronにも追加。</div>
+  </div>
+
+  <div class="entry big">
+    <div><span class="ver">v33</span><span class="badge b-big">重大修正</span><span class="etitle">重賞 過去10年が取得できない</span></div>
+    <div class="edesc">レース名検索がUTF-8のままで0件、かつdb.netkeibaがサーバー直アクセスを403で拒否。PHP中継方式に変更し、<b>EUC-JP変換はサーバー側</b>（mbstring無くてもiconvで動作）→codetabs経由で取得する構成に。</div>
+  </div>
+
+  <div class="entry feat">
+    <div><span class="ver">v33</span><span class="badge b-feat">新機能</span><span class="etitle">重賞 狙い目＋該当馬の推奨</span></div>
+    <div class="edesc">過去10年の分布表示に加え、<b>狙い枠・狙い脚質・人気傾向</b>を抽出し、今の出走馬から傾向に合う馬を理由付きで提示。勝ち馬リストと脚質分布も追加。</div>
+  </div>
+
+  <div class="group-label">JRAオッズ・出馬表の根幹</div>
+
+  <div class="entry big">
+    <div><span class="ver">v32</span><span class="badge b-big">重大修正</span><span class="etitle">JRAのオッズが取れない（土日のG1でも）</span></div>
+    <div class="edesc">JRAオッズAPIに<code>&action=init</code>が必須だったのが抜けていた。これが無いと<code>result odds empty</code>で常に空。単勝・複勝・馬連・ワイド・三連複の全取得URLに追加。「JRA取得できてない」の主因。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v31</span><span class="badge b-fix">修正</span><span class="etitle">オッズ発売前は出馬表も空だった</span></div>
+    <div class="edesc">出走馬リストをオッズデータから作っていたため、オッズ未発売だと出馬表ごと真っ黒に。出馬表（馬柱）から先に表示するよう変更。発売前でも枠・騎手・近走・印が見られる。</div>
+  </div>
+
+  <div class="entry big">
+    <div><span class="ver">v30</span><span class="badge b-big">重大修正</span><span class="etitle">9番以降が取得できない</span></div>
+    <div class="edesc">馬柱の馬番は<code>class="Waku"</code>セルにあったが別の場所を読んでおり、9番以降が丸ごと欠落。多頭数のJRAレース（日本ダービー等）で出馬表が不完全に。あわせてNARの馬名ズレ（近走の相手馬を拾う）も<code>Horse_Info</code>限定で解消。</div>
+  </div>
+
+  <div class="group-label">血統・重賞の初期実装</div>
+
+  <div class="entry feat">
+    <div><span class="ver">v28-29</span><span class="badge b-feat">新機能</span><span class="etitle">🏆 重賞 過去10年の傾向＋血統表示</span></div>
+    <div class="edesc">G1/G2/G3バッジ、過去10年の人気・枠・脚質の集計。db.netkeibaの結果ページパーサも追加。馬柱から父・母父・厩舎を抽出し馬詳細に表示（他サイト不要）。</div>
+  </div>
+
+  <div class="group-label">印を実績ベースへ</div>
+
+  <div class="entry big">
+    <div><span class="ver">v24</span><span class="badge b-big">大型追加</span><span class="etitle">◎○▲ を近走実績ベースに刷新</span></div>
+    <div class="edesc">手入力を完全廃止。馬柱（shutuba_past）から近4走を自動取得し、<b>総合近走力・同回り実績（右/左の得手不得手）・同距離適性・決め手（上り3F）・馬場×脚質</b>でオッズ非依存の印を生成。馬詳細に近走履歴を表示。</div>
+  </div>
+
+  <div class="group-label">資金フロー・地方対応</div>
+
+  <div class="entry feat">
+    <div><span class="ver">v23</span><span class="badge b-feat">改良</span><span class="etitle">資金フローに累積/直近トグル</span></div>
+    <div class="edesc">毎回リセットされて流れが追えなかったのを、デフォルトを<b>累積</b>（取得しても消えない）に。見始めてからの資金の動きが積み上がる。</div>
+  </div>
+
+  <div class="entry fix">
+    <div><span class="ver">v22</span><span class="badge b-fix">修正</span><span class="etitle">帯広（ばんえい）の名前バグ</span></div>
+    <div class="edesc">ばんえいの馬IDは<code>B</code>始まりで、数字限定の正規表現が弾いて馬名が出なかった。英字プレフィックス対応。場コード65（帯広）も追加。</div>
+  </div>
+
+  <div class="group-label">基盤の安定化</div>
+
+  <div class="entry fix">
+    <div><span class="ver">v17-21</span><span class="badge b-fix">修正</span><span class="etitle">JRA取得・複勝オッズ・PWA更新</span></div>
+    <div class="edesc">JRAオッズの階層解決（<code>data.odds</code>）、複勝オッズが範囲配列で<code>.toFixed</code>クラッシュする問題、Service Workerをネットワーク優先にして更新が即反映されるよう修正。</div>
+  </div>
+
+</div>
+
+<a class="back" href="./">← アプリに戻る</a>
+
+<footer>
+  ODDS ANOMALY — SEVENTHWELL<br>
+  継続開発中。バグ報告・要望は随時反映。
+</footer>
+
+</div>
+</body>
+</html>

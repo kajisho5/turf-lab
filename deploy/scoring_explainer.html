@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SW TURF LAB — スコアの計算方法</title>
+<style>
+  :root{
+    --bg:#0a0c10; --card:#151922; --card2:#11151c;
+    --hair:#242a35; --hair2:#333b49;
+    --txt:#f2f5f9; --dim:#b4bdc9; --faint:#7b8593;
+    --acc:#5eead4; --gold:#fbbf24; --red:#f87171; --blue:#60a5fa; --green:#4ade80; --violet:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+    line-height:1.7; padding:24px 16px 80px;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+  h1{font-size:30px;font-weight:800;letter-spacing:.02em;margin-bottom:6px}
+  h1 .accent{color:var(--acc)}
+  .lede{color:var(--dim);font-size:15px;margin-bottom:40px}
+  h2{
+    font-size:20px;font-weight:800;margin:44px 0 16px;
+    padding-left:12px;border-left:4px solid var(--acc);
+  }
+  h3{font-size:16px;font-weight:700;margin:24px 0 10px;color:var(--dim)}
+  p{font-size:15px;color:var(--dim);margin-bottom:12px}
+  .card{background:var(--card);border:1px solid var(--hair2);border-radius:12px;padding:20px;margin:16px 0}
+  .mono{font-family:"SFMono-Regular",Consolas,monospace}
+
+  /* ステップ */
+  .steps{display:flex;flex-direction:column;gap:0}
+  .step{display:flex;gap:16px;position:relative;padding-bottom:28px}
+  .step:not(:last-child)::before{
+    content:"";position:absolute;left:19px;top:44px;bottom:0;width:2px;background:var(--hair2);
+  }
+  .stepnum{
+    flex:0 0 40px;height:40px;border-radius:50%;
+    background:var(--card);border:2px solid var(--acc);color:var(--acc);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:17px;z-index:1;
+  }
+  .stepbody{flex:1;padding-top:4px}
+  .stepbody h4{font-size:17px;font-weight:700;margin-bottom:6px}
+
+  /* ファクターバー */
+  .fac{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:14px}
+  .fac .nm{flex:0 0 108px;color:var(--dim);font-size:14px}
+  .fac .bar{flex:1;height:22px;background:rgba(255,255,255,.05);border-radius:5px;position:relative;overflow:hidden}
+  .fac .fill{position:absolute;top:0;bottom:0;border-radius:5px}
+  .fac .fill.pos{background:linear-gradient(90deg,#5eead4,#2dd4bf)}
+  .fac .fill.neg{background:linear-gradient(90deg,#f87171,#ef4444)}
+  .fac .val{flex:0 0 54px;text-align:right;font-family:monospace;font-weight:700;font-size:14px}
+  .fac .val.pos{color:var(--acc)} .fac .val.neg{color:var(--red)}
+  .fac .w{flex:0 0 52px;font-size:14px;color:var(--faint);text-align:right}
+
+  /* 重みテーブル */
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+  th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--hair)}
+  th{color:var(--faint);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  td.num{font-family:monospace;text-align:right;font-weight:700}
+  .zero{color:var(--faint)}
+  .hi{color:var(--acc)}
+
+  /* 決定木 */
+  .tree{font-family:monospace;font-size:14px;line-height:1.9;overflow-x:auto}
+  .tnode{color:var(--gold)}
+  .tleaf{color:var(--acc);font-weight:700}
+  .tleaf.neg{color:var(--red)}
+  .tbranch{color:var(--faint)}
+
+  /* 重要度 */
+  .imp{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .imp .nm{flex:0 0 110px;font-size:14px;color:var(--dim)}
+  .imp .bar{flex:1;height:18px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+  .imp .fill{height:100%;background:linear-gradient(90deg,#5eead4,#60a5fa);border-radius:4px}
+  .imp .n{flex:0 0 40px;text-align:right;font-family:monospace;font-size:14px;color:var(--faint)}
+
+  /* 結果カード */
+  .result{display:flex;align-items:center;gap:14px;padding:12px;border-radius:8px;margin:6px 0;background:var(--card2)}
+  .result.top{background:rgba(94,234,212,.07);border:1px solid rgba(94,234,212,.25)}
+  .result .mk{font-size:20px;font-weight:800;flex:0 0 28px}
+  .result .num{font-family:monospace;font-weight:800;font-size:19px;flex:0 0 28px;color:var(--dim)}
+  .result .nm{flex:1;font-weight:700}
+  .result .sc{font-family:monospace;font-weight:800;font-size:22px;color:var(--acc)}
+
+  .note{
+    background:rgba(167,139,250,.08);border-left:3px solid var(--violet);
+    padding:12px 14px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;color:var(--dim);
+  }
+  .note b{color:var(--violet)}
+  .warn{
+    background:rgba(248,113,113,.08);border-left:3px solid var(--red);
+    padding:12px 14px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;color:var(--dim);
+  }
+  .warn b{color:var(--red)}
+  .metric{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+  .metric div{
+    flex:1;min-width:120px;background:var(--card2);border:1px solid var(--hair2);
+    border-radius:10px;padding:14px;text-align:center;
+  }
+  .metric .lab{font-size:14px;color:var(--faint);margin-bottom:4px}
+  .metric .v{font-size:26px;font-weight:800;font-family:monospace;color:var(--acc)}
+  .metric .old{font-size:14px;color:var(--faint);margin-top:2px}
+  code{background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px;font-size:14px;color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1><span class="accent">SW TURF LAB</span> — スコアはこう計算している</h1>
+  <p class="lede">◎の数字がどこから来ているのか、実際のレースを例に最後まで追いかける。</p>
+
+  <!-- ===== 全体像 ===== -->
+  <h2>全体の流れ</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="stepnum">1</div>
+      <div class="stepbody">
+        <h4>馬柱から「ファクター」を取り出す</h4>
+        <p>過去5走・騎手・調教師・枠・距離などから、14種類の数値を計算する。全馬が <code>基礎=50点</code> からスタートし、そこに加減点していく。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="stepnum">2</div>
+      <div class="stepbody">
+        <h4>決定木（GBM）が条件を見て再評価する</h4>
+        <p>単純に足すのではなく、<b>180本の決定木</b>が「頭数が9頭以下なら脚質を重く見る」といった条件分岐で最終スコアを出す。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="stepnum">3</div>
+      <div class="stepbody">
+        <h4>スコア順に ◎○▲△△ を打つ</h4>
+        <p>オッズは<b>一切見ていない</b>。人気に引きずられないように、あえて使っていない。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 段階1 ===== -->
+  <h2>① ファクター：14個の数値</h2>
+  <p>実例：<span id="exName" class="mono"></span>（<span id="exField"></span>頭立て）の◎馬。</p>
+  <div class="card">
+    <h3 id="exHorse" style="color:var(--acc);margin-top:0"></h3>
+    <div id="facs"></div>
+    <div style="border-top:1px solid var(--hair2);margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;font-weight:700">
+      <span style="color:var(--dim)">単純に足すと</span>
+      <span class="mono" id="linSum" style="color:var(--gold)"></span>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>重要:</b> ここで各ファクターには<b>重み</b>が掛かっている。この重みは <b>9,841頭（地方）／12,566頭（中央）</b> の実データから逆算したもの。勘では決めていない。
+  </div>
+
+  <h3>重みの一覧（地方 / 中央）</h3>
+  <div class="card" style="padding:8px 20px">
+    <table id="wtable"></table>
+  </div>
+
+  <div class="warn">
+    <b>「近走実績」がゼロなのは意図的。</b> 前走の着順を加点すると、かえって当たらなくなる。理由は<b>その情報がすでにオッズに織り込まれている</b>から。加点すると人気馬をなぞるだけになり、妙味が消える。データがそう言ったので、ゼロにした。
+  </div>
+
+  <!-- ===== 段階2 ===== -->
+  <h2>② 決定木：条件で見方を変える</h2>
+  <p>「脚質は常に1.5倍」のような固定の重み付けでは表せないものがある。たとえば——</p>
+  <div class="card" style="background:var(--card2)">
+    <p style="margin:0;color:var(--txt)">
+      少頭数（〜9頭）は展開がハマるので<b style="color:var(--gold)">脚質が最重要</b>。<br>
+      多頭数（14頭〜）は揉まれて展開利が消え、<b style="color:var(--blue)">純粋な地力（降級・スピード指数）</b>が効く。
+    </p>
+  </div>
+  <p>これを表現するために、決定木を使っている。実際の木を1本見てみる：</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">決定木（180本中の1本目）</h3>
+    <div class="tree" id="tree"></div>
+    <p style="margin:14px 0 0;font-size:14px;color:var(--faint)">
+      このような木が <b style="color:var(--acc)">180本</b> あり、それぞれの予測値を全部足し合わせて最終スコアにする。
+    </p>
+  </div>
+
+  <h3>木が「分岐に使った」ファクター（＝重視しているもの）</h3>
+  <div class="card">
+    <div id="imp"></div>
+    <p style="margin:14px 0 0;font-size:14px;color:var(--faint)">
+      最多は<b style="color:var(--acc)">頭数</b>。「何頭立てか」で他のファクターの見方を変えている、ということ。
+    </p>
+  </div>
+
+  <!-- ===== 結果 ===== -->
+  <h2>③ 結果：印がつく</h2>
+  <div class="card">
+    <div id="results"></div>
+  </div>
+
+  <!-- ===== 精度 ===== -->
+  <h2>実際どのくらい当たるのか</h2>
+  <p>2023年以降の<b>61,511レース</b>（地方49,323R＋中央12,188R）で検証した実測値。
+  <b>学習に使っていないデータ</b>で測っている。回収率の分母は必ず「買った全レース」。</p>
+
+  <h3>地方（NAR）— ◎の成績</h3>
+  <div class="metric">
+    <div><div class="lab">複勝率</div><div class="v">58.4%</div><div class="old">49,323R</div></div>
+    <div><div class="lab">勝率</div><div class="v">27.8%</div><div class="old">単勝ROI 82.0%</div></div>
+    <div><div class="lab">複勝ROI</div><div class="v">86.4%</div><div class="old">全券種で最良</div></div>
+  </div>
+
+  <h3>中央（JRA）— ◎の成績</h3>
+  <div class="metric">
+    <div><div class="lab">複勝率</div><div class="v">58.2%</div><div class="old">12,188R</div></div>
+    <div><div class="lab">勝率</div><div class="v">27.5%</div><div class="old">単勝ROI 77.8%</div></div>
+    <div><div class="lab">複勝ROI</div><div class="v">81.5%</div><div class="old">1番人気は66.9%</div></div>
+  </div>
+
+  <div class="warn">
+    <b>回収率は100%を超えていない。</b> 複勝ROIは81〜86%。つまり<b>買い続ければ長期的には負ける</b>。控除率25%の壁は越えられていない。<br><br>
+    「当たりやすい馬」を見つけることはできるが、それは<b>オッズが低い馬</b>でもあるので、回収では勝てない。ここは正直に言っておく。<br><br>
+    <b>中央はまだ市場に届いていない。</b> ◎の複勝率58.2%に対し、単純に1番人気を買うと66.9%。
+    地方は2026年9月28日から、あえて人気薄の◎を増やす並べ方に変えた。◎の複勝率は下がるが回収率は上がる（それでも100%には届かない）。
+  </div>
+
+  <div class="note">
+    <b>盛らない、データだけ。</b><br>
+    脚質・血統・騎手の得意競馬場・前日バイアス——「効きそう」なものを片っ端から検証したが、<b>ほぼ全部ボツになった</b>。理由はどれも同じで、<b>誰でも知っている情報はすでにオッズに入っている</b>から。<br><br>
+    残った数少ないものだけをスコアに使っている。
+  </div>
+
+</div>
+
+<script>
+const TREE0={"feat":["近走実績","同コース","芝ダ適性","距離適性","上がり","前付け","脚質","降級","斤量","騎手成績","調教師","枠バイアス","前バイアス","スピード指数","__field"],"tree":[3,-2.2,[9,3.4,[13,-0.4,[-0.7412],[-1.3648]],[13,-0.4,[-0.1034],[-0.7919]]],[6,-0.3,[13,-0.1,[-0.1667],[-0.5478]],[2,-0.6,[0.1259],[0.4642]]]]};
+
+const EXAMPLE={"race":{"name":"登別 地獄の谷の鬼花火特別(A3)","field":8,"no":5},
+"horses":[
+ {"num":"2","name":"ディオスメッセージ","s":56.4,"mk":"◎","brk":[["基礎",50],["同コース",1.4],["芝ダ適性",1.6],["距離適性",2.4],["脚質",3.2],["騎手成績",4.1],["調教師",5.3],["枠バイアス",-0.4]]},
+ {"num":"5","name":"モーニングショー","s":56.1,"mk":"○","brk":[]},
+ {"num":"8","name":"オンラインボス","s":56.1,"mk":"▲","brk":[]},
+ {"num":"1","name":"ヴィルユキヒメ","s":54.2,"mk":"△","brk":[]},
+ {"num":"6","name":"タイセイモンスター","s":52.8,"mk":"△","brk":[]}
+]};
+
+const WEIGHTS=[
+  ["近走実績",0,0],["同コース",0.5,0.25],["芝ダ適性",1,1],["距離適性",0.75,0.5],
+  ["上がり",0,0],["前付け",0,0],["脚質",1.5,0.75],["降級",0,0],["斤量",0,0],
+  ["騎手成績",0.75,2],["調教師",1.75,2],["枠バイアス",1.25,2],
+  ["前バイアス",0,1.5],["スピード指数",0,0.25]
+];
+
+const IMPORTANCE=[
+  ["芝ダ適性",147],["頭数",132],["脚質",114],["近走実績",105],["騎手成績",104],
+  ["調教師",88],["スピード指数",81],["枠バイアス",80],["斤量",79],["同コース",74],
+  ["距離適性",72],["前バイアス",47],["上がり",38],["前付け",22],["降級",13]
+];
+
+// --- 実例 ---
+const ex=EXAMPLE;
+document.getElementById("exName").textContent=ex.race.name;
+document.getElementById("exField").textContent=ex.race.field;
+const o=ex.horses[0];
+document.getElementById("exHorse").textContent="◎ "+o.num+" "+o.name;
+
+const facHost=document.getElementById("facs");
+const maxAbs=Math.max(...o.brk.filter(b=>b[0]!=="基礎").map(b=>Math.abs(b[1])), 1);
+let lin=0;
+o.brk.forEach(([k,v])=>{
+  lin+=v;
+  const row=document.createElement("div"); row.className="fac";
+  const isBase=(k==="基礎");
+  const pct = isBase ? 100 : Math.min(100, Math.abs(v)/maxAbs*100);
+  const pos = v>=0;
+  row.innerHTML=`
+    <div class="nm">${k}</div>
+    <div class="bar"><div class="fill ${pos?"pos":"neg"}" style="width:${pct}%;${isBase?"opacity:.35":""}"></div></div>
+    <div class="val ${pos?"pos":"neg"}">${pos?"+":""}${v}</div>`;
+  facHost.appendChild(row);
+});
+document.getElementById("linSum").textContent=lin.toFixed(1)+" 点";
+
+// --- 重みテーブル ---
+const wt=document.getElementById("wtable");
+wt.innerHTML="<tr><th>ファクター</th><th style='text-align:right'>地方</th><th style='text-align:right'>中央</th><th>意味</th></tr>";
+const MEAN={
+  "近走実績":"前走までの着順","同コース":"同じコースでの実績","芝ダ適性":"芝/ダートの得手不得手",
+  "距離適性":"その距離での実績","上がり":"終いの脚","前付け":"前に行けるか","脚質":"逃げ/先行/差し/追込",
+  "降級":"クラスが下がった","斤量":"背負う重さ","騎手成績":"騎手の勝率","調教師":"厩舎の勝率",
+  "枠バイアス":"枠順の有利不利","前バイアス":"前が有利な馬場か","スピード指数":"走破時計の速さ"
+};
+WEIGHTS.forEach(([k,n,j])=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${k}</td>
+    <td class="num ${n===0?"zero":n>=1.5?"hi":""}">${n}</td>
+    <td class="num ${j===0?"zero":j>=1.5?"hi":""}">${j}</td>
+    <td style="color:var(--faint);font-size:14px">${MEAN[k]||""}</td>`;
+  wt.appendChild(tr);
+});
+
+// --- 決定木 ---
+const F=TREE0.feat;
+function drawTree(n, d, host, label){
+  const ind="&nbsp;&nbsp;&nbsp;".repeat(d);
+  if(n.length===1){
+    const neg = n[0]<0;
+    host.innerHTML += `${ind}<span class="tbranch">└─</span> <span class="tleaf ${neg?"neg":""}">予測 ${n[0]>=0?"+":""}${n[0]}</span><br>`;
+    return;
+  }
+  const fname = F[n[0]]==="__field" ? "頭数" : F[n[0]];
+  host.innerHTML += `${ind}<span class="tnode">${fname} ≤ ${n[1]} ?</span><br>`;
+  host.innerHTML += `${ind}<span class="tbranch">├ はい</span><br>`;
+  drawTree(n[2], d+1, host);
+  host.innerHTML += `${ind}<span class="tbranch">├ いいえ</span><br>`;
+  drawTree(n[3], d+1, host);
+}
+drawTree(TREE0.tree, 0, document.getElementById("tree"));
+
+// --- 重要度 ---
+const impHost=document.getElementById("imp");
+const maxImp=IMPORTANCE[0][1];
+IMPORTANCE.forEach(([k,v])=>{
+  const row=document.createElement("div"); row.className="imp";
+  row.innerHTML=`<div class="nm">${k}</div>
+    <div class="bar"><div class="fill" style="width:${v/maxImp*100}%"></div></div>
+    <div class="n">${v}</div>`;
+  impHost.appendChild(row);
+});
+
+// --- 結果 ---
+const resHost=document.getElementById("results");
+const MC={"◎":"var(--red)","○":"var(--gold)","▲":"var(--blue)","△":"var(--green)"};
+ex.horses.forEach((h,i)=>{
+  const d=document.createElement("div"); d.className="result"+(i===0?" top":"");
+  d.innerHTML=`<div class="mk" style="color:${MC[h.mk]||"var(--faint)"}">${h.mk}</div>
+    <div class="num">${h.num}</div>
+    <div class="nm">${h.name}</div>
+    <div class="sc">${h.s}</div>`;
+  resHost.appendChild(d);
+});
+</script>
+</body>
+</html>

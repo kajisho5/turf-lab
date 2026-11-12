@@ -1,0 +1,17 @@
+{
+  "name": "ODDS ANOMALY — 異常オッズ検知",
+  "short_name": "ODDS ANOMALY",
+  "description": "netkeibaのオッズ変動から異常を検知し、馬場・騎手・傾向から印を出す監視ツール",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07080a",
+  "theme_color": "#07080a",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

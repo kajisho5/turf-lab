@@ -1,0 +1,282 @@
+<title>馬検索 — カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css">
+<script src="/core/theme.js"></script>
+<script src="/core/table.js" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="地方競馬の馬検索。馬名・父・母父・毛色・性別で絞り込み。直近3年に出走した約2.8万頭の成績と複勝回収率。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="馬検索 — 血統・毛色からも探せる">
+<meta property="og:description" content="直近3年に出走した約2.8万頭。馬名・父・母父・毛色・性別で検索。">
+<meta property="og:url" content="https://kajikeiba.com/db/horse/">
+<meta property="og:image" content="https://kajikeiba.com/data/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.8;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:920px;margin:0 auto;padding:24px 18px 72px}
+h1{font-size:29px;margin:8px 0 4px}
+.lead{color:var(--mute);font-size:17px}
+.fbox{border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px;margin:16px 0;
+  background:var(--panel)}
+.fbox legend{padding:0 8px;font-weight:700;font-size:16px}
+.fbox legend span{font-weight:400;color:var(--mute);font-size:14px}
+.filters label{display:flex;flex-direction:column;gap:3px;
+  font-size:13px;color:var(--mute);font-weight:700}
+.filters{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin:10px 0 0}
+@media(min-width:640px){.filters{grid-template-columns:2fr 2fr 1fr 1fr}}
+.filters input,.filters select{appearance:none;border:1px solid var(--line);
+  background:var(--panel);color:var(--txt);font:inherit;font-size:16px;
+  padding:10px 12px;border-radius:10px;width:100%}
+.filters input:focus,.filters select:focus{outline:2px solid var(--blue)}
+/* 値が入っている条件は枠を強調する（どれで絞っているか一目で分かる） */
+.filters input:not(:placeholder-shown),.filters select:valid:not([data-empty]){
+  border-color:var(--blue)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:16px;min-width:720px}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.g{color:var(--green);font-weight:700}
+.note{color:var(--mute);font-size:16px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--panel);
+  color:var(--mute);font:inherit;font-size:16px;padding:6px 14px;border-radius:999px;
+  cursor:pointer;margin-right:8px}
+.chip[aria-pressed="true"]{background:var(--accent,var(--green));color:var(--bg);
+  border-color:var(--accent,var(--green));font-weight:700}
+.fav{cursor:pointer;color:var(--mute);font-size:19px;user-select:none}
+.fav[aria-pressed="true"]{color:var(--yellow)}
+.snav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.snav a{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:4px 13px;text-decoration:none;color:var(--mute);font-size:15px}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:16px}
+</style>
+<div class="wrap">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+<a href="/db/">← データベース</a><div style="flex:1"></div>
+<button class="themebtn" type="button">☾</button></div>
+<nav class="snav"><a href="/">レース一覧</a><a href="/ai/">AI予想家</a><a href="/record/">予想の記録</a><a href="/articles/">記事</a><a href="/db/">データベース</a><a href="/calendar/">重賞カレンダー</a></nav>
+
+<h1>馬検索</h1>
+<p class="lead">直近3年に出走した馬を、馬名・父・母父・毛色・性別で探せます。</p>
+
+<!-- ★「絞り込み」だと分かる形にする★
+     もとは select の1つ目の選択肢を見出し代わりにしていた（<option>所属</option>）。
+     画面上は「所属 主戦場 毛色 性別…」という語が並ぶだけで、
+     それが検索条件なのか項目の説明なのか分からなかった。
+     枠で囲って見出しを付け、各項目に必ずラベルを添える。
+     選択肢側は「すべて」にして、いま何も絞っていないことが読めるようにする。 -->
+<fieldset class="fbox">
+  <legend>絞り込み<span id="fCount"></span></legend>
+  <div class="filters">
+    <label>馬名<input id="fName" placeholder="部分一致"></label>
+    <label>父<input id="fSire" placeholder="部分一致"></label>
+    <label>母父<input id="fDsire" placeholder="部分一致"></label>
+    <label>馬主<input id="fOwner" placeholder="部分一致（会社名も可）"></label>
+    <label>状態<select id="fActive"><option value="">すべて</option>
+      <option value="active">現役（推定）</option>
+      <option value="retired">引退（推定）</option></select></label>
+    <label>所属<select id="fBelong"><option value="">すべて</option></select></label>
+    <label>主戦場<select id="fTrack"><option value="">すべて</option></select></label>
+    <label>毛色<select id="fColor"><option value="">すべて</option></select></label>
+    <label>性別<select id="fSex"><option value="">すべて</option></select></label>
+    <label>馬齢<select id="fAge"><option value="">すべて</option></select></label>
+    <label>出走数<select id="fRuns"><option value="">すべて</option>
+      <option value="5">5走以上</option><option value="20">20走以上</option>
+      <option value="50">50走以上</option><option value="100">100走以上</option></select></label>
+    <label>勝利数<select id="fWin"><option value="">すべて</option>
+      <option value="1">1勝以上</option><option value="5">5勝以上</option>
+      <option value="10">10勝以上</option><option value="20">20勝以上</option></select></label>
+    <label>複勝率<select id="fFuku"><option value="">すべて</option>
+      <option value="30">30%以上</option><option value="40">40%以上</option>
+      <option value="50">50%以上</option><option value="60">60%以上</option></select></label>
+    <label>複勝回収率<select id="fRoi"><option value="">すべて</option>
+      <option value="80">80%以上</option><option value="100">100%以上</option>
+      <option value="120">120%以上</option></select></label>
+  </div>
+  <p class="note" style="margin:8px 0 0">
+    <button id="fFav" class="chip" type="button">★ お気に入りのみ</button>
+    <button id="fClear" class="chip" type="button">条件をクリア</button>
+  </p>
+</fieldset>
+<p class="note" id="stat">読み込み中…</p>
+<div class="scroll"><table id="tbl" class="zebra sortable" hidden>
+<thead><tr><th data-nosort>★</th><th>馬名</th><th>状態</th><th>所属</th><th>馬主</th><th>性</th>
+<th class="n">生年</th><th>毛色</th><th>父</th><th>母父</th>
+<th class="n">出走</th><th class="n">勝利</th>
+<th class="n">複勝率</th><th class="n">複勝回収率</th><th>主戦場</th></tr></thead>
+<tbody id="rows"></tbody>
+</table></div>
+<p class="note">複勝回収率は「その馬の複勝を全レース100円ずつ買った」計算です。
+出走数が少ない馬の率は大きく振れるので、そのまま鵜呑みにしないでください。<br>
+「現役／引退」は<b>推定</b>です。引退は公表されないため、
+最終出走から180日以上あいた馬を引退として扱っています（休養明けで戻る馬もいます）。</p>
+
+<footer>
+カジ競馬 ／ データ出典: 地方競馬全国協会 keiba.go.jp（公式データダウンロード）<br>
+本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。<br>
+<a href="/privacy/">プライバシーポリシー・運営者情報</a>
+</footer>
+</div>
+<script>
+/* 馬検索
+ * 索引は build_horse_search.py が生成する配列の配列:
+ *   0馬名 1父 2母父 3毛色 4性 5生年 6出走 7勝利 8複勝率% 9複ROI% 10主戦場 11所属 12最終出走日 13馬主
+ * ★サーバー検索にしない★ 2.8万頭ならgzip後は数百KBで、1回読めば
+ *   あとは端末内で絞り込める。タイプごとに通信するより速く、サーバーも軽い。
+ * ★お気に入りは端末内★ localStorage に馬名を持つだけ。
+ *   ログインも会員登録も要らず、こちらは誰が何を登録したか一切知らない。
+ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let DB = [];
+
+const FAV_KEY = 'kk_fav_horse';
+function favSet(){
+  try { return new Set(JSON.parse(localStorage.getItem(FAV_KEY) || '[]')); }
+  catch(e){ return new Set(); }
+}
+function favToggle(name){
+  const s = favSet();
+  s.has(name) ? s.delete(name) : s.add(name);
+  try { localStorage.setItem(FAV_KEY, JSON.stringify([...s])); } catch(e){}
+  return s;
+}
+
+const F = ['fName','fSire','fDsire','fOwner','fActive','fBelong','fTrack','fColor','fSex','fAge',
+           'fRuns','fWin','fFuku','fRoi'];
+
+/* ★現役/引退は「推定」であることを隠さない★
+   引退は公表されないので、データからは分からない。
+   分かるのは最終出走日だけなので、そこからの経過で線を引く。
+   地方は2〜4週に1回走るのが普通なので、半年走っていなければ
+   現役として扱わない。休養明けで復帰する馬もいるため、断定はしない。
+   索引の最新日を基準にする（実行日を使うと、データ更新が止まった時に
+   全馬が勝手に「引退」になってしまう）。 */
+const RETIRE_DAYS = 180;
+let NEWEST = null;                       // 索引の中で一番新しい出走日
+const dnum = s => { const y=+s.slice(0,4), m=+s.slice(4,6), d=+s.slice(6,8);
+                    return Date.UTC(y, m-1, d) / 86400000; };
+function isActive(lastRun){
+  if(!lastRun || !NEWEST) return null;   // 判定できない
+  return (NEWEST - dnum(lastRun)) <= RETIRE_DAYS;
+}
+let favOnly = false;
+
+/* 馬齢は生年から出す。索引に持たせると毎年ズレるので、表示時に計算する */
+function ageOf(birthYear){
+  const y = +birthYear;
+  if(!y) return null;
+  return new Date().getFullYear() - y;
+}
+
+function render(){
+  const v = {};
+  F.forEach(id => { v[id] = $('#' + id).value.trim(); });
+  const favs = favSet();
+  const hit = [];
+  for (const r of DB){
+    if (favOnly && !favs.has(r[0])) continue;
+    if (v.fName  && !r[0].includes(v.fName)) continue;
+    if (v.fSire  && !(r[1] || '').includes(v.fSire)) continue;
+    if (v.fDsire && !(r[2] || '').includes(v.fDsire)) continue;
+    if (v.fOwner && !(r[13] || '').includes(v.fOwner)) continue;
+    if (v.fBelong && r[11] !== v.fBelong) continue;
+    if (v.fTrack && r[10] !== v.fTrack) continue;
+    if (v.fColor && r[3] !== v.fColor) continue;
+    if (v.fSex   && r[4] !== v.fSex) continue;
+    if (v.fAge   && String(ageOf(r[5])) !== v.fAge) continue;
+    if (v.fRuns  && r[6] < +v.fRuns) continue;
+    if (v.fWin   && r[7] < +v.fWin) continue;
+    if (v.fFuku  && r[8] < +v.fFuku) continue;
+    if (v.fRoi   && r[9] < +v.fRoi) continue;
+    if (v.fActive){
+      const a = isActive(r[12]);
+      if (a === null) continue;
+      if (v.fActive === 'active'  && !a) continue;
+      if (v.fActive === 'retired' &&  a) continue;
+    }
+    hit.push(r);
+    if (hit.length >= 4000) break;
+  }
+  const nOn = F.filter(id => $('#' + id).value.trim()).length + (favOnly ? 1 : 0);
+  $('#fCount').textContent = nOn ? `（${nOn}件の条件を適用中）` : '（条件なし・すべて表示）';
+  const shown = hit.slice(0, 100);
+  $('#rows').innerHTML = shown.map(r => {
+    const on = favs.has(r[0]);
+    return `<tr>
+    <td><span class="fav" role="button" tabindex="0" aria-pressed="${on}"
+        data-h="${esc(r[0])}" title="お気に入り">${on ? '★' : '☆'}</span></td>
+    <td><a href="/db/horse/detail/?name=${encodeURIComponent(r[0])}"><strong>${esc(r[0])}</strong></a></td>
+    <td>${(a => a === null ? '—' : (a ? '現役' : '引退'))(isActive(r[12]))}</td>
+    <td>${esc(r[11] || '')}</td>
+    <td>${esc(r[13] || '')}</td>
+    <td>${esc(r[4])}</td><td class="n">${esc(r[5])}</td><td>${esc(r[3])}</td>
+    <td>${esc(r[1])}</td><td>${esc(r[2])}</td>
+    <td class="n">${r[6]}</td><td class="n">${r[7]}</td>
+    <td class="n">${r[8]}%</td>
+    <td class="n${r[9] >= 90 ? ' g' : ''}">${r[9]}%</td>
+    <td>${esc(r[10])}</td></tr>`;
+  }).join('');
+  $('#tbl').hidden = !shown.length;
+  $('#stat').textContent = hit.length
+    ? `${hit.length.toLocaleString()}頭が該当${hit.length > 100 ? '（上位100頭を表示・出走数順）' : ''}`
+    : (favOnly ? 'お気に入りに登録された馬がいません' : '該当する馬がいません');
+  $('#fFav').textContent = `★ お気に入りのみ（${favs.size}）`;
+}
+
+/* 星は行が作り直されるので、表全体で受ける（1つずつ付けない） */
+document.addEventListener('click', e => {
+  const el = e.target.closest('.fav');
+  if(!el) return;
+  favToggle(el.dataset.h);
+  render();
+});
+
+/* ★force-cache にしない★
+   索引に「所属」列を足して配り直したのに、ブラウザが古い版を掴んだままで
+   所属が全部空になった（theme.css でも同じ事故を起こしている）。
+   no-cache は「毎回サーバーに確認する」だけで、中身が同じなら 304 が返り
+   本文は流れない。数百KBの再取得より、古い索引を見せ続けるほうが害が大きい。 */
+fetch('/db/horses_search.json', {cache: 'no-cache'})
+  .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    DB = d;
+    /* 選択肢はデータから作る。手書きすると実データとズレる
+       （毛色は白毛や栗粕毛まで13色あった） */
+    const fill = (sel, idx) => {
+      const vals = [...new Set(d.map(r => r[idx]).filter(Boolean))].sort();
+      $(sel).innerHTML += vals.map(v => `<option>${esc(v)}</option>`).join('');
+    };
+    fill('#fColor', 3); fill('#fSex', 4); fill('#fTrack', 10); fill('#fBelong', 11);
+    const ages = [...new Set(d.map(r => ageOf(r[5])).filter(a => a && a >= 2 && a <= 15))]
+      .sort((a, b) => a - b);
+    $('#fAge').innerHTML += ages.map(a => `<option value="${a}">${a}歳</option>`).join('');
+
+    F.forEach(id => $('#' + id).addEventListener('input', render));
+    $('#fFav').onclick = () => {
+      favOnly = !favOnly;
+      $('#fFav').setAttribute('aria-pressed', favOnly);
+      render();
+    };
+    $('#fClear').onclick = () => {
+      F.forEach(id => { $('#' + id).value = ''; });
+      favOnly = false; $('#fFav').setAttribute('aria-pressed', false);
+      render();
+    };
+    NEWEST = dnum(d.reduce((a, r) => (r[12] > a ? r[12] : a), '00000000'));
+    $('#stat').textContent =
+      `${d.length.toLocaleString()}頭を読み込みました。上の欄で絞り込めます。`;
+    render();
+  })
+  .catch(e => { $('#stat').textContent = '読み込めませんでした：' + e.message; });
+
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>

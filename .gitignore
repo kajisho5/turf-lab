@@ -1,0 +1,51 @@
+
+# JV-Link �̃_���v�i�Ď擾�\�E����j
+# JV-Linkのダンプ出力
+# OS
+# X APIの認証情報（本人が記入。Claudeは読まない）
+# オッズ時系列のスナップショット（日々増える。再取得不可能なので消さない）
+# ローカル設定
+# 作業中の抽出物
+# 再生成可能な大容量バックテストデータ（backtest/nar_data_pipeline.py で再取得）
+*.jsonl
+*.jvd
+.claude/settings.local.json
+Thumbs.db
+backtest/bt_realmodel/
+backtest/jra_races.jsonl
+backtest/jvdata/
+backtest/jvdata/
+backtest/nardata/
+backtest/nardata/bt_debut.jsonl
+backtest/odds_snapshots/
+bt_dataset.json
+deploy/x_credentials.json
+desktop.ini
+nar_payback/
+pays_fullhistory.json
+script.js
+backtest/races_cache.jsonl
+backtest/gbm_feats.jsonl
+backtest/valid_flat.jsonl
+backtest/train.jsonl
+backtest/valid.jsonl
+backtest/gbm_retrained.txt
+backtest/script.js
+backtest/*_err.log
+backtest/_*.jsonl
+php/line_config.php
+
+# Cloudflare移行（cloudflare/）: 生成物・手元の写し・合言葉
+cloudflare/node_modules/
+cloudflare/dist/
+cloudflare/.wrangler/
+cloudflare/.mirror/
+cloudflare/.admin_token
+cloudflare/.dev.vars
+cloudflare/.deployed.json
+# 認証情報のメモ（誤ってコミットしないように）
+clloudflare_token.txt
+timelink_create_key.txt
+
+# 依存ライブラリ（npm ci で入る）
+node_modules/

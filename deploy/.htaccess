@@ -1,0 +1,48 @@
+# https を強制する（証明書は 2026-07-19 に発行済み）
+# ★理由★ Xはhttpsでないとカードを出さない。SEOでも不利になる。
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# ── AI学習クローラーをサーバー側でも止める ────────────────
+# ★robots.txt は「お願い」でしかない★
+#   従わない相手がいるので、名乗っているものは 403 で返す。
+#   ただし User-Agent は詐称できるので、これも完全ではない。
+#   ★パターンは `.*`、拒否は `[R=403]` にする★
+#     `^` だと環境によって一致せず、ルールが黙って無効になる。
+#     さらに `[F]` はサブディレクトリの .htaccess（/lab/）で効かなかった。
+#     同じ設定なのに公開側だけ403、lab側は素通り、という状態を実測で見つけた。
+#     どちらも「書いたのに効いていない」型なので、変えたら必ず curl で確かめる。
+#   ブラウザで見える情報は必ず取れる、という前提は変わらない。
+RewriteCond %{HTTP_USER_AGENT} (GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-Web|anthropic-ai|CCBot|PerplexityBot|Bytespider|Amazonbot|meta-externalagent|FacebookBot|cohere-ai|Diffbot|omgili|ImagesiftBot|Scrapy|python-requests|node-fetch|Go-http-client|curl|wget) [NC]
+RewriteRule .* - [R=403,L]
+
+# ── 索引ファイルの直リンクを塞ぐ ─────────────────────
+# ★自サイトのページから読まれた時だけ許す★
+#   URLを直接叩いて全件持っていく、という一番手軽なコピーを防ぐ。
+#   ページ内の fetch は Referer が付くので通常利用には影響しない。
+#   Referer を送らない設定のブラウザもあるため、空の場合は許可している
+#   （利用者を締め出すより、素人のコピーを止めることを優先）。
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_URI} ^/(db/(horses_search\.json|h/|j/)|db/jra/(horses_search\.json|h/)|data/(horses|jra_horses)\.json)
+  RewriteCond %{HTTP_REFERER} !^https?://(www\.)?kajikeiba\.com [NC]
+  RewriteCond %{HTTP_REFERER} !^$
+  RewriteRule .* - [R=403,L]
+</IfModule>
+
+# レース詳細を /race/{12桁}/ で扱う
+# ★クエリ文字列(/race.html?id=)は検索で評価されにくく、titleも出し分けられなかった★
+#   race.php がサーバー側で中身を出すので、クローラにも読める。
+RewriteRule ^race/([0-9]{12})/?$ /race.php?id=$1 [L,QSA]
+
+# sitemap は PHP で当日ぶんを生成する
+RewriteRule ^sitemap\.xml$ /sitemap.php [L]
+
+# 圧縮（horses.json 1.8MB -> 0.37MB）
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/xml application/javascript application/json
+</IfModule>
+
+# キャッシュ用ディレクトリは外から見せない
+RedirectMatch 404 ^/cache/

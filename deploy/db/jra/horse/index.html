@@ -1,0 +1,197 @@
+<title>馬検索（中央競馬） — カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css?v=25f2cf98">
+<script src="/core/theme.js?v=6c7f699d"></script>
+<script src="/core/table.js?v=cfcaae79" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="中央競馬の馬検索。馬名・父・母父で絞り込み。3代血統図と全戦績つき。">
+<link rel="canonical" href="https://kajikeiba.com/db/jra/horse/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="馬検索（中央競馬）">
+<meta property="og:description" content="中央競馬の馬検索。馬名・父・母父で絞り込み。3代血統図と全戦績つき。">
+<meta property="og:image" content="https://kajikeiba.com/data/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.8;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:960px;margin:0 auto;padding:22px 16px 72px}
+h1{font-size:27px;margin:8px 0 4px;border-left:5px solid var(--yellow);padding-left:12px}
+h2{font-size:20px;margin:32px 0 6px}
+h2::before{content:"";display:inline-block;width:4px;height:16px;margin-right:8px;
+  background:var(--blue);vertical-align:-2px;border-radius:2px}
+.lead,.sub{color:var(--mute)}
+.snav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.snav a{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:4px 13px;text-decoration:none;color:var(--mute);font-size:15px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:16px;min-width:560px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700;background:var(--panel)}
+tbody tr:nth-child(even){background:var(--stripe)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.r1{color:var(--yellow);font-weight:700}
+.r2{color:var(--blue);font-weight:700}
+.r3{color:var(--green);font-weight:700}
+.paid{color:var(--green);font-weight:700}
+.kpi{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.kpi div{flex:1 1 120px;background:var(--panel);border:1px solid var(--line);
+  border-top:3px solid var(--line);border-radius:12px;padding:11px 14px}
+.kpi div:nth-child(2){border-top-color:var(--yellow)}
+.kpi div:nth-child(3){border-top-color:var(--orange)}
+.kpi div:nth-child(4){border-top-color:var(--green)}
+.kpi div:nth-child(5){border-top-color:var(--blue)}
+.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.3}
+.kpi span{color:var(--mute);font-size:14px}
+/* ── 血統図 ──────────────────────────────
+   ★3代を「列＝世代」で並べる★
+     縦に父系・母系、横に世代。競馬の血統表の並びに合わせる。
+     grid の行数を 8 にして、各世代がその倍数の高さを占めるようにすると
+     どの馬が誰の親か、線を引かなくても位置で分かる。 */
+.ped{display:grid;grid-template-columns:repeat(3,minmax(112px,1fr));
+  grid-template-rows:repeat(8,minmax(38px,auto));gap:4px;margin:12px 0;min-width:360px}
+.ped div{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:5px 8px;display:flex;align-items:center;font-size:14px;line-height:1.3;
+  word-break:break-all;overflow:hidden}
+.ped .g1{grid-row:span 4;font-size:16px;font-weight:700}
+.ped .g2{grid-row:span 2}
+.ped .g3{grid-row:span 1;font-size:13px;color:var(--mute)}
+/* 父系は上半分、母系は下半分。境目を色で示す */
+.ped .sireside{border-left:3px solid var(--blue)}
+.ped .damside{border-left:3px solid var(--red)}
+.fbox{border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px;
+  margin:16px 0;background:var(--panel)}
+.fbox legend{padding:0 8px;font-weight:700;font-size:16px}
+.fbox legend span{font-weight:400;color:var(--mute);font-size:14px}
+.filters{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin:10px 0 0}
+@media(min-width:640px){.filters{grid-template-columns:repeat(4,1fr)}}
+.filters label{display:flex;flex-direction:column;gap:3px;
+  font-size:13px;color:var(--mute);font-weight:700}
+.filters input,.filters select{appearance:none;border:1px solid var(--line);
+  background:var(--bg);color:var(--txt);font:inherit;font-size:16px;
+  padding:9px 11px;border-radius:10px;width:100%}
+.chip{appearance:none;border:1px solid var(--line);background:var(--bg);
+  color:var(--mute);font:inherit;font-size:15px;padding:5px 14px;border-radius:999px;
+  cursor:pointer;margin-right:8px}
+.note{color:var(--mute);font-size:15px}
+.msg{color:var(--mute);padding:22px 0}
+.xnote{background:var(--panel,rgba(128,128,128,.12));border-left:4px solid var(--blue,#4a90d9);
+  border-radius:0 8px 8px 0;padding:12px 14px;margin:12px 0 0;font-size:15px;line-height:1.6}
+.xnote a{display:inline-block;margin-top:4px;font-weight:700}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:15px}</style>
+<div class="wrap">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+<a href="/db/jra/">← 中央のデータベース</a><div style="flex:1"></div>
+<button class="themebtn" type="button">☾</button></div>
+<nav class="snav"><a href="/">レース一覧</a><a href="/ai/">AI予想家</a><a href="/record/">予想の記録</a><a href="/articles/">記事</a><a href="/db/">データベース</a><a href="/calendar/">重賞カレンダー</a></nav>
+<h1>馬検索（中央競馬）</h1>
+<p class="lead">直近3年に出走した中央の馬を、馬名・父・母父で探せます。
+馬名を押すと<b>3代血統図</b>と全戦績が出ます。</p>
+<fieldset class="fbox">
+  <legend>絞り込み<span id="fCount"></span></legend>
+  <div class="filters">
+    <label>馬名<input id="fName" placeholder="部分一致"></label>
+    <label>父<input id="fSire" placeholder="部分一致"></label>
+    <label>母父<input id="fDsire" placeholder="部分一致"></label>
+    <label>状態<select id="fActive"><option value="">すべて</option>
+      <option value="active">現役（推定）</option>
+      <option value="retired">引退（推定）</option></select></label>
+    <label>出走数<select id="fRuns"><option value="">すべて</option>
+      <option value="5">5走以上</option><option value="10">10走以上</option>
+      <option value="20">20走以上</option><option value="30">30走以上</option></select></label>
+    <label>勝利数<select id="fWin"><option value="">すべて</option>
+      <option value="1">1勝以上</option><option value="3">3勝以上</option>
+      <option value="5">5勝以上</option><option value="10">10勝以上</option></select></label>
+    <label>複勝率<select id="fFuku"><option value="">すべて</option>
+      <option value="30">30%以上</option><option value="40">40%以上</option>
+      <option value="50">50%以上</option><option value="60">60%以上</option></select></label>
+    <label>複勝回収率<select id="fRoi"><option value="">すべて</option>
+      <option value="80">80%以上</option><option value="100">100%以上</option>
+      <option value="120">120%以上</option></select></label>
+  </div>
+  <p class="note" style="margin:8px 0 0">
+    <button id="fClear" class="chip" type="button">条件をクリア</button></p>
+</fieldset>
+<p class="note" id="stat">読み込み中…</p>
+<div class="scroll"><table id="tbl" class="zebra sortable" hidden>
+<thead><tr><th>馬名</th><th>状態</th><th class="n">生年</th><th>父</th><th>母父</th>
+<th class="n">出走</th><th class="n">勝利</th><th class="n">複勝率</th>
+<th class="n">複勝回収率</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p class="note">複勝回収率は「その馬の複勝を全レース100円ずつ買った」計算です。
+出走数が少ない馬の率は大きく振れるので、そのまま鵜呑みにしないでください。<br>
+「現役／引退」は<b>推定</b>です。引退は公表されないため、最終出走から210日以上
+あいた馬を引退として扱っています（休養明けで戻る馬もいます）。</p>
+<footer>
+カジ競馬 ／ データ出典: JRA-VAN Data Lab.（公式データ）<br>
+本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。<br>
+<a href="/privacy/">プライバシーポリシー・運営者情報</a>
+</footer>
+</div>
+<script>
+/* 中央の馬検索
+   索引は build_jra_pedigree.py が作る配列の配列（地方版と同じ並び）:
+     0馬名 1父 2母父 3毛色 4性 5生年 6出走 7勝利 8複勝率% 9複ROI% 10主戦場 11所属 12最終出走日
+   ★列を地方と揃えてある★ 揃えないと画面を2つ作ることになる。 */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let DB = [];
+const F = ['fName','fSire','fDsire','fActive','fRuns','fWin','fFuku','fRoi'];
+
+/* 現役/引退は推定。引退は公表されないので最終出走からの経過で線を引く */
+const RETIRE_DAYS = 210;
+let NEWEST = null;
+const dnum = s => Date.UTC(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8)) / 86400000;
+const isActive = d => (!d || !NEWEST) ? null : (NEWEST - dnum(d)) <= RETIRE_DAYS;
+
+function render(){
+  const v = {}; F.forEach(id => v[id] = $('#'+id).value.trim());
+  const hit = [];
+  for(const r of DB){
+    if(v.fName  && !r[0].includes(v.fName)) continue;
+    if(v.fSire  && !(r[1]||'').includes(v.fSire)) continue;
+    if(v.fDsire && !(r[2]||'').includes(v.fDsire)) continue;
+    if(v.fRuns  && r[6] < +v.fRuns) continue;
+    if(v.fWin   && r[7] < +v.fWin) continue;
+    if(v.fFuku  && r[8] < +v.fFuku) continue;
+    if(v.fRoi   && r[9] < +v.fRoi) continue;
+    if(v.fActive){
+      const a = isActive(r[12]);
+      if(a === null) continue;
+      if(v.fActive === 'active' && !a) continue;
+      if(v.fActive === 'retired' && a) continue;
+    }
+    hit.push(r);
+    if(hit.length >= 4000) break;
+  }
+  const on = F.filter(id => $('#'+id).value.trim()).length;
+  $('#fCount').textContent = on ? `（${on}件の条件を適用中）` : '（条件なし・すべて表示）';
+  $('#rows').innerHTML = hit.slice(0,100).map(r => `<tr>
+    <td><a href="/db/jra/horse/detail/?name=${encodeURIComponent(r[0])}"><strong>${esc(r[0])}</strong></a></td>
+    <td>${(a => a===null?'—':(a?'現役':'引退'))(isActive(r[12]))}</td>
+    <td class="n">${esc(r[5])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td>
+    <td class="n">${r[6]}</td><td class="n">${r[7]}</td>
+    <td class="n">${r[8]}%</td><td class="n">${r[9]}%</td></tr>`).join('');
+  $('#stat').textContent =
+    `${hit.length.toLocaleString()}頭が該当（上位100頭を表示・出走数順）`;
+  $('#tbl').hidden = false;
+}
+
+fetch('/db/jra/horses_search.json', {cache:'no-cache'})
+  .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    DB = d;
+    NEWEST = dnum(d.reduce((a,r) => r[12] > a ? r[12] : a, '00000000'));
+    F.forEach(id => $('#'+id).addEventListener('input', render));
+    $('#fClear').onclick = () => { F.forEach(id => $('#'+id).value=''); render(); };
+    render();
+  })
+  .catch(e => { $('#stat').textContent = '読み込めませんでした：' + e.message; });
+</script>
+<script>
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>

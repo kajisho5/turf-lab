@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ODDS ANOMALY — 使い方</title>
+<style>
+  :root{
+    --bg:#07080a; --panel:#0d0f13; --panel2:#12151b; --line:#1d2129;
+    --txt:#e8eaed; --muted:#9aa0aa; --dim:#5a616d;
+    --red:#e8002a; --drop:#ff4b4b; --div:#9bff5e; --vel:#ffb13a; --rise:#4b9bff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+    line-height:1.7;font-size:15px;padding:0 0 60px;
+    padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  .wrap{max-width:680px;margin:0 auto;padding:0 18px}
+  header{padding:34px 0 22px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .logo{font-family:"Saira Condensed",sans-serif;font-weight:700;letter-spacing:.18em;
+    font-size:13px;color:var(--muted)}
+  h1{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:30px;letter-spacing:.04em;
+    margin:6px 0 4px}
+  .sub{color:var(--muted);font-size:13px}
+  .red{color:var(--red)}
+  h2{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:20px;letter-spacing:.03em;
+    margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+    background:var(--red);color:#fff;border-radius:7px;font-size:14px;flex:0 0 auto}
+  h3{font-size:15px;font-weight:700;margin:18px 0 4px;color:var(--txt)}
+  p{margin:6px 0;color:var(--txt)}
+  .muted{color:var(--muted);font-size:13px}
+  ul{margin:6px 0;padding-left:20px}
+  li{margin:4px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+  .step{display:flex;gap:12px;margin:10px 0;align-items:flex-start}
+  .step .b{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--panel2);
+    border:1px solid var(--line);color:var(--vel);font-family:"Saira Condensed";font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:2px}
+  .tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:5px;border:1px solid;
+    margin:0 3px 3px 0;font-family:"Space Mono",monospace}
+  .t-drop{color:var(--drop);border-color:var(--drop)}
+  .t-rise{color:var(--rise);border-color:var(--rise)}
+  .t-vel{color:var(--vel);border-color:var(--vel)}
+  .t-div{color:var(--div);border-color:var(--div)}
+  .mark{font-size:18px;font-weight:700;margin-right:4px}
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;
+    font-family:"Space Mono",monospace;font-size:13px;color:var(--vel)}
+  .key{color:var(--div);font-weight:700}
+  .warn{border-left:3px solid var(--vel);padding-left:12px;color:var(--muted);font-size:13px;margin:10px 0}
+  .danger{border-left:3px solid var(--drop);padding-left:12px;color:var(--muted);font-size:13px;margin:10px 0}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12px}
+  td.l{color:var(--vel);white-space:nowrap;font-weight:700}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:16px 0}
+  .toc a{display:block;color:var(--txt);text-decoration:none;padding:4px 0;font-size:14px;border-bottom:1px solid var(--line)}
+  .toc a:last-child{border-bottom:none}
+  .toc a:hover{color:var(--vel)}
+  .toc .num{color:var(--red);font-family:"Saira Condensed";font-weight:700;margin-right:8px}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:12px;text-align:center}
+  .back{display:inline-block;margin:18px 0 0;color:var(--vel);text-decoration:none;font-size:14px}
+  b.hl{color:var(--div)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">SEVENTHWELL</div>
+  <h1>ODDS ANOMALY <span class="red">/</span> 使い方</h1>
+  <div class="sub">オッズの異常な動きを検知し、期待値で「買う・見送る」を判断する競馬ツール</div>
+</header>
+
+<div class="card">
+  <p style="margin-top:0"><b class="hl">このアプリの核</b></p>
+  <p class="muted">勝つコツは「当てる」ことより「<b style="color:var(--txt)">期待値がプラスの時だけ買い、それ以外は見送る</b>」こと。人気や感情ではなく、①オッズの異常な動き（資金の流れ）と②馬の近走実績、この2軸で淡々と判断する。全馬が見送りなら「買わない」が正解。</p>
+</div>
+
+<div class="toc">
+  <a href="#start"><span class="num">1</span>はじめの3ステップ</a>
+  <a href="#now"><span class="num">2</span>現在レースバー・締切</a>
+  <a href="#buy"><span class="num">3</span>買い目・期待値（EV）</a>
+  <a href="#combo"><span class="num">4</span>馬連・ワイド・3連複</a>
+  <a href="#anomaly"><span class="num">5</span>異常検知のタグ</a>
+  <a href="#marks"><span class="num">6</span>◎○▲△ 印の意味</a>
+  <a href="#flow"><span class="num">7</span>資金フロー</a>
+  <a href="#watch"><span class="num">8</span>全Rウォッチ司令塔</a>
+  <a href="#result"><span class="num">9</span>結果・答え合わせ</a>
+  <a href="#bet"><span class="num">10</span>仮想ベットと回収率</a>
+  <a href="#learn"><span class="num">11</span>自己学習・傾向</a>
+  <a href="#tips"><span class="num">12</span>コツ・注意点</a>
+  <a href="#trouble"><span class="num">13</span>困ったとき</a>
+</div>
+
+<h2 id="start"><span class="n">1</span>はじめの3ステップ</h2>
+<div class="step"><div class="b">1</div><div><b>JRA / NAR を選ぶ</b><br><span class="muted">上のタブで中央競馬（JRA）か地方競馬（NAR）を切り替え。開くと自動でその日の開催一覧を取得する。</span></div></div>
+<div class="step"><div class="b">2</div><div><b>レースをタップ</b><br><span class="muted">「データ取得・レース選択」の中に場・R番号の一覧が出る。見たいレースをタップ＝出走表とオッズを自動取得。</span></div></div>
+<div class="step"><div class="b">3</div><div><b>自動更新をON</b><br><span class="muted">あとは放っておけば一定間隔でオッズを取り直し、動きを検知する。締切が近いレースほど直前の動きが重要。</span></div></div>
+<div class="warn">JRAのオッズは<b>当日朝の発売開始後</b>から取れる（おおむね9時前後〜各レース順次）。発売前は「まだオッズ未発売」と出る＝正常。地方は開催時間帯に取得できる。</div>
+
+<h2 id="now"><span class="n">2</span>現在レースバー・締切</h2>
+<p>画面上部に<b>常に固定表示</b>される。今どのレースを見ているか（場・R・レース名・頭数）と、<b class="key">発走までのカウントダウン</b>が出る。</p>
+<ul>
+  <li><span style="color:var(--vel)">締切◯分前</span> … まもなく締切。色が変わって警告</li>
+  <li><span style="color:var(--drop)">締切間際!</span> … 残り2分以内。点滅</li>
+  <li><span style="color:var(--dim)">発走済</span> … もう走った</li>
+</ul>
+<p class="muted">馬券は締切時刻が命。スクロールしても上に残るので、夢中で分析してても買い逃さない。</p>
+
+<h2 id="buy"><span class="n">3</span>買い目・期待値（EV）</h2>
+<p>このアプリの<b class="hl">心臓部</b>。各馬の<b>期待値（EV）= 推定勝率 × オッズ</b>を計算する。</p>
+<table>
+  <tr><th>EV値</th><th>意味</th></tr>
+  <tr><td class="l">1.00 超</td><td>理論上プラス。買う価値がある</td></tr>
+  <tr><td class="l">1.00 未満</td><td>理論上マイナス。基本は見送り</td></tr>
+</table>
+<p>パネルの先頭に判定が出る：</p>
+<ul>
+  <li><b style="color:var(--div)">買い候補◯頭</b> … EV1.0超の馬がいる。最有力馬とEV値を表示</li>
+  <li><b style="color:var(--vel)">見送り推奨</b> … 全馬EV1.0未満。市場が適正＝<b>無理に張らないのが回収率を守る</b></li>
+</ul>
+<p>単勝／複勝を切り替え可能。各馬に<b>推奨投資額（ケリー基準）</b>も出る（予算の何%を張るべきか、上限10%で安全側）。</p>
+<div class="warn">推定勝率は「市場オッズ（控除率80%反映）＋異常検知の補正＋過去の学習実績」から算出。データが溜まるほど精度が上がる。</div>
+
+<h2 id="combo"><span class="n">4</span>馬連・ワイド・3連複（JRA限定）</h2>
+<p>急落で資金が入った馬を<b>軸</b>に、相手との組み合わせ期待値を実オッズで計算。馬連／ワイド／3連複を切替。</p>
+<h3>合成オッズ・トリガミ判定</h3>
+<p>EV1.0超の点が複数ある時、「全部まとめ買いしたら」を自動計算：</p>
+<ul>
+  <li><b>均等回収配分</b> … 各点いくらずつ張ればどれが当たっても同額戻るか（100円単位）</li>
+  <li><b>合成オッズ</b> … まとめ買いの実質倍率</li>
+  <li><span style="color:var(--drop)">⚠ トリガミ警告</span> … 合成が1.0未満＝当たっても損。点数の広げすぎを止める</li>
+</ul>
+<div class="warn">地方（NAR）は複勝・馬連オッズのAPIが提供されていないため、この機能はJRAのみ。地方は単勝EVで判断する。</div>
+
+<h2 id="anomaly"><span class="n">5</span>異常検知のタグ</h2>
+<p>オッズの動きから「資金がどう動いたか」を検知してタグ表示する。</p>
+<table>
+  <tr><td><span class="tag t-drop">🔻急落</span></td><td>オッズが大きく下がった＝<b>資金流入＝評価急上昇</b>。最重要シグナル</td></tr>
+  <tr><td><span class="tag t-rise">🔺急騰</span></td><td>オッズが上がった＝見限られた</td></tr>
+  <tr><td><span class="tag t-vel">⚡直前急変</span></td><td>締切間際の急な動き。プロの資金が入った可能性</td></tr>
+  <tr><td><span class="tag t-div">🔀単複乖離</span></td><td>単勝と複勝の支持にズレ＝玄人筋の置きにいく資金の気配</td></tr>
+</table>
+<p class="muted">スコアは「本命〜中波長（2〜10倍）の急落」を重く、万馬券（超人気薄）の動きは軽く評価する。ノイズに振り回されないための重み付け。</p>
+
+<h2 id="marks"><span class="n">6</span><span class="mark">◎○▲△</span> 印の意味</h2>
+<p>印は<b class="hl">オッズ（人気）を一切見ない</b>。馬の<b>近4走の実績だけ</b>で評価する。だから<b>オッズが動いても印は変わらない</b>。上位5頭に <span class="mark">◎</span><span class="mark">○</span><span class="mark">▲</span><span class="mark">△</span><span class="mark">△</span> が付く。</p>
+<h3>評価の中身（すべて自動・手入力不要）</h3>
+<ul>
+  <li><b>総合近走力</b> … 着順を頭数で正規化＋人気を上回ったか。新しい走ほど重視</li>
+  <li><b>★同じ回りでの実績</b> … 今走が左回りなら過去の左回り成績を加点（<b>右回り左回りの得手不得手</b>）</li>
+  <li><b>同じ芝/ダ適性・同距離帯適性</b></li>
+  <li><b>決め手</b> … 上り3F（ラスト600m）が速い馬を加点</li>
+  <li><b>馬場×脚質</b> … 不良・重なら逃げ先行馬を加点</li>
+</ul>
+<p>馬名をタップ → <b>近走履歴</b>が見られる。今走と同じ回りには白枠の印が付くので、「この馬は左回り得意か」が一目で分かる。着順は1着=緑、3着内=橙。</p>
+<div class="warn">印（近走実績）と検知（オッズの動き）は<b>別の軸</b>。「実績ある馬（◎）に資金も入った（🔻急落）」が重なる時が最も信頼できる。</div>
+
+<h2 id="flow"><span class="n">7</span>資金フロー</h2>
+<p>どの馬に金が流れたかを左右バーで表示。<span style="color:var(--div)">左=資金流入（評価↑）</span>／<span style="color:var(--drop)">右=見限られ</span>。</p>
+<ul>
+  <li><b>累積</b>（初期表示）… 見始めてからの合計の動き。<b>取得を繰り返しても消えない</b>。本命がじわじわ買われてるのも追える</li>
+  <li><b>直近</b> … 今のステップの動き。「今まさに動いてる馬」を見たい時</li>
+</ul>
+
+<h2 id="watch"><span class="n">8</span>全Rウォッチ司令塔</h2>
+<p>開催<b>全レース</b>を一覧して、<b class="hl">急落が大きいレース＝資金が動いてる＝妙味</b>を上位に表示。1レースに張り付かず「おいしいレースだけ拾う」ための司令塔。</p>
+<p class="muted">サーバー（cron）が裏で集めたデータを読むので、あなたの端末に負荷はかからない。急落15%超のレースは赤くハイライト。タップでそのレースの監視に飛ぶ。</p>
+<div class="warn">中身が出るのは、サーバーがしばらくデータを集めた後（開催時間帯）。空なら「アクティブなレースなし」＝正常。</div>
+
+<h2 id="result"><span class="n">9</span>結果・答え合わせ</h2>
+<p>発走後のレースで「<b>着順を取得</b>」を押すと、確定着順と検知の答え合わせができる：</p>
+<ul>
+  <li>上位3着（馬番・馬名・人気）</li>
+  <li><b>検知トップは何着だったか</b></li>
+  <li><b>◎本命は何着だったか</b></li>
+  <li><b>EV買い目が的中したか</b></li>
+</ul>
+<p>出走表にも着順バッジが重なる（1着=緑、3着内=橙）。「あの検知は正しかったか」を後から検証できる。</p>
+
+<h2 id="bet"><span class="n">10</span>仮想ベットと回収率</h2>
+<p>買い目の「<b>張る</b>」ボタンで紙トレード記録（1点100円）。後で「ベット結果反映」を押すと実際の着順で<b class="key">回収率（ROI）</b>を自動計算。</p>
+<p class="muted">「このアプリの言う通り買ったら儲かるか」を<b>実弾を使わず</b>に検証できる安全装置。本番投入前にまずここでデータを貯めるのが賢い。</p>
+
+<h2 id="learn"><span class="n">11</span>自己学習・傾向</h2>
+<p>監視したレースの検知と結果が自動で記録され、溜まると見えてくる：</p>
+<ul>
+  <li><b>トップ検知の勝率・複勝率</b></li>
+  <li><b>タグ別の的中率</b>（🔻急落は複勝率◯%、など）</li>
+  <li><b>場別・条件別の傾向</b>（この場は堅い／荒れる、勝ち枠の偏り）</li>
+  <li><b>自動チューニング</b>（10レース以上溜まると、検知スコアの閾値を提案）</li>
+</ul>
+<p>「サーバー同期」を押すと、cronが集めたデータも取り込まれて学習が育つ。サーバーURLは最初から入っている。</p>
+
+<h2 id="tips"><span class="n">12</span>コツ・注意点</h2>
+<div class="card">
+  <h3 style="margin-top:0">勝つための使い方</h3>
+  <ul>
+    <li><b>見送りを恐れない。</b> 全馬EV1.0未満なら買わないのが正解。市場が正しい時は勝てない</li>
+    <li><b>◎（実績）と🔻急落（資金）が重なる馬</b>が最も信頼できる</li>
+    <li><b>締切間際の急変</b>は情報量が多い（プロの金）。直前まで見る</li>
+    <li><b>まず仮想ベットで数週間。</b> 回収率を見てから本番。机上の理論より自分のデータ</li>
+  </ul>
+</div>
+<div class="danger"><b>やらない方がいいこと：</b> 3連単・WIN5のような点数が爆発する馬券は期待値計算の誤差が大きく、このアプリでは扱わない。トリガミ警告が出たら点数を絞る。</div>
+
+<h2 id="trouble"><span class="n">13</span>困ったとき</h2>
+<table>
+  <tr><td class="l">「未発売」が出る</td><td>JRAは当日朝の発売開始前。少し待つ。締切間際なのに出るなら、別の開催中レースで確認</td></tr>
+  <tr><td class="l">データが出ない</td><td>開催が無い日・時間帯かも。日付と開催を確認</td></tr>
+  <tr><td class="l">更新したのに変わらない</td><td>アプリを一度削除→ブラウザで開き直して再追加（古いキャッシュを捨てる）</td></tr>
+  <tr><td class="l">全Rウォッチが空</td><td>サーバーがまだデータ収集中。開催時間帯に再度「更新」</td></tr>
+  <tr><td class="l">印がしっくり来ない</td><td>近走の少ない馬や、出走表取得前は精度が落ちる。馬名タップで近走を確認</td></tr>
+</table>
+
+<a class="back" href="./">← アプリに戻る</a>
+
+<footer>
+  ODDS ANOMALY — SEVENTHWELL<br>
+  競馬は自己責任で。このツールは予想の補助であり、的中や利益を保証するものではありません。
+</footer>
+
+</div>
+</body>
+</html>

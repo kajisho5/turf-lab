@@ -1,0 +1,61 @@
+{
+  // 3サイトを1つの Worker で出す（docs/CLOUDFLARE_MIGRATION.md）
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kajikeiba-turf",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // 全部いったん Worker を通す（ボット拒否・直リンク拒否・ホスト振り分けを .htaccess と同じにするため）
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kajikeiba",
+      // ★初回だけ★ `npx wrangler d1 create kajikeiba` で出たIDに置き換える（deploy_cf.py --setup が自動でやる）
+      "database_id": "4a865324-8f24-42da-9ffa-e0f851453a62",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "vars": {
+    // proxy_seed.php と同じ値（PC側の seed_*.js がこの値で送ってくる）
+    "SEED_TOKEN": "sw-seed-9f2a1c7e",
+    // 1回の実行で外へ投げる上限。無料プランは50本までなので45。有料にしたら 900 に上げてよい
+    "SUBREQ_BUDGET": "45"
+  },
+
+  "triggers": {
+    "crons": [
+      "*/5 0-13 * * *",
+      "17 * * * *",
+      "37 15 * * *"
+    ]
+  },
+
+  // 2026-10-29: seventh-well.com 本体が seventhwell-live（会社HP）になったので /odds と /lab だけ先にこちらへ。
+  // ルートはカスタムドメインより優先される。kajikeiba.com はまだ旧サーバー。
+  "routes": [
+    { "pattern": "seventh-well.com/odds*", "zone_name": "seventh-well.com" },
+    { "pattern": "seventh-well.com/lab*",  "zone_name": "seventh-well.com" }
+  ],
+
+  // （全部切り替える時の形）
+  // "routes": [
+  //   { "pattern": "seventh-well.com/odds*", "zone_name": "seventh-well.com" },
+  //   { "pattern": "seventh-well.com/lab*",  "zone_name": "seventh-well.com" },
+  //   { "pattern": "kajikeiba.com", "custom_domain": true },
+  //   { "pattern": "www.kajikeiba.com", "custom_domain": true }
+  // ],
+
+  "observability": { "enabled": true }
+}

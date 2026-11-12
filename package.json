@@ -1,0 +1,26 @@
+{
+  "name": "odds",
+  "version": "1.0.0",
+  "description": "地方競馬AI予想PWA。本番: https://seventh-well.com/odds/ このパッケージは Claude Code で開発を継続するための一式。**まず `docs/SCORING_AUDIT.md` を全部読むこと**（全作業履歴・検証結果・触るな領域が書いてある）。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "node backtest/check_undefined.js && node backtest/check_person_index.js && node backtest/check_model_wiring.js && python backtest/check_scoring_sync.py && python backtest/check_stale.py && python backtest/check_theme.py && python backtest/check_data_health.py && python backtest/check_tasks.py && python backtest/check_claims.py && python backtest/check_fontsize.py",
+    "check:scoring": "node backtest/verify_scoring.js 200"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "acorn": "^8.17.0",
+    "acorn-walk": "^8.3.5",
+    "linkedom": "^0.18.13"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.4.0"
+  }
+}

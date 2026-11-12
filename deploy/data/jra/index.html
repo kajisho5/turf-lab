@@ -1,0 +1,151 @@
+<title>中央 vs 地方 — データで見る競馬 | カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css?v=25f2cf98">
+<script src="/core/theme.js?v=80891113"></script>
+<script src="/core/table.js?v=cfcaae79" defer></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="中央競馬と地方競馬を同じ計算式で並べた実測比較。均等買い回収率、人気別回収率、1番人気の信頼度の違い。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="「荒れやすいのは地方」は本当か — 中央 vs 地方">
+<meta property="og:description" content="中央138,995Rと地方176,819Rを同じ計算式で比較。1番人気の勝率は地方44.3%／中央33.6%でした。">
+<meta property="og:url" content="https://kajikeiba.com/data/jra/">
+<meta property="og:image" content="https://kajikeiba.com/data/jra/ogp.png">
+<meta property="og:site_name" content="カジ競馬">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.75;-webkit-text-size-adjust:100%}
+.wrap{max-width:820px;margin:0 auto;padding:24px 18px 72px}
+h1{font-size:32px;line-height:1.4;margin:8px 0 4px;font-weight:700}
+h2{font-size:24px;line-height:1.4;margin:44px 0 10px;font-weight:700;
+  border-left:5px solid var(--yellow);padding-left:12px}
+p{margin:10px 0}
+.lead{color:var(--mute);font-size:17px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:18px 16px;margin:16px 0}
+.note{color:var(--mute);font-size:16px;margin-top:10px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:16px;min-width:520px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700;font-size:16px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.g{color:var(--green);font-weight:700}
+.r{color:var(--red);font-weight:700}
+.y{color:var(--yellow);font-weight:700}
+.b{color:var(--blue);font-weight:700}
+.o{color:var(--orange);font-weight:700}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:16px}
+.ad{margin:22px 0}
+.ad:empty{display:none}
+a{color:var(--blue)}
+</style>
+<div class="wrap">
+
+<div class="ad" data-slot="jra-top"><!-- AD:START jra-top --><!-- ここにASPから貰った広告タグを貼る。貼るまで何も表示されない --><!-- AD:END jra-top --></div>
+
+<p><a href="../">← データで見る地方競馬</a></p>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><div style="flex:1"></div><button class="themebtn" type="button">☾</button></div>
+<h1>中央 vs 地方</h1>
+<p class="lead">中央競馬 <strong>138,995レース</strong>（1986年1月〜2026年7月）と
+地方競馬 <strong>176,819レース</strong>（2013年1月〜2026年7月）を、
+<strong>同じ計算式</strong>に通して並べました。<br>
+数値は全て実測です。手入力は一つもありません。</p>
+
+<h2>1. 全通りを均等に買うと、いくら戻るか</h2>
+<p>券種の全通りを1点ずつ同じ金額で機械的に買った場合の回収率です。
+予想の巧拙が一切入らないので、その競馬の「地の高さ」が見えます。</p>
+<div class="panel"><svg viewBox="0 0 680 348" width="100%" role="img"><rect x="150" y="0" width="12" height="12" rx="3" fill="var(--blue)"/><text x="168" y="11" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">地方</text><rect x="222" y="0" width="12" height="12" rx="3" fill="var(--orange)"/><text x="240" y="11" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">中央</text><text x="0" y="46" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">単勝</text><rect x="150" y="24" width="369.5" height="15" rx="3" fill="var(--blue)"/><text x="526.5" y="36" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">69.4%</text><rect x="150" y="42" width="382.9" height="15" rx="3" fill="var(--orange)"/><text x="539.9" y="54" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">71.9%</text><text x="0" y="92" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">複勝</text><rect x="150" y="70" width="375.3" height="15" rx="3" fill="var(--blue)"/><text x="532.3" y="82" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">70.4%</text><rect x="150" y="88" width="389.5" height="15" rx="3" fill="var(--orange)"/><text x="546.5" y="100" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">73.1%</text><text x="0" y="138" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">ワイド</text><rect x="150" y="116" width="330.3" height="15" rx="3" fill="var(--blue)"/><text x="487.3" y="128" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">62.0%</text><rect x="150" y="134" width="321.7" height="15" rx="3" fill="var(--orange)"/><text x="478.7" y="146" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">60.4%</text><text x="0" y="184" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">馬連</text><rect x="150" y="162" width="294.3" height="15" rx="3" fill="var(--blue)"/><text x="451.3" y="174" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">55.2%</text><rect x="150" y="180" width="317.5" height="15" rx="3" fill="var(--orange)"/><text x="474.5" y="192" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">59.6%</text><text x="0" y="230" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">馬単</text><rect x="150" y="208" width="307.3" height="15" rx="3" fill="var(--blue)"/><text x="464.3" y="220" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">57.7%</text><rect x="150" y="226" width="322.1" height="15" rx="3" fill="var(--orange)"/><text x="479.1" y="238" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">60.4%</text><text x="0" y="276" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">3連複</text><rect x="150" y="254" width="266.7" height="15" rx="3" fill="var(--blue)"/><text x="423.7" y="266" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">50.0%</text><rect x="150" y="272" width="291.0" height="15" rx="3" fill="var(--orange)"/><text x="448.0" y="284" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">54.6%</text><text x="0" y="322" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">3連単</text><rect x="150" y="300" width="292.0" height="15" rx="3" fill="var(--blue)"/><text x="449.0" y="312" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">54.8%</text><rect x="150" y="318" width="310.2" height="15" rx="3" fill="var(--orange)"/><text x="467.2" y="330" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">58.2%</text></svg></div>
+<p>大枠は同じ形でした。<strong class="y">券種が複雑になるほど落ちる</strong>という傾向は
+中央でも地方でも変わりません。中央のほうが高いのは単勝・複勝・馬連・馬単・3連複・3連単、地方のほうが高いのはワイドで、
+<strong>どちらか一方が一貫して有利ということはありません</strong>。
+差はいずれも4.6pt以内です。</p>
+
+<h2>2. 「控除率」と実測がずれる理由</h2>
+<p>中央競馬は払戻率が法令で公表されています。実測と並べると、<strong class="r">実測は必ず下</strong>でした。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>券種</th><th class="n">公表払戻率</th><th class="n">均等買いの実測</th><th class="n">差</th></tr>
+<tr><td>単勝</td><td class="n">80.0%</td><td class="n">71.9%</td><td class="n r">-8.1pt</td></tr><tr><td>複勝</td><td class="n">80.0%</td><td class="n">73.1%</td><td class="n r">-6.9pt</td></tr><tr><td>ワイド</td><td class="n">77.5%</td><td class="n">60.4%</td><td class="n r">-17.1pt</td></tr><tr><td>馬連</td><td class="n">77.5%</td><td class="n">59.6%</td><td class="n r">-17.9pt</td></tr><tr><td>馬単</td><td class="n">77.5%</td><td class="n">60.4%</td><td class="n r">-17.1pt</td></tr><tr><td>3連複</td><td class="n">75.0%</td><td class="n">54.6%</td><td class="n r">-20.4pt</td></tr><tr><td>3連単</td><td class="n">72.5%</td><td class="n">58.2%</td><td class="n r">-14.3pt</td></tr>
+</table></div>
+<p>この差は胴元が引いた分ではありません。<strong>均等に買うと、割高な人気薄まで等しく買ってしまう</strong>ために生じます。
+差が最も小さいのは複勝（6.9pt）、最も大きいのは3連複（<strong class="r">20.4pt</strong>）。</p>
+<p>はっきり出ているのは<strong class="y">単勝・複勝だけが小さく（8.1pt以下）、
+組み合わせ券種はまとめて大きい（14.3pt以上）</strong>という段差です。
+1点で1頭だけ選ぶ券種と、複数頭の組を選ぶ券種で、性質が変わります。</p>
+<p class="note">※ ただし<strong>「組合せ数が多いほど差が大きい」とは言えません</strong>。
+3連単（14.3pt）は組合せがはるかに多いのに、3連複（20.4pt）より差が小さく出ています。
+きれいな法則になりそうな形ですが、実測はそうなっていないので、そう書かないでおきます。</p>
+<p class="note">※ よく「3連単は控除率27.5%」と言われますが、機械的に全部買った人が実際に失うのは
+41.8%でした。控除率は下限であって、実際に払うコストではありません。</p>
+
+<h2>3. 人気別の回収率 — 形は同じ、傾きが違う</h2>
+<p>人気帯ごとに複勝を買い続けた場合の回収率です。</p>
+<div class="panel"><svg viewBox="0 0 680 578" width="100%" role="img"><rect x="150" y="0" width="12" height="12" rx="3" fill="var(--blue)"/><text x="168" y="11" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">地方</text><rect x="222" y="0" width="12" height="12" rx="3" fill="var(--orange)"/><text x="240" y="11" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">中央</text><text x="0" y="46" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">1番人気</text><rect x="150" y="24" width="389.5" height="15" rx="3" fill="var(--blue)"/><text x="546.5" y="36" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">88.3%</text><rect x="150" y="42" width="370.6" height="15" rx="3" fill="var(--orange)"/><text x="527.6" y="54" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">84.0%</text><text x="0" y="92" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">2番人気</text><rect x="150" y="70" width="358.8" height="15" rx="3" fill="var(--blue)"/><text x="515.8" y="82" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">81.3%</text><rect x="150" y="88" width="362.2" height="15" rx="3" fill="var(--orange)"/><text x="519.2" y="100" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">82.1%</text><text x="0" y="138" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">3番人気</text><rect x="150" y="116" width="335.6" height="15" rx="3" fill="var(--blue)"/><text x="492.6" y="128" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">76.0%</text><rect x="150" y="134" width="355.0" height="15" rx="3" fill="var(--orange)"/><text x="512.0" y="146" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">80.4%</text><text x="0" y="184" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">4番人気</text><rect x="150" y="162" width="318.1" height="15" rx="3" fill="var(--blue)"/><text x="475.1" y="174" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">72.1%</text><rect x="150" y="180" width="344.7" height="15" rx="3" fill="var(--orange)"/><text x="501.7" y="192" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">78.1%</text><text x="0" y="230" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">5番人気</text><rect x="150" y="208" width="311.4" height="15" rx="3" fill="var(--blue)"/><text x="468.4" y="220" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">70.6%</text><rect x="150" y="226" width="339.2" height="15" rx="3" fill="var(--orange)"/><text x="496.2" y="238" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">76.9%</text><text x="0" y="276" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">6番人気</text><rect x="150" y="254" width="300.8" height="15" rx="3" fill="var(--blue)"/><text x="457.8" y="266" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">68.2%</text><rect x="150" y="272" width="341.2" height="15" rx="3" fill="var(--orange)"/><text x="498.2" y="284" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">77.3%</text><text x="0" y="322" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">7番人気</text><rect x="150" y="300" width="294.4" height="15" rx="3" fill="var(--blue)"/><text x="451.4" y="312" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">66.7%</text><rect x="150" y="318" width="332.4" height="15" rx="3" fill="var(--orange)"/><text x="489.4" y="330" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">75.3%</text><text x="0" y="368" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">8番人気</text><rect x="150" y="346" width="285.4" height="15" rx="3" fill="var(--blue)"/><text x="442.4" y="358" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">64.7%</text><rect x="150" y="364" width="331.6" height="15" rx="3" fill="var(--orange)"/><text x="488.6" y="376" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">75.1%</text><text x="0" y="414" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">9番人気</text><rect x="150" y="392" width="273.1" height="15" rx="3" fill="var(--blue)"/><text x="430.1" y="404" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">61.9%</text><rect x="150" y="410" width="319.9" height="15" rx="3" fill="var(--orange)"/><text x="476.9" y="422" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">72.5%</text><text x="0" y="460" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">10番人気</text><rect x="150" y="438" width="263.6" height="15" rx="3" fill="var(--blue)"/><text x="420.6" y="450" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">59.7%</text><rect x="150" y="456" width="313.4" height="15" rx="3" fill="var(--orange)"/><text x="470.4" y="468" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">71.0%</text><text x="0" y="506" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">11番人気</text><rect x="150" y="484" width="246.9" height="15" rx="3" fill="var(--blue)"/><text x="403.9" y="496" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">56.0%</text><rect x="150" y="502" width="308.9" height="15" rx="3" fill="var(--orange)"/><text x="465.9" y="514" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">70.0%</text><text x="0" y="552" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">12番人気</text><rect x="150" y="530" width="241.9" height="15" rx="3" fill="var(--blue)"/><text x="398.9" y="542" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">54.8%</text><rect x="150" y="548" width="291.7" height="15" rx="3" fill="var(--orange)"/><text x="448.7" y="560" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">66.1%</text></svg></div>
+<p>どちらも右肩下がりで、<em>favorite-longshot bias</em>（人気薄が割高に買われる現象）は
+中央でも地方でも確認できました。ただし<strong class="y">傾きが違います</strong>。
+1番人気から12番人気までの落差は、地方が<strong class="b">33.4pt</strong>、
+中央が<strong class="o">17.9pt</strong>でした。</p>
+
+<h2>4. 1番人気の重みが違う</h2>
+<p>同じ「1番人気」でも、中央と地方では別物です。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>人気</th><th class="n">勝率(地方)</th><th class="n">勝率(中央)</th>
+<th class="n">複勝率(地方)</th><th class="n">複勝率(中央)</th>
+<th class="n">複ROI(地方)</th><th class="n">複ROI(中央)</th></tr>
+<tr><td>1番人気</td><td class="n">44.3%</td><td class="n">33.6%</td><td class="n">76.2%</td><td class="n">65.8%</td><td class="n">88.3%</td><td class="n">84.0%</td></tr><tr><td>2番人気</td><td class="n">20.8%</td><td class="n">19.4%</td><td class="n">60.5%</td><td class="n">52.2%</td><td class="n">81.3%</td><td class="n">82.1%</td></tr><tr><td>3番人気</td><td class="n">12.5%</td><td class="n">13.3%</td><td class="n">47.4%</td><td class="n">42.1%</td><td class="n">76.0%</td><td class="n">80.4%</td></tr><tr><td>4番人気</td><td class="n">8.1%</td><td class="n">9.4%</td><td class="n">36.2%</td><td class="n">33.6%</td><td class="n">72.1%</td><td class="n">78.1%</td></tr><tr><td>5番人気</td><td class="n">5.4%</td><td class="n">7.0%</td><td class="n">27.0%</td><td class="n">26.8%</td><td class="n">70.6%</td><td class="n">76.9%</td></tr><tr><td>6番人気</td><td class="n">3.6%</td><td class="n">5.3%</td><td class="n">19.6%</td><td class="n">21.6%</td><td class="n">68.2%</td><td class="n">77.3%</td></tr><tr><td>7番人気</td><td class="n">2.4%</td><td class="n">3.9%</td><td class="n">14.0%</td><td class="n">16.7%</td><td class="n">66.7%</td><td class="n">75.3%</td></tr><tr><td>8番人気</td><td class="n">1.6%</td><td class="n">2.8%</td><td class="n">9.9%</td><td class="n">13.2%</td><td class="n">64.7%</td><td class="n">75.1%</td></tr><tr><td>9番人気</td><td class="n">1.1%</td><td class="n">2.1%</td><td class="n">7.1%</td><td class="n">10.1%</td><td class="n">61.9%</td><td class="n">72.5%</td></tr><tr><td>10番人気</td><td class="n">0.8%</td><td class="n">1.6%</td><td class="n">5.2%</td><td class="n">8.0%</td><td class="n">59.7%</td><td class="n">71.0%</td></tr><tr><td>11番人気</td><td class="n">0.6%</td><td class="n">1.3%</td><td class="n">4.0%</td><td class="n">6.3%</td><td class="n">56.0%</td><td class="n">70.0%</td></tr><tr><td>12番人気</td><td class="n">0.5%</td><td class="n">0.9%</td><td class="n">3.0%</td><td class="n">4.8%</td><td class="n">54.8%</td><td class="n">66.1%</td></tr>
+</table></div>
+<p>1番人気の勝率は地方<strong class="b">44.3%</strong>に対し中央<strong class="o">33.6%</strong>。
+複勝率も地方76.2%／中央65.8%で、
+<strong class="y">地方の1番人気のほうがはっきり強い</strong>という結果でした。</p>
+<p>理由は頭数だと思われます。これも実測しました。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th></th><th class="n">平均出走頭数</th><th class="n">10頭以下のレース</th></tr>
+<tr><td>地方</td><td class="n b">10.04頭</td><td class="n b">61.4%</td></tr>
+<tr><td>中央</td><td class="n o">13.28頭</td><td class="n o">20.1%</td></tr>
+</table></div>
+<p>地方は<strong class="y">6割以上が10頭以下</strong>、中央は20.1%しかありません。
+頭数が少なければ紛れる余地も少なく、力量差がそのまま着順に出ます。
+「荒れやすいのは地方」という語られ方をよく見ますが、
+<strong>人気順の信頼度で見ると逆でした</strong>。</p>
+<p class="note">※ ただし<strong>「当てやすい＝儲かる」ではありません</strong>。
+地方の1番人気は複勝率で<strong>+10.4pt</strong> も上なのに、
+複勝ROIの差は<strong>+4.3pt</strong>（88.3% と 84.0%）しかありません。
+<strong class="y">当たりやすさは、そのぶんオッズが低くなることでほぼ吸収されています</strong>。
+実際3の表の通り、2〜8番人気ではむしろ中央のほうが回収率は上でした。</p>
+
+<h2>5. この比較の限界</h2>
+<p>正直に書いておきます。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>項目</th><th>中身</th></tr>
+<tr><td>サンプル数の差</td><td>地方176,819R に対し中央は138,995R。
+中央は1年分しかなく、人気別の各数値には数pt程度のぶれが乗り得ます</td></tr>
+<tr><td>期間の差</td><td>中央は1986年1月〜2026年7月のみ。地方は2013年1月〜2026年7月。
+時期が違うので、景気やルール変更の影響は分離できていません</td></tr>
+<tr><td>できないこと</td><td>この比較から「どちらが儲かるか」は言えません。
+<strong class="r">どちらも均等買いでは大きく負けます</strong></td></tr>
+</table></div>
+
+<h2>6. このページの作り方</h2>
+<p>中央は JRA-VAN の蓄積系データ、地方は keiba.go.jp の公式データから計算しています。
+両者はデータ形式が全く違うため、読み込み部分だけを分けて<strong>集計関数は1つを共有</strong>しています。
+別々の式で出すと、差が「競馬の差」なのか「集計の差」なのか分からなくなるためです。</p>
+<p>回収率は必ず「買った全レースを分母」にしています。
+中央データの読み取り位置は仕様書ではなく実データから同定し、
+<strong>「馬連の組＝着順上位2頭」「3連単の組＝上位3頭の順序通り」が全138,995レースで一致する</strong>
+ことを確認しています。一致しなければ生成が止まる作りです。</p>
+
+<footer>
+カジ競馬 ／ データ出典: 中央=JRA-VAN Data Lab.、地方=地方競馬全国協会 keiba.go.jp<br>
+中央 138,995レース（1986年1月〜2026年7月）／ 地方 176,819レース（2013年1月〜2026年7月）<br>
+本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。<br>
+<a href="/privacy/">プライバシーポリシー・運営者情報</a>
+</footer>
+</div>
+<script>
+/* アクセス計測（Cookieなし・自前）。失敗しても本体に影響させない */
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>

@@ -1,0 +1,146 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>データで見る地方競馬 — カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css?v=25f2cf98">
+<script src="/core/theme.js?v=938a39db"></script>
+<script src="/core/table.js?v=cfcaae79" defer></script>
+<meta name="description" content="地方競馬178,991レースの実測。券種ごとの壁、人気別回収率、AI予想は市場に勝てるのか、そして効かなかったもの。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI予想は、市場に勝てるのか — データで見る地方競馬">
+<meta property="og:description" content="178,991レースの実測。数値は全て計算で、手入力は一つもありません。効かなかった検証も公開しています。">
+<meta property="og:url" content="https://kajikeiba.com/data/">
+<meta property="og:image" content="https://kajikeiba.com/data/ogp.png">
+<meta property="og:site_name" content="カジ競馬">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.75;-webkit-text-size-adjust:100%}
+.wrap{max-width:820px;margin:0 auto;padding:24px 18px 72px}
+h1{font-size:32px;line-height:1.4;margin:8px 0 4px;font-weight:700}
+h2{font-size:24px;line-height:1.4;margin:44px 0 10px;font-weight:700;
+  border-left:5px solid var(--yellow);padding-left:12px}
+h3{font-size:18px;margin:22px 0 8px;font-weight:700;color:var(--yellow)}
+p{margin:10px 0}
+.lead{color:var(--mute);font-size:17px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:18px 16px;margin:16px 0}
+.big{font-size:36px;font-weight:700;line-height:1.2}
+.note{color:var(--mute);font-size:16px;margin-top:10px}  /* DADS: 本文16px以上。14pxは違反 */
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:16px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--mute);font-weight:700;font-size:16px}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.g{color:var(--green);font-weight:700}
+.r{color:var(--red);font-weight:700}
+.y{color:var(--yellow);font-weight:700}
+.b{color:var(--blue);font-weight:700}
+.scroll{overflow-x:auto}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
+  color:var(--dim);font-size:14px}
+.ad{margin:22px 0}
+.ad:empty{display:none}
+a{color:var(--blue)}
+</style>
+<div class="wrap">
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><div style="flex:1"></div><button class="themebtn" type="button">☾</button></div>
+<h1>データで見る地方競馬</h1>
+<p class="lead">公式データ（keiba.go.jp）<strong>178,991レース</strong>／2013年1月 〜 2026年9月<br>
+このページの数値は全て実測です。手入力は一つもありません。</p>
+
+<h2>1. まず知るべきこと — 券種ごとの「壁」</h2>
+<p>その券種の全通りを、1点ずつ同じ金額で機械的に買うと、いくら戻るか。
+どんな予想でも越えなければならない壁です。</p>
+<div class="panel"><svg viewBox="0 0 680 246" width="100%" role="img"><text x="0" y="22" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">単勝（均等買い）</text><rect x="190" y="8" width="362.1" height="18" rx="4" fill="var(--green)"/><text x="560.1" y="22" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">69.4%</text><text x="0" y="56" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">複勝（均等買い）</text><rect x="190" y="42" width="367.9" height="18" rx="4" fill="var(--green)"/><text x="565.9" y="56" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">70.5%</text><text x="0" y="90" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">ワイド（均等買い）</text><rect x="190" y="76" width="323.7" height="18" rx="4" fill="var(--yellow)"/><text x="521.7" y="90" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">62.0%</text><text x="0" y="124" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">馬単（均等買い）</text><rect x="190" y="110" width="301.8" height="18" rx="4" fill="var(--red)"/><text x="499.8" y="124" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">57.8%</text><text x="0" y="158" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">馬連（均等買い）</text><rect x="190" y="144" width="288.7" height="18" rx="4" fill="var(--red)"/><text x="486.7" y="158" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">55.3%</text><text x="0" y="192" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">3連単（均等買い）</text><rect x="190" y="178" width="286.7" height="18" rx="4" fill="var(--red)"/><text x="484.7" y="192" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">54.9%</text><text x="0" y="226" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">3連複（均等買い）</text><rect x="190" y="212" width="261.6" height="18" rx="4" fill="var(--red)"/><text x="459.6" y="226" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">50.1%</text></svg></div>
+<p><strong class="y">券種が複雑になるほど壁が高い</strong>のがはっきり出ています。
+3連複は半分近く引かれます。「3連単で万馬券」は、その時点で大きなハンデを背負う選択です。</p>
+<p class="note">※ この数字は<strong>控除率そのものではありません</strong>。公表されている払戻率は
+単勝・複勝で80%前後ですが、均等買いの実測はそれを大きく下回ります。
+差は胴元が引いた分ではなく、<strong>割高な人気薄まで等しく買ってしまう</strong>ことで生じます。
+次の項がその中身です。</p>
+
+<h2>2. 人気薄は「夢」ではなく「割高」</h2>
+<p>人気帯ごとに複勝を買い続けた場合の回収率です。</p>
+<div class="panel"><svg viewBox="0 0 680 416" width="100%" role="img"><text x="0" y="22" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">1番人気（複勝率 76%）</text><rect x="190" y="8" width="367.9" height="18" rx="4" fill="var(--green)"/><text x="565.9" y="22" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">88.3%</text><text x="0" y="56" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">2番人気（複勝率 60%）</text><rect x="190" y="42" width="338.8" height="18" rx="4" fill="var(--green)"/><text x="536.8" y="56" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">81.3%</text><text x="0" y="90" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">3番人気（複勝率 47%）</text><rect x="190" y="76" width="317.0" height="18" rx="4" fill="var(--blue)"/><text x="515.0" y="90" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">76.1%</text><text x="0" y="124" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">4番人気（複勝率 36%）</text><rect x="190" y="110" width="300.5" height="18" rx="4" fill="var(--blue)"/><text x="498.5" y="124" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">72.1%</text><text x="0" y="158" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">5番人気（複勝率 27%）</text><rect x="190" y="144" width="294.2" height="18" rx="4" fill="var(--blue)"/><text x="492.2" y="158" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">70.6%</text><text x="0" y="192" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">6番人気（複勝率 20%）</text><rect x="190" y="178" width="283.9" height="18" rx="4" fill="var(--orange)"/><text x="481.9" y="192" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">68.1%</text><text x="0" y="226" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">7番人気（複勝率 14%）</text><rect x="190" y="212" width="278.1" height="18" rx="4" fill="var(--orange)"/><text x="476.1" y="226" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">66.7%</text><text x="0" y="260" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">8番人気（複勝率 10%）</text><rect x="190" y="246" width="269.5" height="18" rx="4" fill="var(--orange)"/><text x="467.5" y="260" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">64.7%</text><text x="0" y="294" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">9番人気（複勝率 7%）</text><rect x="190" y="280" width="257.9" height="18" rx="4" fill="var(--orange)"/><text x="455.9" y="294" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">61.9%</text><text x="0" y="328" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">10番人気（複勝率 5%）</text><rect x="190" y="314" width="248.4" height="18" rx="4" fill="var(--red)"/><text x="446.4" y="328" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">59.6%</text><text x="0" y="362" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">11番人気（複勝率 4%）</text><rect x="190" y="348" width="233.1" height="18" rx="4" fill="var(--red)"/><text x="431.1" y="362" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">55.9%</text><text x="0" y="396" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">12番人気（複勝率 3%）</text><rect x="190" y="382" width="230.8" height="18" rx="4" fill="var(--red)"/><text x="428.8" y="396" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">55.4%</text></svg></div>
+<p>きれいな右肩下がりです。<strong class="y">人気馬に寄るほど回収率が高い</strong>。
+これは競馬に広く見られる<em>favorite-longshot bias</em>（人気薄が割高に買われる現象）で、
+地方競馬でもはっきり確認できます。</p>
+<p>「人気薄を狙って一発」は、控除率に加えて<strong class="r">この逆風も背負う</strong>ことになります。
+1の均等買いが払戻率より低く出るのも、同じ理由です。</p>
+
+<h2>3. AI予想は市場に勝てるのか</h2>
+<p>正直に測りました。比較対象は「無予想」ではなく<strong>「1番人気を買うだけ」</strong>です。
+市場は無料で手に入る最強の予測器なので、それを超えられなければ意味がありません。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>買い方</th><th class="n">複勝率</th><th class="n">回収率</th><th class="n">レース数</th></tr>
+<tr><td>モデルの◎</td><td class="n">61.1%</td><td class="n">78.5%</td><td class="n">174,659</td></tr>
+<tr><td><strong>1番人気</strong></td><td class="n g">76.0%</td><td class="n g">88.3%</td><td class="n">174,659</td></tr>
+</table></div>
+<p>負けています。さらに決定的なのが、<strong>両者の意見が食い違ったとき</strong>です。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>◎ ≠ 1番人気 のレース（90,882R）</th><th class="n">複勝率</th><th class="n">回収率</th></tr>
+<tr><td>◎を買う</td><td class="n r">45.3%</td><td class="n r">70.1%</td></tr>
+<tr><td>1番人気を買う</td><td class="n g">74.0%</td><td class="n g">89.0%</td></tr>
+</table></div>
+<p><strong class="y">市場と食い違ったとき、モデルはほぼ全敗でした。</strong>
+近走成績も、位置取りも、当地実績も、オッズには既に織り込まれています。
+公開情報だけを materials にする限り、市場を出し抜くのは容易ではありません。</p>
+
+<h2>4. それでも予想に意味があるとしたら</h2>
+<p>「当てる」ではなく「<strong>どのレースを買い、どのレースを見送るか</strong>」です。
+◎の複勝率を、レースの読みやすさ（スコア差）で層別しました。</p>
+<div class="panel"><svg viewBox="0 0 680 178" width="100%" role="img"><text x="0" y="22" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">鉄板（4,850R）</text><rect x="190" y="8" width="367.9" height="18" rx="4" fill="var(--purple)"/><text x="565.9" y="22" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">77.3%</text><text x="0" y="56" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">勝負（19,316R）</text><rect x="190" y="42" width="342.5" height="18" rx="4" fill="var(--purple)"/><text x="540.5" y="56" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">72.0%</text><text x="0" y="90" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">狙い目（35,065R）</text><rect x="190" y="76" width="312.7" height="18" rx="4" fill="var(--purple)"/><text x="510.7" y="90" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">65.7%</text><text x="0" y="124" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">様子見（46,181R）</text><rect x="190" y="110" width="287.0" height="18" rx="4" fill="var(--purple)"/><text x="485.0" y="124" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">60.3%</text><text x="0" y="158" fill="var(--mute)" font-size="16" font-family="Noto Sans JP,sans-serif">見送り（69,247R）</text><rect x="190" y="144" width="262.4" height="18" rx="4" fill="var(--purple)"/><text x="460.4" y="158" fill="var(--txt)" font-size="16" font-weight="700" font-family="Noto Sans JP,sans-serif">55.1%</text></svg></div>
+<p>条件を絞ると精度は上がります。実測で最も安定していたのはこれです。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>条件</th><th class="n">複勝率</th><th class="n">回収率</th><th class="n">レース数</th></tr>
+<tr><td>◎が1番人気 × 9頭以下</td><td class="n">82.8%</td><td class="n">88.5%</td><td class="n">31,297</td></tr><tr><td>◎が1番人気</td><td class="n">78.3%</td><td class="n">87.5%</td><td class="n">83,608</td></tr><tr><td>9頭以下 × ◎3番人気以内</td><td class="n">73.8%</td><td class="n">82.9%</td><td class="n">53,371</td></tr><tr><td>全レースで◎を買う</td><td class="n">61.1%</td><td class="n">78.5%</td><td class="n">174,659</td></tr>
+</table></div>
+<p class="note">※ 精度は上がりますが、回収率が100%を超えるわけではありません。
+絞り込みの価値は「無駄玉を減らすこと」であって「勝てるようになること」ではありません。</p>
+
+<h2>5. 検証したが、効かなかったもの</h2>
+<p>ここが一番大事だと思っています。<strong>試して駄目だったことを公開できるのは、
+データを持っている側の特権</strong>だからです。</p>
+<div class="scroll"><table class="zebra sortable">
+<tr><th>試したこと</th><th>結果</th></tr>
+<tr><td>馬体重の増減</td><td>複勝率28.6〜31.5%でほぼフラット（67万頭）。市場が織り込み済み</td></tr>
+<tr><td>休み明け・連闘</td><td>生の数字では差が出るが、馬の質を揃えると<strong class="r">完全に消えた</strong></td></tr>
+<tr><td>逃げ馬が多いと差しが台頭</td><td>差しは一度も先行を逆転しなかった（68,280R）</td></tr>
+<tr><td>◎○を厚く買う配分</td><td><strong class="r">逆効果</strong>。◎○は最も割高な組み合わせだった</td></tr>
+<tr><td>ダッチング（均等配当になる配分）</td><td>実オッズ5,455Rで差1pt未満。配分は期待値を変えない</td></tr>
+<tr><td>買い方43種の総当たり</td><td>回収率100%超は<strong class="r">ひとつも無し</strong>。天井92.2%</td></tr>
+</table></div>
+
+<h2>6. このページの作り方</h2>
+<p>数値は全て <code>keiba.go.jp</code> の公式データから計算しています。
+回収率は必ず<strong>「買った全レースを分母」</strong>にしています。
+的中したレースだけを分母にすると回収率は簡単に水増しできるためです
+（実際に過去、その誤りで「複勝は黒字」と誤結論した経緯があります）。</p>
+<p>探索は 2013-2022 で行い、2023-2026 は検証用に残す形を取っています。
+何百通りも試せば偶然100%を超えるものが必ず出るためです。</p>
+
+<h2>7. 続き</h2>
+<p><a href="jra/">中央 vs 地方 — 同じ計算式で並べた実測比較</a><br>
+中央競馬のデータも同じ方法で集計しました。人気順の信頼度が中央と地方でどう違うか、
+「控除率」と実際に失う額がなぜずれるかを扱っています。</p>
+<p><a href="skip/">「見送り」のレースは、本当に見送るべきか</a><br>
+的中率は62%から46%まで落ちるのに、ワイドの回収率はどのゾーンでも67〜68%で
+変わりませんでした。オッズが当たりやすさの差を吸収しています。</p>
+<p><a href="debut/">新馬戦は「荒れる」のか</a><br>
+過去のレース結果が無い新馬戦は荒れやすいはず——と思って調べたら逆でした。
+あわせて「数字が出ていても読んではいけない場合」の話をしています。</p>
+
+
+<div class="ad" data-slot="nar-bottom"><!-- AD:START nar-bottom --><!-- ここにASPから貰った広告タグを貼る。貼るまで何も表示されない --><!-- AD:END nar-bottom --></div>
+
+<footer>
+カジ競馬 ／ データ出典: 地方競馬全国協会 keiba.go.jp（公式データダウンロード）<br>
+集計対象 178,991レース（2013年1月 〜 2026年9月）／ ばんえいは平地と性質が異なるため除外<br>
+本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。<br>
+<a href="/privacy/">プライバシーポリシー・運営者情報</a>
+</footer>
+</div>

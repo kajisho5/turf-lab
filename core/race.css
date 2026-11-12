@@ -1,0 +1,249 @@
+/* レース詳細ページのスタイル（race.php と race.html が共用する）
+   ★コピーしない★ 1ファイルにして両方から読む。 */
+
+/* DADS準拠: 本文16px以上。色は core/theme.css（ライト基本・ダーク切替）。
+   ★ここで色を再定義しない★
+     以前ここに :root{--bg:#0a0e16; ...} を持っていた。theme.css より後に
+     読み込まれるため上書きしてしまい、ライトを選んでいてもダークのまま出た。
+     さらに置換で --bg:var(--bg) という循環定義になり、背景が透明化して
+     ヘッダと場タブが重なって見えていた。ここはアクセント色の割り当てだけ持つ。 */
+:root{--accent:var(--green)}
+:root[data-mode="nar"]{--accent:var(--orange)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.hbar{max-width:960px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:12px}
+.logo{font-size:21px;font-weight:700;text-decoration:none;color:var(--txt)}
+.logo span{color:var(--accent)}
+.wrap{max-width:960px;margin:0 auto;padding:14px 14px 72px}
+h1{font-size:23px;line-height:1.4;margin:6px 0 2px}
+.sub{color:var(--mute);margin:0 0 12px}
+.tabs{display:flex;gap:8px;margin:12px 0 16px;overflow-x:auto}
+.tabs button{appearance:none;border:1px solid var(--line);background:var(--panel);
+  color:var(--mute);font:inherit;font-size:16px;padding:8px 16px;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--bg);
+  border-color:var(--accent);font-weight:700}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:16px;min-width:600px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700;background:var(--panel);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+/* 枠色。★テーマに依存させない★
+   以前 color:var(--bg) にしていたため、ライトでは 1枠が白背景に白文字になり
+   数字が完全に見えなくなっていた（本番で発生）。
+   枠色は競馬側で決まっている固定色なので、文字色も背景ごとに固定で持つ。 */
+.w{display:inline-block;min-width:26px;height:26px;line-height:24px;
+  text-align:center;border-radius:5px;font-weight:700;font-size:16px;
+  border:1px solid rgba(0,0,0,.28);vertical-align:middle}
+/* ★背景と文字で4.5:1以上を確保する★
+   最初に選んだ 赤#e8534a(3.64:1) 青#2f7fe0(4.01:1) 緑#3aa163(3.25:1) は
+   白文字に対して基準を満たしていなかった。競馬の枠色と分かる範囲で暗くしてある。 */
+.w1{background:#ffffff;color:#111111}   /* 白枠は文字を黒にし、枠線で輪郭を出す */
+.w2{background:#1a1a1a;color:#ffffff;border-color:rgba(255,255,255,.35)}
+.w3{background:#c62828;color:#ffffff}
+.w4{background:#1461b8;color:#ffffff}
+.w5{background:#f2ce38;color:#111111}
+.w6{background:#127a45;color:#ffffff}
+.w7{background:#f08030;color:#111111}
+.w8{background:#f4a0c0;color:#111111}
+.pop1{color:var(--yellow);font-weight:700}
+.rank1{color:var(--yellow);font-weight:700;font-size:18px}
+.rank2,.rank3{color:var(--txt);font-weight:700}
+/* 場タブ / R番号タブ（SPAIA と同じく、上で開催とレースを直接移動できるようにする） */
+.vtabs{display:flex;gap:8px;margin:2px 0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.vtabs a{border:1px solid var(--line);background:var(--panel);color:var(--mute);
+  font-size:16px;padding:6px 15px;border-radius:999px;white-space:nowrap;text-decoration:none}
+.vtabs a[aria-current="page"]{background:var(--accent);color:var(--bg);
+  border-color:var(--accent);font-weight:700}
+.rtabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0 0 14px}
+@media(min-width:560px){.rtabs{grid-template-columns:repeat(12,1fr)}}
+.rtabs a{border:1px solid var(--line);background:var(--panel);color:var(--mute);
+  font-size:16px;padding:8px 0;border-radius:8px;text-align:center;text-decoration:none}
+.rtabs a[aria-current="page"]{background:var(--accent);color:var(--bg);
+  border-color:var(--accent);font-weight:700}
+.rtabs a.off{opacity:.35;pointer-events:none}
+.msg{color:var(--mute);padding:26px 4px}.err{color:var(--red)}
+
+/* AI予想の表: 行=馬 / 列=人格。左の「馬番＋馬名」を固定して横スクロールさせる
+   ★固定列は1本にまとめる★
+     馬番と馬名を別々の sticky にして left:52px と決め打ちしたら、
+     馬番セルの実幅とズレて隙間ができ、そこから裏の列が透けて見えた。
+     1セルにまとめれば left は 0 だけで済み、ズレようがない。 */
+/* ★馬名は必ず全部見える（省略しない）★
+   これが最優先。馬名は左端に position:sticky で固定するので、
+   人格の印が多くて右側が横スクロールしても、名前は常に画面に残る。
+   二次列（集計◎○▲△☆・オッズ・人気・馬体重）は外して幅を減らした。
+   名前を … で切るのは本末転倒なので絶対にしない。 */
+table.ai{width:100%;min-width:0;border-collapse:separate;border-spacing:0}
+table.ai th,table.ai td{border-bottom:1px solid var(--line)}
+/* ★行の高さは全セルで揃える★
+   セルごとに本文の line-height:1.7（=27.2px）の行ボックスが生まれ、
+   中身の高さと足し合わさって 46/47/50px にばらついていた。
+   1セルでも背が高いと行全体が伸びるので、**全セル**に指定する。
+   個別のセルだけ直しても直らない（実際3回外した）。 */
+table.ai td{height:46px;padding-top:0;padding-bottom:0;
+  line-height:1.2;vertical-align:middle}
+table.ai td small{line-height:1}
+table.ai tbody tr,table.ai tr{height:46px}
+/* ★馬名を省略しない★
+   幅158px・馬名110pxで切っていたため「ソニックサン…」のように
+   途中で切れ、どの馬か分からなかった（利用者から指摘）。
+   馬名は最長9文字。2行に折り返して全部見せる。
+   固定列を広げると印の列が狭くなるが、**名前が読めないほうが困る**。 */
+/* ★行の高さは全行そろえる★
+   文字サイズを名前の長さで変えたため、行ごとに高さが 46/50px とばらついた。
+   表として横に目で追うとき、高さが揃っていないと行を見失う。
+   セルの高さを固定し、中身は縦中央に置く。 */
+.stick{position:sticky;left:0;z-index:2;height:46px;
+  background:var(--panel);          /* 不透明。透けると裏の印が重なって読めない */
+  width:166px;min-width:166px;max-width:166px;
+  border-right:1px solid var(--line);
+  padding:0 6px;
+  vertical-align:middle;
+  line-height:0;                    /* ★セル自身の strut を消す★
+                                       本文の line-height:1.7 が 27.2px の行ボックスを作り、
+                                       中身が24pxでも行が 49.59px になっていた。
+                                       高さは中の inline-block だけで決める。 */
+  overflow:hidden}                  /* はみ出して隣の列に重ならないようにする */
+table.ai th.stick{background:var(--panel);z-index:4}
+.stick .w{margin-right:8px;vertical-align:middle}
+/* ★馬名は全馬とも同じ15pxで1行★
+   以前「長い名前だけ小さくする」にしたら、9番だけ小さいなど
+   行ごとにフォントサイズがバラついて不自然だった（利用者から指摘）。
+   固定列を186pxに広げ、最長9文字でも15pxで1行に収まるようにした。
+   万一はみ出しても表全体が横スクロールするので切れない。
+   線高は24pxに固定（本文の line-height:1.7 が掛かると行の高さがぶれるため）。 */
+.stick .hn{display:inline-block;vertical-align:middle;
+  white-space:nowrap;font-size:15px;line-height:24px;height:24px;
+  letter-spacing:-0.02em}
+.stick .w{line-height:24px;height:24px}
+/* 人格名は縦に置いて列幅を稼ぐ。スマホで13列並べるにはこれが要る */
+th.mk{padding:6px 0;vertical-align:bottom;text-align:center;background:var(--panel)}
+/* DADS: 本文/UIテキストは16px以上・サイズによる緩和なし。
+   以前は13pxだった（縦書きで「GBM（本命）」が上で見切れた対策として詰めていたが、
+   それはラベル文言を短くして解決すべきで、フォントを基準未満にする理由にはならない）。 */
+th.mk span{writing-mode:vertical-rl;font-weight:400;font-size:16px;
+  line-height:1.05;white-space:nowrap;max-height:120px}
+/* 印のセルは正方形にして、縦の罫線を入れる。
+   罫線が無いと、どの人格の印なのか目で追えなくなる（読みづらいとの指摘） */
+td.mk,th.mk{border-right:1px solid var(--line)}
+/* ★セル自身の行ボックス（strut）を消す★
+   中の <b> を 46px にしても、td 側の line-height が余分な行ボックスを作り、
+   **印がある行だけ 4px 高くなって** 46/50px にばらついた。
+   印の無い行には <b> が無いので strut も生まれず、そこで差が出る。
+   td 側を line-height:0 にして、高さは <b> だけで決める。 */
+td.mk{text-align:center;padding:0;width:34px;min-width:34px;height:46px;
+  line-height:0;vertical-align:middle}
+td.mk b{display:flex;align-items:center;justify-content:center;
+  width:100%;height:46px;line-height:1;font-size:18px;font-weight:700}
+.m0{color:var(--yellow)}   /* ◎ */
+.m1{color:var(--green,#51b883)}
+.m2{color:var(--blue)}
+.m3{color:var(--mute)}          /* △ */
+.m4{color:var(--purple)}        /* ☆ = 穴。人気馬の印と色で区別する */
+td.tal b.star{color:var(--purple)}
+/* DADS: 本文16px以上。small の既定13.3pxは違反なので上書きする */
+table.ai small,table.ai th small{font-size:16px}
+.tal{min-width:34px}
+/* ── 印の集計（◎○の数）列 ─────────────────────────
+   以前は<th>が無いままtd2列（◎数／○数）を出しており、見出しの無い列が
+   2つ並ぶ壊れた表になっていた。1列にまとめてヘッダを付け、
+   人格の印セルと同じ配色（.m0=◎ .m1=○）で視覚的に揃える。
+   ★「総合」という名前は使わない★ balance人格が既にその名前（id=balance）
+   なので、同じ表に同名の列が2つ並んでしまう。 */
+th.mk.total,td.mk.total{width:46px;min-width:46px}
+/* td自体はtable-cellのまま(displayを変えるとテーブル崩れの原因になる)。
+   中身だけflexで積む。 */
+td.mk.total .totwrap{display:flex;flex-direction:column;justify-content:center;
+  align-items:center;height:46px;gap:2px}
+td.mk.total b{display:flex;align-items:center;gap:2px;width:auto;height:auto;
+  line-height:1;font-size:15px;font-weight:700}
+td.mk.total b small{font-size:14px;font-weight:700}
+td.tal b{color:var(--yellow);font-size:18px}
+tr.hot td{background:var(--line)}
+tr.hot td.stick{background:var(--line)}
+.pay{display:grid;gap:8px;grid-template-columns:1fr;margin-top:14px}
+@media(min-width:640px){.pay{grid-template-columns:1fr 1fr}}
+.payrow{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;display:flex;gap:10px;align-items:baseline}
+.payrow b{flex:0 0 74px;color:var(--mute);font-weight:400}
+.payrow i{font-style:normal;flex:1}
+.payrow em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:16px}
+
+/* ── 脚質（逃げ/先行/差し/追込） ─────────────────────────
+   ★背景色は付けず、文字色と細い枠線だけにする★
+     枠の色（.w1〜.w8）と並ぶ列なので、塗りつぶしを増やすと
+     どちらが枠でどちらが脚質か一目で分からなくなる。
+   色はライト/ダーク双方で --bg / --panel / --stripe に対して
+   4.5:1 以上を backtest/check_theme.py で確認したものだけを使う。 */
+.sty{display:inline-block;min-width:3.2em;text-align:center;
+     padding:1px 6px;border-radius:6px;font-size:14px;font-weight:700;
+     border:1px solid currentColor;background:transparent}
+.st1{color:var(--st1)}   /* 逃げ */
+.st2{color:var(--st2)}   /* 先行 */
+.st3{color:var(--st3)}   /* 差し */
+.st4{color:var(--st4)}   /* 追込 */
+td.sty{white-space:nowrap}
+.note{color:var(--mute);font-size:14px;margin:8px 2px 0}
+.note a{color:var(--accent)}
+
+/* ── 出馬表の左端を固定する ─────────────────────────
+   ★横スクロールすると馬番と馬名が流れて、どの行を見ているか分からなくなる★
+     実機（375px幅）で見ると左端の「馬番」が見切れていた。
+     騎手や厩舎を見ている間も、馬番と馬名は必ず見えている必要がある。
+   ★背景は不透明にする★ 透けると下の行の文字が重なって読めない
+     （AI予想の表で一度踏んでいる）。 */
+td.stk1,th.stk1{position:sticky;left:0;z-index:3;background:var(--panel);
+  padding-left:10px;padding-right:6px}
+td.stk2,th.stk2{position:sticky;left:44px;z-index:3;background:var(--panel);
+  padding-left:4px;padding-right:6px}
+td.stk3,th.stk3{position:sticky;left:80px;z-index:3;background:var(--panel);
+  max-width:9.5em;overflow:hidden;text-overflow:ellipsis}
+th.stk1,th.stk2,th.stk3{z-index:5}
+/* 固定列の右端に区切りを出す（どこまでが固定かを見せる） */
+td.stk3,th.stk3{box-shadow:1px 0 0 var(--line)}
+tbody tr:nth-child(even) td.stk1,
+tbody tr:nth-child(even) td.stk2,
+tbody tr:nth-child(even) td.stk3{background:var(--stripe)}
+
+/* ===== 各AIの買い目（AI予想タブ・AI名タップで表示） ===== */
+.aihdr{cursor:pointer}
+/* ★アイコンは見出し文字の上に積む★ 以前はinline-flexで縦書き文字と
+   横に並んでいた（アイコンの意味が列とすぐ結びつかず読みにくいとの指摘）。
+   ブロック化して中央寄せし、文字を下の行へ強制的に送る。 */
+.aihdr .pico{display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  color:var(--pc);background:#0b1220;border:1px solid color-mix(in srgb,var(--pc) 45%,#0b1220);
+  border-radius:50%;margin:0 auto 4px}
+.aihdr .pico svg{width:66%;height:66%}
+.aihdr.sel{background:var(--stripe);box-shadow:inset 0 -3px 0 var(--accent)}
+.aibetbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);margin:2px 0 4px}
+.aibhead{font-weight:800;font-size:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.aibhead .pico{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  color:var(--pc);background:#0b1220;border:1px solid color-mix(in srgb,var(--pc) 45%,#0b1220);
+  border-radius:50%}
+.aibhead .pico svg{width:66%;height:66%}
+.aibmk{font-weight:700;color:var(--accent);font-size:15px}
+.aibstyle{margin-top:3px;font-size:14px;font-weight:700;color:var(--mute)}
+.aibtix2{margin-top:8px;display:grid;gap:5px}
+.tkrow{font-size:15px;line-height:1.5}
+.tkrow b{display:inline-block;min-width:48px;color:var(--mute);font-weight:700;font-size:14px;margin-right:4px}
+.tks{color:var(--mute);font-size:14px;margin-left:6px}
+.aibmc{margin-top:9px;padding:8px 10px;border-radius:8px;background:var(--panel);
+  border:1px solid var(--line);font-size:14px;line-height:1.6;font-weight:700}
+.aibmc .mcv{color:var(--accent);font-size:15px}
+.aibmc .mcnote{margin-top:4px;font-size:14px;color:var(--mute);font-weight:400;line-height:1.45}
+.raceshape{margin:0 0 12px;padding:9px 12px;border-radius:9px;background:var(--panel);
+  border:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.raceshape .rslbl{font-weight:800;font-size:14px}
+.raceshape .rsstars{font-size:17px;letter-spacing:1px;color:var(--orange)}
+.raceshape .rslevel{font-weight:800;font-size:15px}
+.raceshape.rs5 .rslevel,.raceshape.rs4 .rslevel{color:var(--green)}
+.raceshape.rs2 .rslevel,.raceshape.rs1 .rslevel{color:var(--red)}
+.raceshape .rsmeta{flex-basis:100%;font-size:14px;color:var(--mute);font-weight:400;line-height:1.5}

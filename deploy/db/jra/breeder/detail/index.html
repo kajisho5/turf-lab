@@ -1,0 +1,221 @@
+<title>生産者の成績（中央競馬） — カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css?v=25f2cf98">
+<script src="/core/theme.js?v=6c7f699d"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="中央競馬・生産者（牧場）別の成績・競馬場別・年別・重賞">
+<meta name="robots" content="noindex">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  font-size:15px;line-height:1.55}
+/* ★余白を詰める★ SPAT4を参考に、情報密度を上げる。
+   本文16px→15px、行間1.7→1.55、上下パディングを削る。 */
+.wrap{max-width:1000px;margin:0 auto;padding:12px 12px 56px}
+a{color:var(--blue)}
+h1{font-size:23px;margin:8px 0 2px}
+h2{font-size:17px;margin:20px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.sub{color:var(--mute);font-size:14px;margin:0 0 6px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+table{width:100%;border-collapse:collapse;margin:6px 0;font-size:14px;min-width:640px}
+th,td{padding:5px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700;background:var(--panel);position:sticky;top:0}
+tbody tr:nth-child(even){background:var(--stripe)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+/* ← 横にスライド → のヒント（数秒で消える） */
+.swipehint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);
+  background:rgba(20,24,32,.86);color:#fff;padding:12px 20px;border-radius:12px;
+  font-size:15px;font-weight:700;pointer-events:none;opacity:0;z-index:5;
+  transition:opacity .3s,transform .3s;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.swipehint.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.swipehint span{display:inline-block;animation:swipeMove 1.1s ease-in-out infinite}
+@keyframes swipeMove{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+/* ★数字に意味の色を付ける★
+   もとは全部が本文色で、どこを見ればいいのか分からない「色のないページ」だった。
+   意味のある所だけ色を持たせる（飾りで色を増やすと逆に読めなくなる）。
+   色は theme.css の検証済みパレットのみ使う（コントラスト4.5:1確認済み）。 */
+.kpi{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.kpi div{flex:1 1 130px;background:var(--panel);border:1px solid var(--line);
+  border-top:3px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi div:nth-child(1){border-top-color:var(--mute)}
+.kpi div:nth-child(2){border-top-color:var(--yellow)}
+.kpi div:nth-child(3){border-top-color:var(--orange)}
+.kpi div:nth-child(4){border-top-color:var(--green)}
+.kpi div:nth-child(5){border-top-color:var(--blue)}
+.kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums;line-height:1.3}
+.kpi div:nth-child(2) b{color:var(--yellow)}
+.kpi div:nth-child(3) b{color:var(--orange)}
+.kpi div:nth-child(4) b{color:var(--green)}
+.kpi div:nth-child(5) b{color:var(--blue)}
+.kpi span{color:var(--mute);font-size:14px}
+/* 着順は1・2・3着だけ色を変える。4着以下に色を付けると差が消える */
+.r1{color:var(--yellow);font-weight:700;font-size:18px}
+.r2{color:var(--blue);font-weight:700}
+.r3{color:var(--green);font-weight:700}
+tbody tr:has(td.r1){background:color-mix(in srgb, var(--yellow) 10%, transparent)}
+.paid{color:var(--green);font-weight:700}   /* 払戻が付いた行 */
+h1{border-left:5px solid var(--yellow);padding-left:12px}
+h2{color:var(--txt)}
+h2::before{content:"";display:inline-block;width:4px;height:16px;margin-right:8px;
+  background:var(--blue);vertical-align:-2px;border-radius:2px}
+.msg{color:var(--mute);padding:24px 0}
+.xnote{background:var(--panel,rgba(128,128,128,.12));border-left:4px solid var(--blue,#4a90d9);
+  border-radius:0 8px 8px 0;padding:12px 14px;margin:12px 0 0;font-size:15px;line-height:1.6}
+.xnote a{display:inline-block;margin-top:4px;font-weight:700}
+.fav{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--mute);
+  border-radius:999px;padding:6px 14px;font:inherit;font-size:15px;cursor:pointer}
+.fav[aria-pressed="true"]{color:var(--yellow);border-color:var(--yellow)}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:15px}
+/* ★どのページからも他の入口へ行けるようにする★
+   戻りリンク1本しか置いていなかったため、データベースの入口が
+   自分自身を指して行き止まりになっていた（利用者から「戻れん」と指摘）。
+   1段戻るだけでなく、常に全部の入口を出す。 */
+.snav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.snav a{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:4px 13px;text-decoration:none;color:var(--mute);font-size:15px}
+.snav a:hover{border-color:var(--mute);color:var(--txt)}
+</style>
+<div class="wrap">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+<a href="/db/">← データベース</a><div style="flex:1"></div>
+<button class="themebtn" type="button">☾</button></div>
+<nav class="snav"><a href="/">レース一覧</a><a href="/ai/">AI予想家</a><a href="/record/">予想の記録</a><a href="/articles/">記事</a><a href="/db/">データベース</a><a href="/calendar/">重賞カレンダー</a></nav>
+<h1 id="name">…</h1>
+<p class="sub" id="sub"></p>
+<button class="fav" id="fav" type="button" aria-pressed="false">☆ お気に入り</button>
+<div class="kpi" id="kpi"></div>
+<div id="out"></div>
+<div id="detail">
+<div id="gradewrap" style="display:none"><h2>重賞成績</h2><div class="scroll" id="bygrade"></div>
+<p class="sub" id="g1link"></p></div>
+<h2>競馬場別</h2><div class="scroll" id="bytrack"></div>
+<h2>年別</h2><div class="scroll" id="byyear"></div>
+</div>
+<footer>
+カジ競馬 ／ データ出典: 地方競馬全国協会 keiba.go.jp（公式データダウンロード）<br>
+本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。<br>
+<a href="/privacy/">プライバシーポリシー・運営者情報</a>
+</footer>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NAME = new URLSearchParams(location.search).get('name') || '';
+
+/* お気に入りは端末に持つ（サーバーに個人の情報を置かない） */
+const FAV = {
+  key: k => 'fav_' + k,
+  has(k, n){ return (JSON.parse(localStorage.getItem(FAV.key(k)) || '[]')).includes(n); },
+  toggle(k, n){
+    const a = JSON.parse(localStorage.getItem(FAV.key(k)) || '[]');
+    const i = a.indexOf(n);
+    if(i < 0) a.push(n); else a.splice(i, 1);
+    localStorage.setItem(FAV.key(k), JSON.stringify(a));
+    return i < 0;
+  }
+};
+function favButton(kind){
+  const b = $('#fav');
+  const set = on => { b.setAttribute('aria-pressed', on); b.textContent = on ? '★ お気に入り' : '☆ お気に入り'; };
+  set(FAV.has(kind, NAME));
+  b.onclick = () => set(FAV.toggle(kind, NAME));
+}
+const rankCls = r => (r===1?'r1':(r===2?'r2':(r===3?'r3':'')));
+const pct = (a,b) => b ? (100*a/b).toFixed(1) + '%' : '—';
+
+/* 横スクロールできる表に「← 横にスライド →」のヒントを数秒出す。
+   ★スマホだと右に列があることに気づかれない★（SPAT4もこの案内を出している）。
+   一度出したらこの端末では二度と出さない（毎回はうるさい）。
+   実際にスクロール可能な（はみ出している）表にだけ付ける。 */
+function swipeHint(sel){
+  if(localStorage.getItem('swipeHintSeen')) return;
+  const box = $(sel);
+  if(!box) return;
+  // はみ出していなければ出さない（PCや少列では不要）
+  if(box.scrollWidth <= box.clientWidth + 4) return;
+  const tip = document.createElement('div');
+  tip.className = 'swipehint';
+  tip.innerHTML = '<span>← 横にスライド →</span>';
+  box.style.position = 'relative';
+  box.appendChild(tip);
+  requestAnimationFrame(() => tip.classList.add('on'));
+  const kill = () => { tip.classList.remove('on'); setTimeout(() => tip.remove(), 400);
+    localStorage.setItem('swipeHintSeen', '1'); box.removeEventListener('scroll', kill); };
+  box.addEventListener('scroll', kill, {passive:true});
+  setTimeout(kill, 3500);
+}
+
+async function main(){
+  if(!NAME){ $('#out').innerHTML = '<p class="msg">名前が指定されていません。</p>'; return; }
+  $('#name').textContent = NAME;
+  document.title = NAME + ' の成績 — カジ競馬';
+  favButton('breeder');
+
+  let all;
+  try{
+    const r = await fetch('/db/jra/br/index.json', {cache:'no-cache'});
+    if(!r.ok) throw new Error(r.status);
+    all = await r.json();
+  }catch(e){
+    $('#out').innerHTML = '<p class="msg">データを読み込めませんでした。</p>'; return;
+  }
+  const e = all[NAME];
+  if(!e){
+    $('#out').innerHTML = '<p class="msg">この「生産者」の記録は見つかりませんでした。'
+      + '（収録は50回以上）</p>';
+    const d = $('#detail'); if(d) d.style.display = 'none';    // 空の見出しを残さない
+    return;
+  }
+
+  const hasGrade = e.gr && Object.keys(e.gr).length;   // 重賞成績テーブルを出すかどうか
+  const isJra = !!(e.gr && e.gr.GI);       // JRAはGI/GII/GIII、地方は重賞/準重賞（キーの語彙で判定）
+  let gradeBadge = '';
+  if(isJra){
+    gradeBadge = `<div><b>${(e.gr.GI||[0,0])[1].toLocaleString()}</b><span>GI勝利</span></div>`;
+  }else if(hasGrade){
+    const stakes = (e.gr['重賞']||[0,0])[1] + (e.gr['準重賞']||[0,0])[1];
+    gradeBadge = `<div><b>${stakes.toLocaleString()}</b><span>重賞勝利</span></div>`;
+  }
+  $('#kpi').innerHTML = `
+    <div><b>${e.n.toLocaleString()}</b><span>出走</span></div>
+    <div><b>${e.w.toLocaleString()}</b><span>勝利</span></div>
+    <div><b>${pct(e.w,e.n)}</b><span>勝率</span></div>
+    <div><b>${pct(e.t3,e.n)}</b><span>複勝率</span></div>
+    <div><b>${e.roi}%</b><span>複勝回収率</span></div>` + gradeBadge;
+  $('#sub').textContent = isJra ? '1986年〜の中央競馬（JRA-VAN公式データ）' : '2013年〜の地方競馬（公式データ）';
+  if(hasGrade){
+    $('#g1link').innerHTML = `<a href="${isJra ? '/db/jra/g1/' : '/db/g1/'}">`
+      + (isJra ? '重賞(GI/GII/GIII)ランキングで他の人物と比べる →' : '重賞・準重賞ランキングで他の人物と比べる →') + '</a>';
+  }
+
+  const tbl = (obj, head) => `<table><thead><tr><th>${head}</th>
+      <th class="n">出走</th><th class="n">勝利</th><th class="n">勝率</th><th class="n">複勝率</th>
+    </tr></thead><tbody>` + Object.entries(obj).map(([k,v]) => `<tr>
+      <td>${esc(k)}</td><td class="n">${v[0].toLocaleString()}</td>
+      <td class="n">${v[1].toLocaleString()}</td>
+      <td class="n">${pct(v[1],v[0])}</td><td class="n">${pct(v[2],v[0])}</td>
+    </tr>`).join('') + '</tbody></table>';
+  $('#bytrack').innerHTML = tbl(e.tr, '競馬場');
+  $('#byyear').innerHTML  = tbl(e.yr, '年');
+  if(hasGrade){
+    $('#gradewrap').style.display = '';
+    $('#bygrade').innerHTML = `<table><thead><tr><th>格付け</th>
+        <th class="n">出走</th><th class="n">勝利</th><th class="n">勝率</th>
+      </tr></thead><tbody>` + Object.entries(e.gr).map(([k,v]) => `<tr>
+        <td>${esc(k)}</td><td class="n">${v[0].toLocaleString()}</td>
+        <td class="n">${v[1].toLocaleString()}</td><td class="n">${pct(v[1],v[0])}</td>
+      </tr>`).join('') + '</tbody></table>';
+  }
+  swipeHint('#bytrack');
+}
+main();
+</script>
+<script>
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>

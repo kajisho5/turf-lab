@@ -1,0 +1,631 @@
+<title>レース詳細 — カジ競馬</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css">
+<script src="/core/theme.js"></script>
+<script src="/core/table.js" defer></script>
+<link rel="stylesheet" href="/core/race.css">
+<style>
+/* オッズボード（2026-08-04追加）。色は必ずテーマ変数（16進直書き禁止） */
+.obtn{font-size:16px;font-weight:700;padding:10px 18px;margin:14px 0 6px;border-radius:10px;
+  border:1px solid var(--blue);background:var(--panel);color:var(--blue);cursor:pointer}
+.obtn:disabled{opacity:.6}
+.obgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 22px}
+.obh{font-size:18px;margin:16px 0 4px}
+.obh .obn{font-size:14px;color:var(--mute);font-weight:400;margin-left:8px}
+.obwrap{max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+.obt{width:100%;border-collapse:collapse;font-size:16px}
+.obt th,.obt td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left}
+.obt th{position:sticky;top:0;background:var(--panel);color:var(--mute)}
+.obt td.n,.obt th.n{text-align:right;font-variant-numeric:tabular-nums}
+/* ★14px未満は禁止（DADS_DESIGN.md §サイズ段階）★
+   <small>の既定は親の約0.83倍＝16px→13.3pxになり基準を割る。
+   このページの small を一括で14pxに固定する（出馬表の人気・馬体重増減も対象）。 */
+small{font-size:14px}
+.obt td small{color:var(--mute);margin-left:4px}
+.obtop td{font-weight:700}
+</style>
+
+<header><div class="hbar">
+  <a class="logo" href="/">カジ<span>競馬</span></a>
+  <div style="flex:1"></div>
+  <button class="themebtn" type="button" style="margin-right:10px">☾</button>
+  <a href="/" style="text-decoration:none">← レース一覧</a>
+</div></header>
+
+<div class="wrap">
+  <div class="vtabs" id="vtabs"></div>
+  <div class="rtabs" id="rtabs"></div>
+  <h1 id="title">読み込み中…</h1>
+  <p class="sub" id="sub"></p>
+  <div class="tabs" role="group" aria-label="表示の切替">
+    <button id="tCard" aria-pressed="true">出馬表</button>
+    <button id="tAi" aria-pressed="false">AI予想</button>
+    <button id="tResult" aria-pressed="false">結果・払戻</button>
+  </div>
+  <div id="out"></div>
+  <footer>データ出典: netkeiba.com<br>
+  本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。</footer>
+</div>
+
+<script src="/core/ltr_model.js"></script>
+<script src="/core/personas.js"></script>
+<script src="/core/netkeiba_past.js"></script>
+<script src="/core/montecarlo.js"></script>
+<script>
+/* 共通コアはコピーせず読み込む。tweet.html から関数を写して
+   kochi.html を作った結果、抜けた関数が本番で未定義になり
+   v357/v359/v360/v364 と4回連鎖して壊れた。二度とコピーしない。 */
+const PERSONAS_API = window.PERSONAS;
+/* レース詳細（出馬表 / 結果・払戻）
+ *
+ * ★取得は同一オリジンの /proxy.php 経由・絶対パスで叩く★
+ *   相対だとサブディレクトリから404になる（過去に踏んだ）。
+ *
+ * ★オッズは出馬表HTMLには入っていない★
+ *   HTMLの単勝欄は "---.-"、人気欄は "**" のまま。実体は別APIのJSON:
+ *     /api/api_get_jra_odds.html?race_id=..&type=1&action=init
+ *     data.odds["1"]["01"] = [単勝オッズ, 前回比, 人気]
+ *   地方(nar)も同じパスで返る。発売前は空になるのでその場合は "―" を出す。
+ *
+ * ★race_id から中央/地方を判定する★
+ *   中央 = YYYY+場(2桁 01-10)+回+日+R
+ *   地方 = YYYY+場(2桁 30-55)+MMDD+R
+ *   場コードが 10 以下なら中央。これで参照先ホストを決める。
+ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const b64url = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)))
+  .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+const rid = new URLSearchParams(location.search).get('id') || '';
+const isJra = (() => {
+  const jyo = parseInt(rid.slice(4, 6), 10);
+  return jyo >= 1 && jyo <= 10;
+})();
+const HOST = isJra ? 'race.netkeiba.com' : 'nar.netkeiba.com';
+document.documentElement.dataset.mode = isJra ? 'jra' : 'nar';
+
+async function grab(url){
+  const r = await fetch(`/proxy.php?u=${b64url(url)}`, {cache:'no-store'});
+  if(!r.ok) throw new Error('取得に失敗しました（' + r.status + '）');
+  return r.text();
+}
+const dom = t => new DOMParser().parseFromString(t, 'text/html');
+const txt = (el, sel) => {
+  const x = el.querySelector(sel);
+  return x ? x.textContent.replace(/\s+/g,' ').trim() : '';
+};
+
+/* 単勝オッズ・人気を別APIから取る。取れなければ null（画面には「―」を出す） */
+async function fetchOdds(){
+  // ★中央と地方で エンドポイントもJSONの形も違う★
+  //   中央 api_get_jra_odds.html → data.odds["1"]["01"] = [オッズ, 前回比, 人気]
+  //   地方 api_get_nar_odds.html → ary_odds["01"] = {Odds, Ninki}
+  //   地方に jra 版を投げると 404。共通だと思い込むと静かに「―」のままになる。
+  const api = isJra ? 'api_get_jra_odds.html' : 'api_get_nar_odds.html';
+  try{
+    const j = JSON.parse(await grab(`https://${HOST}/api/${api}`
+      + `?race_id=${encodeURIComponent(rid)}&type=1&action=init`));
+    const m = {};
+    if(isJra){
+      const o = j && j.data && j.data.odds && j.data.odds['1'];
+      if(!o) return null;
+      for(const k in o) m[String(parseInt(k,10))] = {odds:o[k][0], pop:o[k][2]};
+    }else{
+      const o = j && j.ary_odds;
+      if(!o) return null;
+      for(const k in o) m[String(parseInt(k,10))] = {odds:o[k].Odds, pop:o[k].Ninki};
+    }
+    return Object.keys(m).length ? m : null;
+  }catch(e){ console.warn('オッズ取得できず', e); return null; }
+}
+
+/* ★オッズボード（SITE_MAP P1「オッズ画面」・2026-08-04）★
+   複勝(下限)・馬連・ワイド(下限)・馬単をボタン押下時にまとめて取得して人気順で並べる。
+   取得ロジックは tweet.html の fetchExoticOdds / fetchJraOdds と同系
+   （地方=odds_get_form b1/b4/b5/b6 のHTML、中央=api_get_jra_odds type=1/4/5/6 のJSON。
+   中央はオッズ未確定時 <html><pre>{json}</pre> で包まれるのでラッパー耐性が要る）。
+   3連単は組合せが数千点で一覧に不向きなため載せない（SITE_MAPにも明記）。 */
+async function fetchOddsBoard(){
+  const out = { fuku:{}, umaren:{}, wide:{}, umatan:{} };
+  if(isJra){
+    const api = (ty,act)=>`https://race.netkeiba.com/api/api_get_jra_odds.html?race_id=${encodeURIComponent(rid)}&type=${ty}`+(act?`&action=${act}`:'');
+    const grabOdds = async ty => {
+      for(const act of ['', 'init', 'update']){
+        const t = await grab(api(ty,act));
+        let j = null;
+        try{ j = JSON.parse(t); }
+        catch(_){ const m = t.match(/\{[\s\S]*\}/); if(m){ try{ j = JSON.parse(m[0]); }catch(__){} } }
+        const od = (j && j.data && j.data.odds) || {};
+        if(Object.keys(od).length) return od;
+      }
+      return {};
+    };
+    const num = s => String(parseInt(s,10));
+    const val = a => { const v = parseFloat(String(a&&a[0]||'').replace(/,/g,'')); return isFinite(v)?v:null; };
+    const tf = await grabOdds(1);
+    for(const k in (tf['2']||{})){ const v = val(tf['2'][k]); if(v) out.fuku[num(k)] = v; }
+    for(const [ty,key,ordered] of [[4,'umaren',0],[5,'wide',0],[6,'umatan',1]]){
+      const g = await grabOdds(ty); const d = g[String(ty)]||{};
+      for(const k in d){
+        const a = num(k.slice(0,2)), b = num(k.slice(2,4)); const v = val(d[k]); if(!v) continue;
+        out[key][ordered ? a+'-'+b : [a,b].sort((x,y)=>+x-+y).join('-')] = v;
+      }
+    }
+  }else{
+    const form = ty => `https://nar.netkeiba.com/odds/odds_get_form.html?type=${ty}&race_id=${encodeURIComponent(rid)}`;
+    /* ★未発売は 0.0 が入る★（2026-08-04 盛岡1Rで実測）
+       netkeibaは発売前でもページ自体は返し、オッズ欄に "0.0 - 0.0" を入れる。
+       素直にparseFloatすると全馬0.0倍の表が出る＝嘘の情報。1.0未満は捨てる
+       （複勝の下限が1.0倍になることはあるが、0.x倍は存在しない）。 */
+    const ok = v => isFinite(v) && v >= 1;
+    const b1 = await grab(form('b1'));
+    // 投票チェックボックス(chk_b2_)のあるレイアウトと、マーク枠(mymarkb2_)だけの
+    // レイアウトの両方が存在する。両方拾って、有効な値だけ採用する。
+    // 複勝は「1.0 - 1.5」のレンジ。下限だけ出すと実際より安く見えるので両方持つ。
+    for(const re of [/id="chk_b2_(\d+)"[\s\S]{0,400}?class="Odds\s*">([\d.]+)(?:\s*-\s*([\d.]+))?/g,
+                     /id\s*=\s*"mymarkb2_(\d+)"[\s\S]{0,400}?class="Odds\s*">([\d.]+)(?:\s*-\s*([\d.]+))?/g]){
+      for(const m of b1.matchAll(re)){
+        const lo = parseFloat(m[2]), hi = parseFloat(m[3]);
+        if(ok(lo)) out.fuku[String(+m[1])] = ok(hi) && hi > lo ? [lo, hi] : lo;
+      }
+    }
+    for(const [ty,key,ordered] of [['b4','umaren',0],['b5','wide',0],['b6','umatan',1]]){
+      const t = await grab(form(ty));
+      for(const m of t.matchAll(/id="chk_[^"]*_b\d_c0_(\d+)_(\d+)"[^>]*>\s*([\d.]+)/g)){
+        const a = String(+m[1]), b = String(+m[2]);
+        const v = parseFloat(m[3]);
+        if(ok(v)) out[key][ordered ? a+'-'+b : [a,b].sort((x,y)=>+x-+y).join('-')] = v;
+      }
+    }
+  }
+  // 空成功を成功にしない（tweet.htmlで踏んだ罠。0件ヒットはレイアウト差か未発売）
+  return Object.keys(out.fuku).length ? out : null;
+}
+
+function renderOddsBoard(board, nameOf){
+  const nm = n => nameOf[n] ? `<small>${esc(nameOf[n])}</small>` : '';
+  // ordered=馬単（1着→2着の向きがある）。矢印で向きを明示する
+  const pair = (k, ordered) => k.split('-').map(n => `${n} ${nameOf[n]?esc(nameOf[n]):''}`).join(ordered?' → ':' − ');
+  // 複勝は [下限,上限] の配列になることがある。並べ替えは下限で、表示はレンジで。
+  const lo = v => Array.isArray(v) ? v[0] : v;
+  const show = v => Array.isArray(v) ? `${v[0].toFixed(1)} - ${v[1].toFixed(1)}` : v.toFixed(1);
+  const tbl = (title, obj, isPair, note, ordered) => {
+    const es = Object.entries(obj).sort((a,b)=>lo(a[1])-lo(b[1]));
+    if(!es.length) return `<h3 class="obh">${title}</h3><p class="msg">発売前か、取得できませんでした。</p>`;
+    return `<h3 class="obh">${title}${note?`<small class="obn">${note}</small>`:''}</h3>
+    <div class="obwrap"><table class="obt">
+      <tr><th>${isPair?'組':'馬番'}</th><th class="n">オッズ</th></tr>
+      ${es.map(([k,v],i) => `<tr${i<3?' class="obtop"':''}>
+        <td>${isPair ? pair(k, ordered) : `${k} ${nm(k)}`}</td>
+        <td class="n">${show(v)}</td></tr>`).join('')}
+    </table></div>`;
+  };
+  return `<p class="msg">オッズは取得した時点のものです（${new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}時点）。締切に向けて大きく動きます。</p>
+    <div class="obgrid">
+    ${tbl("複勝", board.fuku, false, "下限-上限")}
+    ${tbl('馬連', board.umaren, true, '')}
+    ${tbl('ワイド', board.wide, true, '下限')}
+    ${tbl('馬単', board.umatan, true, '1着→2着', true)}
+    </div>`;
+}
+
+/* netkeiba の無名条件戦 "C2111213(C212)" を読める形に。
+   ★同じ関数が core/race_app.js / index.html / php/race.php にもある。直すなら全部★ */
+function prettyRaceName(name){
+  if(!name) return name;
+  const m = String(name).trim().match(/^([A-D][1-3]|\d+歳)(\d{4,})(?:\([^)]*\))?$/);
+  if(!m || m[2].length % 2) return name;
+  const gs = m[2].match(/../g).map(Number);
+  if(!gs.every(g => g >= 1 && g <= 25)) return name;
+  const dig = '〇一二三四五六七八九';
+  const k = n => n < 10 ? dig[n] : n < 20 ? '十' + (n > 10 ? dig[n - 10] : '')
+                                          : dig[Math.floor(n / 10)] + '十' + (n % 10 ? dig[n % 10] : '');
+  return m[1] + gs.map(g => '（' + k(g) + '）').join('');
+}
+
+function header(doc){
+  const name = prettyRaceName(txt(doc, '.RaceName')) || 'レース';
+  const d1 = txt(doc, '.RaceData01');
+  const d2 = txt(doc, '.RaceData02');
+  // ★R番号は必ず出す★ netkeiba の .RaceNum が空でも rid から復元する
+  //   （空だと「10R」が消え、条件戦だと名前も無く見出しが空に見える）
+  const num = txt(doc, '.RaceNum') || (curR ? curR + 'R' : '');
+  // ★#title は race.html では見出し、race.php(SSR)では隠しのダブり要素★
+  //   display は触らない（触ると SSR の h1 と二重表示になる）。中身だけ入れる。
+  $('#title').textContent = (num ? num + ' ' : '') + name;
+  $('#sub').textContent = [d1, d2].filter(Boolean).join(' ／ ');
+  document.title = `${(num ? num + ' ' : '')}${name} — カジ競馬`;
+}
+
+async function showCard(){
+  const doc = dom(await grab(`https://${HOST}/race/shutuba.html?race_id=${encodeURIComponent(rid)}`));
+  header(doc);
+  const odds = await fetchOdds();
+  const rows = [...doc.querySelectorAll('tr.HorseList')].map(tr => {
+    const waku = txt(tr, '[class^="Waku"]');
+    const uma  = txt(tr, '[class^="Umaban"]');
+    const o = odds ? odds[String(parseInt(uma,10))] : null;
+    return {
+      waku, uma,
+      name:    txt(tr, '.HorseInfo'),
+      barei:   txt(tr, '.Barei'),
+      kin:     txt(tr, 'td.Txt_C:not(.Barei):not([class^="Waku"]):not([class^="Umaban"])'),
+      jockey:  txt(tr, '.Jockey'),
+      trainer: txt(tr, '.Trainer'),
+      weight:  txt(tr, '.Weight'),
+      odds: o ? o.odds : '',
+      pop:  o ? o.pop  : ''
+    };
+  });
+  if(!rows.length){ $('#out').innerHTML = '<p class="msg">出馬表がまだ公開されていません。</p>'; return; }
+  // 地方の出馬表には性齢の列そのものが無い。全行空なら列ごと落とす
+  const hasBarei = rows.some(r => r.barei);
+  $('#out').innerHTML = `<div class="scroll"><table>
+    <tr><th>枠</th><th>馬番</th><th>馬名</th>${hasBarei ? '<th>性齢</th>' : ''}<th class="n">斤量</th>
+        <th>騎手</th><th>厩舎</th><th class="n">馬体重</th>
+        <th class="n">単勝</th><th class="n">人気</th></tr>
+    ${rows.map(r => `<tr>
+      <td><span class="w w${esc(r.waku)}">${esc(r.waku)}</span></td>
+      <td class="n">${esc(r.uma)}</td>
+      <td>${esc(r.name)}</td>
+      ${hasBarei ? `<td>${esc(r.barei)}</td>` : ''}
+      <td class="n">${esc(r.kin)}</td>
+      <td>${esc(r.jockey)}</td>
+      <td>${esc(r.trainer)}</td>
+      <td class="n">${esc(r.weight)}</td>
+      <td class="n">${r.odds ? esc(r.odds) : '―'}</td>
+      <td class="n${r.pop === '1' ? ' pop1' : ''}">${r.pop ? esc(r.pop) : '―'}</td>
+    </tr>`).join('')}
+  </table></div>
+  ${odds ? '' : '<p class="msg">単勝オッズは発売開始後に表示されます。</p>'}
+  <div id="oddsBoard">
+    <button id="obBtn" type="button" class="obtn">複勝・馬連・ワイド・馬単のオッズを見る</button>
+    <div id="obOut"></div>
+  </div>`;
+  const obBtn = $('#obBtn');
+  if(obBtn) obBtn.onclick = async () => {
+    obBtn.disabled = true; obBtn.textContent = 'オッズ取得中…';
+    const nameOf = {};
+    rows.forEach(r => { nameOf[String(parseInt(r.uma,10))] = r.name; });
+    try{
+      const board = await fetchOddsBoard();
+      $('#obOut').innerHTML = board ? renderOddsBoard(board, nameOf)
+        : '<p class="msg">オッズを取得できませんでした（発売前の可能性があります）。</p>';
+    }catch(e){
+      $('#obOut').innerHTML = '<p class="msg">オッズを取得できませんでした。時間をおいて試してください。</p>';
+    }
+    obBtn.disabled = false; obBtn.textContent = '🔄 オッズを更新';
+  };
+}
+
+async function showResult(){
+  const doc = dom(await grab(`https://${HOST}/race/result.html?race_id=${encodeURIComponent(rid)}`));
+  header(doc);
+  const rows = [...doc.querySelectorAll('tr.HorseList')].map(tr => {
+    const tds = tr.querySelectorAll('td');
+    const cell = i => tds[i] ? tds[i].textContent.replace(/\s+/g,' ').trim() : '';
+    // ★人気セルのクラスは着順で変わる★
+    //   1着 "Odds BgYellow Txt_C" / 2着 "Odds BgBlue02 Txt_C" …
+    //   .Odds.BgYellow で取ると1着しか埋まらない（実際そうなった）。列位置で取る。
+    //   0着順 1枠 2馬番 3馬名 4性齢 5斤量 6騎手 7タイム 8着差 9人気 10単勝 11上り
+    return {
+      rank: txt(tr, '.Result_Num') || cell(0),
+      waku: cell(1), uma: cell(2),
+      name: txt(tr, '.Horse_Info'),
+      jockey: txt(tr, '.Jockey'),
+      time: txt(tr, '.Time'),
+      pop:  cell(9),
+      odds: cell(10)
+    };
+  });
+  if(!rows.length){ $('#out').innerHTML = '<p class="msg">まだ結果が出ていません。</p>'; return; }
+
+  /* 払戻
+   *
+   * ★券種1行の中に「複数の組」が入っている★
+   *   複勝は3頭、ワイドは3組。素朴に全部の span を拾うと
+   *   「複勝 10 12 11 / 10 / 12 / 11」のように重複し、金額も
+   *   「150円200円180円」と連結してしまう（実際そうなった）。
+   *
+   *   組の区切り方が2通りある:
+   *     ul がある券種（枠連・馬連・ワイド・馬単・3連複・3連単）→ ul 1つ = 1組
+   *     ul が無い券種（単勝・複勝）→ div 3つ = 1組（空divで桁を埋めている）
+   *   金額は1セルに <br> 区切りで入っているので分割して組と対応づける。
+   */
+  const clean = el => el.textContent.replace(/\s+/g,' ').trim();
+  const pays = [];
+  doc.querySelectorAll('.Payout_Detail_Table tr').forEach(tr => {
+    const kind = txt(tr, 'th');
+    const res = tr.querySelector('.Result');
+    if(!kind || !res) return;
+
+    let combos = [];
+    const uls = res.querySelectorAll('ul');
+    if(uls.length){
+      combos = [...uls].map(ul =>
+        [...ul.querySelectorAll('li')].map(clean).filter(Boolean).join('-'));
+    }else{
+      const divs = [...res.children].filter(e => e.tagName === 'DIV');
+      for(let i = 0; i < divs.length; i += 3){
+        const c = divs.slice(i, i + 3).map(clean).filter(Boolean).join('-');
+        if(c) combos.push(c);
+      }
+    }
+    const yens = [...tr.querySelectorAll('.Payout span')]
+      .flatMap(s => s.innerHTML.split(/<br\s*\/?>/i))
+      .map(x => x.replace(/<[^>]*>/g,'').trim()).filter(Boolean);
+    const ninki = [...tr.querySelectorAll('.Ninki span')].map(clean).filter(Boolean);
+
+    combos.forEach((c, i) => {
+      if(!yens[i]) return;
+      pays.push({kind: i === 0 ? kind : '', nums: c, yen: yens[i], pop: ninki[i] || ''});
+    });
+  });
+
+  $('#out').innerHTML = `<div class="scroll"><table>
+    <tr><th>着</th><th>枠</th><th>馬番</th><th>馬名</th><th>騎手</th>
+        <th class="n">タイム</th><th class="n">単勝</th><th class="n">人気</th></tr>
+    ${rows.map(r => `<tr>
+      <td class="rank${['1','2','3'].includes(r.rank) ? r.rank : ''}">${esc(r.rank)}</td>
+      <td><span class="w w${esc(r.waku)}">${esc(r.waku)}</span></td>
+      <td class="n">${esc(r.uma)}</td>
+      <td>${esc(r.name)}</td>
+      <td>${esc(r.jockey)}</td>
+      <td class="n">${esc(r.time)}</td>
+      <td class="n">${esc(r.odds)}</td>
+      <td class="n${r.pop === '1' ? ' pop1' : ''}">${esc(r.pop)}</td>
+    </tr>`).join('')}
+  </table></div>
+  ${pays.length ? `<div class="pay">${pays.map(p =>
+      `<div class="payrow"><b>${esc(p.kind)}</b><i>${esc(p.nums)}</i>`
+      + `<em>${esc(p.yen)}</em>`
+      + `<span style="color:var(--mute);flex:0 0 62px;text-align:right">${esc(p.pop)}</span></div>`
+    ).join('')}</div>` : ''}`;
+}
+
+/* ===== AI予想（人格別の印） ===================================== */
+
+let horseIndex = null;      // 馬名 -> {t:{場:[複勝率,数]}, d:{距離帯:[率,数]}}
+async function loadHorseIndex(){
+  if(horseIndex) return horseIndex;
+  const r = await fetch('/data/horses.json', {cache:'force-cache'});
+  if(!r.ok) throw new Error('馬データを読み込めませんでした');
+  horseIndex = await r.json();
+  return horseIndex;
+}
+
+/* 当地複勝率(wr) と 当距離複勝率(dr) を自前の履歴から引く。
+   ★netkeibaには無い値なので、13年分の公式データから作った索引を使う★
+     backtest/build_horse_index.py が deploy/data/horses.json を生成している。
+     推定で埋めると、公開しているバックテスト成績が当てはまらない別物になる。 */
+function attachRates(horses, names, track, dist){
+  if(!horseIndex) return;
+  const band = dist ? String(Math.floor(dist / 200) * 200) : null;
+  horses.forEach((h, i) => {
+    const rec = horseIndex[names[i]];
+    if(!rec) return;
+    const t = track && rec.t ? rec.t[track] : null;
+    const d = band && rec.d ? rec.d[band] : null;
+    // 出走数が極端に少ないと率が暴れるので 3走未満は使わない（null のまま＝平均扱い）
+    if(t && t[1] >= 3) h.wr = t[0] / 100;
+    if(d && d[1] >= 3) h.dr = d[0] / 100;
+  });
+}
+
+async function showAi(){
+  const doc = dom(await grab(
+    `https://${HOST}/race/shutuba_past.html?race_id=${encodeURIComponent(rid)}`));
+  header(doc);
+
+  const horses = NKPast.parseDoc(doc);
+  if(!horses.length){ $('#out').innerHTML = '<p class="msg">出馬表がまだ公開されていません。</p>'; return; }
+
+  // 馬名は parseDoc が同じ1回のパースで返す（別ループにすると添字がズレる）
+  const names = horses.map(h => h.name);
+
+  // 開催場と距離をヘッダから取る
+  const sub = txt(doc, '.RaceData01') + ' ' + txt(doc, '.RaceData02');
+  const track = (sub.match(/(門別|盛岡|水沢|浦和|船橋|大井|川崎|金沢|笠松|名古屋|園田|姫路|高知|佐賀|帯広)/) || [])[1] || '';
+  const dist = parseInt((sub.match(/[ダ芝](\d{3,4})/) || [])[1], 10) || null;
+  /* ★2026-07-29: LTRの履歴系特徴量（rest/dchg/tchg）を埋める★
+     rid = YYYY(4)+TC(2)+MMDD(4)+RR(2) → 今日の日付が復元できる。 */
+  NKPast.enrich(horses, { date: String(rid).slice(0,4) + String(rid).slice(6,10),
+                          track: track, dist: dist });
+
+  try{ await loadHorseIndex(); attachRates(horses, names, track, dist); }
+  catch(e){ console.warn('馬データ未取得', e); }
+
+  // 人気（市場人格が使う）を単勝オッズAPIから
+  const odds = await fetchOdds();
+  if(odds) horses.forEach(h => { const o = odds[String(+h.n)]; if(o) h.pop = +o.pop || null; });
+
+  const marks = PERSONAS_API.scoreRace(horses);
+
+  /* ★確定印（2026-08-04・不一致対策）★
+     ★このファイルは core/race_app.js と同じ showAi を自前コピーで持っている★
+       （tweet.html と core/scoring.js の関係と同じ二重管理。片方だけ直すと必ずズレる）
+     人格の印は再計算のたびにデータ源の微差（公式 vs netkeibaの人気・騎手名）で
+     僅差の馬が入れ替わる。実際に盛岡8Rで「/ai/の的中カードは◎5で3連単213万的中、
+     このタブは◎6で外れ」という不一致が起きた（ユーザー指摘）。
+     → 公式データで計算した確定印(pmarks.json・毎朝更新・直近35日)があるレースは
+       必ずそちらで上書きし、/ai/ の成績と単一の正にする。 */
+  let officialMarks = false;
+  try{
+    const _day = new Date(Date.now() + 9*3600e3).toISOString().slice(0,10).replace(/-/g,'');
+    const pr = await fetch(`/data/pmarks.json?d=${_day}`);   // ?d=で日替わりキャッシュバスト
+    if(pr.ok){
+      const pm = (await pr.json())[String(rid)];
+      if(pm){
+        for(const pid in pm){
+          if(Array.isArray(pm[pid]) && pm[pid].length)
+            marks[pid] = pm[pid].map(n => ({ n: String(n) }));
+        }
+        officialMarks = true;
+      }
+    }
+  }catch(e){ console.warn('確定印の取得失敗（暫定印で表示）', e); }
+
+  /* ★行=馬 / 列=人格 の表にする★
+     人格を行にすると「どの馬に印が集まっているか」が読み取れない。
+     馬を行にして横に人格を並べると、集まり方が一目で分かる。
+     馬番と馬名は position:sticky で左に固定し、人格側だけ横スクロールさせる。 */
+  const nameOf = {}, wakuOf = {};
+  horses.forEach((h, i) => { nameOf[h.n] = names[i] || h.n; wakuOf[h.n] = h.wk; });
+
+  // 算出できない人格は列ごと落とす（空欄が並ぶより、無いほうが読みやすい）
+  const has = axis => horses.some(h => h[axis] !== null && h[axis] !== undefined);
+  const cols = PERSONAS_API.PERSONAS.filter(p => p.axes.every(([a]) => has(a)));
+  const dropped = PERSONAS_API.PERSONAS.filter(p => !cols.includes(p));
+
+  // 馬番 -> 人格ID -> 印
+  const markOf = {};
+  for (const p of cols) {
+    (marks[p.id] || []).forEach((x, i) => {
+      if (i < PERSONAS_API.MARKS.length) {
+        (markOf[x.n] = markOf[x.n] || {})[p.id] = PERSONAS_API.MARKS[i];
+      }
+    });
+  }
+
+  // 印の集計（◎が何人か、が一番知りたい情報）
+  const tally = h => {
+    const t = {'◎':0, '○':0, '▲':0, '△':0, '☆':0};
+    for (const p of cols) {
+      const m = markOf[h.n] && markOf[h.n][p.id];
+      if (m) t[m]++;
+    }
+    return t;
+  };
+
+  const sorted = [...horses].sort((a, b) => +a.n - +b.n);
+  const maxMaru = Math.max(...sorted.map(h => tally(h)['◎']), 0);
+
+  const body = sorted.map(h => {
+    const t = tally(h);
+    const o = odds ? odds[String(+h.n)] : null;
+    const hot = t['◎'] === maxMaru && maxMaru > 0;
+    return `<tr${hot ? ' class="hot"' : ''}>
+      <td class="stick"><span class="w w${esc(h.wk)}">${esc(h.n)}</span><span class="hn">${esc(nameOf[h.n])}</span></td>
+      ${cols.map(p => {
+        const m = markOf[h.n] && markOf[h.n][p.id];
+        return `<td class="mk">${m ? `<b class="m${'◎○▲△☆'.indexOf(m)}">${m}</b>` : ''}</td>`;
+      }).join('')}
+      <td class="n tal">${t['◎'] ? `<b>${t['◎']}</b>` : ''}</td>
+      <td class="n tal">${t['○'] || ''}</td>
+      <td class="n tal">${t['▲'] || ''}</td>
+      <td class="n">${o ? esc(o.odds) : '―'}<small style="color:var(--mute)">${o ? ' (' + esc(o.pop) + ')' : ''}</small></td>
+      <td class="n">${h.wt ? esc(h.wt) + (h.wd !== null ? `<small style="color:var(--mute)">(${h.wd > 0 ? '+' : ''}${esc(h.wd)})</small>` : '') : '―'}</td>
+    </tr>`;
+  }).join('');
+
+  $('#out').innerHTML = `
+  ${officialMarks
+    ? `<p class="msg" style="padding:0 0 6px">✅ この印は<strong>公式確定データによる確定値</strong>です（毎朝更新・<a href="/ai/">AI別成績</a>の集計と同じ計算）。発走前に出していた暫定印とは、僅差の馬で入れ替わっていることがあります。</p>`
+    : `<p class="msg" style="padding:0 0 6px">⏳ この印は<strong>暫定</strong>です（netkeibaのデータからのライブ計算）。確定印は<strong>レース確定の翌朝から約35日間</strong>だけ保持しているため、これから走るレースと、それより古いレースでは暫定表示になります。</p>`}
+  <p class="msg" style="padding:0 0 10px">観点の違う<strong>${cols.length}つの予想</strong>を横に並べています。
+  <strong>◎が集まっている馬</strong>ほど、多くの観点から見て有力ということです。
+  各人格の実測成績は<a href="/ai/">AI予想家の成績</a>で公開しています。</p>
+  <div class="scroll"><table class="ai">
+    <tr>
+      <th class="stick">馬番・馬名</th>
+      ${cols.map(p => `<th class="mk" title="${esc(p.desc)}"><span>${esc(p.name)}</span></th>`).join('')}
+      <th class="n tal">◎</th><th class="n tal">○</th><th class="n tal">▲</th>
+      <th class="n">オッズ<br><small>(人気)</small></th>
+      <th class="n">馬体重<br><small>(増減)</small></th>
+    </tr>
+    ${body}
+  </table></div>
+  ${dropped.length ? `<p class="msg">※ ${esc(dropped.map(p => p.name).join('・'))} は
+    このレースではデータ不足で算出できないため列を外しています。</p>` : ''}
+  <p class="msg">※ 各人格は独立した観点で、当てるための最適解ではありません。
+  <strong>市場（人気順）を上回った人格はまだ一つもありません。</strong>
+  黄色の行は◎が最も集まった馬です。</p>`;
+}
+
+
+/* ===== 上部ナビ（場 / R番号） =====================================
+ * ★R番号は race_id から直接作れる★
+ *   中央 YYYY+場+回+日+RR / 地方 YYYY+場+MMDD+RR
+ *   どちらも**末尾2桁がR番号**で、先頭10桁は同一開催で共通。
+ *   なので先頭10桁 + ゼロ埋めR で兄弟レースのIDになる（取得不要）。
+ * ★場タブはその日の一覧が要る★
+ *   一覧から渡された ?d=YYYYMMDD を使う。無ければ地方は race_id から
+ *   復元でき（YYYY + MMDD）、中央は日付を持たないので今日を使う。
+ */
+function ymdFromRid(){
+  const q = new URLSearchParams(location.search).get('d');
+  if(q && /^\d{8}$/.test(q)) return q;
+  if(!isJra) return rid.slice(0,4) + rid.slice(6,10);   // 地方は復元できる
+  const t = new Date();
+  return t.getFullYear() + String(t.getMonth()+1).padStart(2,'0')
+       + String(t.getDate()).padStart(2,'0');
+}
+const DATE = ymdFromRid();
+const curR = parseInt(rid.slice(10,12), 10);
+
+function buildRaceTabs(maxR){
+  $('#rtabs').innerHTML = Array.from({length: maxR}, (_, i) => {
+    const r = i + 1;
+    const id = rid.slice(0,10) + String(r).padStart(2,'0');
+    return `<a href="/race.html?id=${id}&d=${DATE}"${r === curR ? ' aria-current="page"' : ''}>${r}R</a>`;
+  }).join('');
+}
+
+async function buildNav(){
+  buildRaceTabs(12);                       // まず12個出す（取得を待たせない）
+  try{
+    const url = `https://${HOST}/top/race_list_sub.html?kaisai_date=${DATE}`;
+    const doc = dom(await grab(url));
+    let boxes = doc.querySelectorAll('.RaceList_DataList');
+    if(!boxes.length) boxes = doc.querySelectorAll('.RaceList_Box');
+    const vs = [];
+    boxes.forEach(box => {
+      const title = box.querySelector('.RaceList_DataTitle, .RaceList_Date, h3');
+      const ids = [...new Set([...box.querySelectorAll('a[href*="race_id="]')]
+        .map(a => (a.getAttribute('href').match(/race_id=(\d+)/) || [])[1]).filter(Boolean))];
+      if(!ids.length) return;
+      const nm = title ? title.textContent.replace(/\s+/g,' ').trim() : '';
+      vs.push({
+        name: (nm.match(/(札幌|函館|福島|新潟|東京|中山|中京|京都|阪神|小倉|門別|盛岡|水沢|浦和|船橋|大井|川崎|金沢|笠松|名古屋|園田|姫路|高知|佐賀|帯広)/) || [, nm])[1],
+        first: ids[0], prefix: ids[0].slice(0,10), n: ids.length
+      });
+    });
+    if(vs.length){
+      $('#vtabs').innerHTML = vs.map(v =>
+        `<a href="/race.html?id=${v.prefix}${String(Math.min(curR, v.n)).padStart(2,'0')}&d=${DATE}"`
+        + `${v.prefix === rid.slice(0,10) ? ' aria-current="page"' : ''}>${esc(v.name)}</a>`).join('');
+      const me = vs.find(v => v.prefix === rid.slice(0,10));
+      if(me) buildRaceTabs(me.n);          // 実際のレース数に合わせ直す
+    }
+  }catch(e){
+    console.warn('ナビを作れず', e);       // ナビが出なくても本体は見られる
+  }
+}
+
+let tab = 'card';
+async function load(){
+  $('#tCard').setAttribute('aria-pressed', tab === 'card');
+  $('#tAi').setAttribute('aria-pressed', tab === 'ai');
+  $('#tResult').setAttribute('aria-pressed', tab === 'result');
+  $('#out').innerHTML = '<p class="msg">読み込み中…</p>';
+  try{
+    if(!rid) throw new Error('レースが指定されていません');
+    if(tab === 'card') await showCard();
+    else if(tab === 'ai') await showAi();
+    else await showResult();
+  }catch(e){
+    // ★握り潰さない★ 原因が見えないと直せない
+    $('#out').innerHTML = `<p class="msg err">読み込めませんでした：${esc(e.message)}</p>`;
+    console.error(e);
+  }
+}
+$('#tCard').onclick = () => { tab = 'card'; load(); };
+$('#tAi').onclick = () => { tab = 'ai'; load(); };
+$('#tResult').onclick = () => { tab = 'result'; load(); };
+buildNav();
+load();
+</script>

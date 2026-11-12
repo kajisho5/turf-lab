@@ -1,0 +1,22 @@
+# /lab/ 配下（知人向け）。kajikeiba.com と同じ構成を SW TURF LAB 名義で置いている。
+# ★ソースは1系統★ deploy.py --site lab がブランド名とパスを書き換えて配る。
+RewriteEngine On
+RewriteBase /lab/
+
+# AI学習クローラーを止める（公開サイトと同じ方針）
+# ★パターンは .* にする★ ^ だと環境によって一致せずルールが黙って無効になる
+RewriteCond %{HTTP_USER_AGENT} (GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-Web|anthropic-ai|CCBot|PerplexityBot|Bytespider|Amazonbot|meta-externalagent|FacebookBot|cohere-ai|Diffbot|omgili|ImagesiftBot|Scrapy|python-requests|node-fetch|Go-http-client|curl|wget) [NC]
+RewriteRule .* - [F,L]
+
+# レース詳細を /lab/race/{12桁}/ で扱う
+RewriteRule ^race/([0-9]{12})/?$ race.php?id=$1 [L,QSA]
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/xml application/javascript application/json
+</IfModule>
+
+# 知人向けなので検索には出さない
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+RedirectMatch 404 ^/lab/cache/

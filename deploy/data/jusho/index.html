@@ -1,0 +1,199 @@
+<title>重賞データ — カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css?v=25f2cf98">
+<script src="/core/theme.js?v=d75275b1"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="中央競馬の重賞を過去データで分析。人気別・枠順別・脚質別の成績と近年の勝ち馬。有馬記念・日本ダービー・皐月賞ほか143重賞。">
+<link rel="canonical" href="https://kajikeiba.com/data/jusho/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="重賞データ — 過去の傾向で見る">
+<meta property="og:description" content="人気・枠・脚質の成績と勝ち馬。143重賞を実データで。">
+<meta property="og:url" content="https://kajikeiba.com/data/jusho/">
+<meta property="og:image" content="https://kajikeiba.com/data/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.8;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:860px;margin:0 auto;padding:22px 16px 72px;overflow-x:hidden}
+h1{font-size:27px;margin:8px 0 2px}
+h2{font-size:19px;margin:30px 0 6px}
+h3{font-size:17px;margin:24px 0 4px;font-weight:700}
+p{margin:0 0 13px}
+h2::before{content:"";display:inline-block;width:4px;height:16px;margin-right:8px;
+  background:var(--blue);vertical-align:-2px;border-radius:2px}
+.sub{color:var(--mute);margin:0 0 6px}
+.snav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.snav a{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:4px 13px;text-decoration:none;color:var(--mute);font-size:15px}
+.pick{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+.pick{max-width:100%}
+.pick select,.pick input{appearance:none;border:1px solid var(--line);background:var(--panel);
+  color:var(--txt);font:inherit;font-size:16px;padding:9px 12px;border-radius:10px;max-width:100%}
+#sel{width:100%}
+.pick input{flex:1;min-width:160px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;margin:8px 0;font-size:16px;min-width:0}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700;background:var(--panel)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.gb{display:inline-block;font-size:14px;font-weight:800;border-radius:6px;padding:1px 8px;
+  color:var(--bg)}
+.g1{background:var(--red)}.g2{background:var(--orange)}.g3{background:var(--yellow)}
+.hot{color:var(--green);font-weight:700}
+.bar span{display:inline-block;height:12px;background:var(--blue);border-radius:3px;
+  vertical-align:middle;margin-right:6px}
+.list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.list a{border:1px solid var(--line);border-radius:8px;padding:4px 10px;
+  text-decoration:none;font-size:14px}
+.note{color:var(--mute);font-size:15px}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:15px}</style>
+<div class="wrap">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+<a href="/calendar/">← 重賞カレンダー</a><div style="flex:1"></div>
+<button class="themebtn" type="button">☾</button></div>
+<nav class="snav"><a href="/">レース一覧</a><a href="/ai/">AI予想家</a><a href="/record/">予想の記録</a><a href="/articles/">記事</a><a href="/db/">データベース</a><a href="/calendar/">重賞カレンダー</a></nav>
+<h1 style="margin-bottom:2px">重賞データ</h1>
+<p class="sub">中央競馬の重賞を、過去のデータで見ます。人気・枠・脚質の成績と勝ち馬の一覧。</p>
+<div class="pick">
+  <select id="sel"><option>読み込み中…</option></select>
+</div>
+<h2 style="font-size:16px;border:0;margin:16px 0 4px;color:var(--mute)">GⅠから選ぶ</h2>
+<div class="list" id="g1list"></div>
+<div id="body"><p class="note">読み込み中…</p></div>
+<h2>143重賞をまとめて見ると、2つのことが分かります</h2>
+
+<h3>1. 重賞では1番人気があてになりません</h3>
+<p>収録している143重賞・延べ1,577回の施行を合算すると、
+1番人気の成績は<strong>勝率30.1% / 複勝率59.6%</strong>でした
+（1,572回ぶん）。中央競馬全体では1番人気の勝率はおよそ3分の1あるので、
+<strong>重賞になると1番人気は目に見えて信頼できなくなる</strong>ということです。</p>
+<p>理由は単純で、重賞には強い馬しか出てこないからです。
+条件戦なら1頭だけ抜けていることがありますが、
+重賞では相手も全部が実績馬で、力の差が詰まります。
+<strong>「大レースだから堅い」は逆</strong>で、大レースだから紛れます。</p>
+
+<h3>2. 重賞は「前に行った馬」が圧倒的に有利です</h3>
+<p>各年の最初のコーナー通過順から脚質を機械的に付けて集計すると、
+<strong>逃げ・先行の複勝率25.9%</strong>に対し
+<strong>差し・追込は17.5%</strong>。8.3ポイントの差です。</p>
+<p>レース単位で見るともっとはっきりします。
+前が有利（逃げ・先行が差し・追込を8ポイント以上上回る）と言えるのは
+<strong>38レース</strong>、逆に後ろから届くと言えるのは
+<strong>わずか3レース</strong>、どちらとも言えないのが36レースでした。
+<strong>前有利のレースは、後ろ有利のレースの13倍以上あります。</strong></p>
+<p class="note">ただしこれは「逃げれば勝てる」という意味ではありません。
+強い馬が好位を取れる、という因果の向きも含まれています。
+また脚質はコーナー通過順から機械的に付けたもので、
+その馬本来の脚質とは限りません（同じ馬でもレースによって位置取りは変わります）。
+このページの数字は<strong>そのレースのペース傾向を知る目安</strong>として使ってください。</p>
+
+<h3>このページの使い方</h3>
+<p>上のプルダウンか下の一覧からレースを選ぶと、そのレース単体の
+人気別・枠順別・脚質別の成績と、近年の勝ち馬（人気・単勝配当つき）が出ます。
+<strong>1番人気が信頼できるレースなのか、内枠と外枠のどちらが来ているのか、
+前と後ろのどちらが有利なのか</strong>を、そのレースの過去10年前後の実績だけで確認できます。</p>
+<p class="note">出典はJRA-VAN Data Lab.の公式データです。
+施行回数はレースによって違います（新設重賞は数年分しかありません）。
+回数が少ないレースの率は大きく振れるので、必ず「過去○回」の表示を見てください。</p>
+<h2>収録している重賞（143レース）</h2>
+<div class="list"><a href="?r=%E3%82%A8%E3%83%AA%E3%82%B6%E3%83%99%E3%82%B9%E5%A5%B3%E7%8E%8B%E6%9D%AF">GⅠ エリザベス女王杯</a><a href="?r=%E3%82%B8%E3%83%A3%E3%83%91%E3%83%B3%E3%82%AB%E3%83%83%E3%83%97">GⅠ ジャパンカップ</a><a href="?r=%E3%82%B9%E3%83%97%E3%83%AA%E3%83%B3%E3%82%BF%E3%83%BC%E3%82%BA%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅠ スプリンターズステークス</a><a href="?r=%E3%83%81%E3%83%A3%E3%83%B3%E3%83%94%E3%82%AA%E3%83%B3%E3%82%BA%E3%82%AB%E3%83%83%E3%83%97">GⅠ チャンピオンズカップ</a><a href="?r=%E3%83%95%E3%82%A7%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅠ フェブラリーステークス</a><a href="?r=%E3%83%9B%E3%83%BC%E3%83%97%E3%83%95%E3%83%AB%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅠ ホープフルステークス</a><a href="?r=%E3%83%9E%E3%82%A4%E3%83%AB%E3%83%81%E3%83%A3%E3%83%B3%E3%83%94%E3%82%AA%E3%83%B3%E3%82%B7%E3%83%83%E3%83%97">GⅠ マイルチャンピオンシップ</a><a href="?r=%E3%83%B4%E3%82%A3%E3%82%AF%E3%83%88%E3%83%AA%E3%82%A2%E3%83%9E%E3%82%A4%E3%83%AB">GⅠ ヴィクトリアマイル</a><a href="?r=%E5%84%AA%E9%A7%BF%E7%89%9D%E9%A6%AC">GⅠ 優駿牝馬</a><a href="?r=%E5%A4%A7%E9%98%AA%E6%9D%AF">GⅠ 大阪杯</a><a href="?r=%E5%A4%A9%E7%9A%87%E8%B3%9E%EF%BC%88%E6%98%A5%EF%BC%89">GⅠ 天皇賞（春）</a><a href="?r=%E5%A4%A9%E7%9A%87%E8%B3%9E%EF%BC%88%E7%A7%8B%EF%BC%89">GⅠ 天皇賞（秋）</a><a href="?r=%E5%AE%89%E7%94%B0%E8%A8%98%E5%BF%B5">GⅠ 安田記念</a><a href="?r=%E5%AE%9D%E5%A1%9A%E8%A8%98%E5%BF%B5">GⅠ 宝塚記念</a><a href="?r=%E6%9C%89%E9%A6%AC%E8%A8%98%E5%BF%B5">GⅠ 有馬記念</a><a href="?r=%E6%9C%9D%E6%97%A5%E6%9D%AF%E3%83%95%E3%83%A5%E3%83%BC%E3%83%81%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅠ 朝日杯フューチュリティステークス</a><a href="?r=%E6%9D%B1%E4%BA%AC%E5%84%AA%E9%A7%BF">GⅠ 東京優駿</a><a href="?r=%E6%A1%9C%E8%8A%B1%E8%B3%9E">GⅠ 桜花賞</a><a href="?r=%E7%9A%90%E6%9C%88%E8%B3%9E">GⅠ 皐月賞</a><a href="?r=%E7%A7%8B%E8%8F%AF%E8%B3%9E">GⅠ 秋華賞</a><a href="?r=%E8%8F%8A%E8%8A%B1%E8%B3%9E">GⅠ 菊花賞</a><a href="?r=%E9%98%AA%E7%A5%9E%E3%82%B8%E3%83%A5%E3%83%99%E3%83%8A%E3%82%A4%E3%83%AB%E3%83%95%E3%82%A3%E3%83%AA%E3%83%BC%E3%82%BA">GⅠ 阪神ジュベナイルフィリーズ</a><a href="?r=%E9%AB%98%E6%9D%BE%E5%AE%AE%E8%A8%98%E5%BF%B5">GⅠ 高松宮記念</a><a href="?r=%EF%BC%AE%EF%BC%A8%EF%BC%AB%E3%83%9E%E3%82%A4%E3%83%AB%E3%82%AB%E3%83%83%E3%83%97">GⅠ ＮＨＫマイルカップ</a><a href="?r=%E3%82%A2%E3%82%A4%E3%83%AB%E3%83%A9%E3%83%B3%E3%83%89%E3%83%88%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC%E5%BA%9C%E4%B8%AD%E7%89%9D%E9%A6%AC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ アイルランドトロフィー府中牝馬ステークス</a><a href="?r=%E3%82%A2%E3%83%A1%E3%83%AA%E3%82%AB%E3%82%B8%E3%83%A7%E3%83%83%E3%82%AD%E3%83%BC%E3%82%AF%E3%83%A9%E3%83%96%E3%82%AB%E3%83%83%E3%83%97">GⅡ アメリカジョッキークラブカップ</a><a href="?r=%E3%82%A2%E3%83%AB%E3%82%BC%E3%83%B3%E3%83%81%E3%83%B3%E5%85%B1%E5%92%8C%E5%9B%BD%E6%9D%AF">GⅡ アルゼンチン共和国杯</a><a href="?r=%E3%82%B5%E3%83%B3%E3%82%B1%E3%82%A4%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E6%9D%AF%E9%98%AA%E7%A5%9E%E7%89%9D%E9%A6%AC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ サンケイスポーツ杯阪神牝馬ステークス</a><a href="?r=%E3%82%B5%E3%83%B3%E3%82%B1%E3%82%A4%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E8%B3%9E%E3%83%95%E3%83%AD%E3%83%BC%E3%83%A9%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ サンケイスポーツ賞フローラステークス</a><a href="?r=%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E3%83%8B%E3%83%83%E3%83%9D%E3%83%B3%E8%B3%9E%E3%82%B9%E3%83%86%E3%82%A4%E3%83%A4%E3%83%BC%E3%82%BA%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ スポーツニッポン賞ステイヤーズステークス</a><a href="?r=%E3%83%81%E3%83%A5%E3%83%BC%E3%83%AA%E3%83%83%E3%83%97%E8%B3%9E">GⅡ チューリップ賞</a><a href="?r=%E3%83%86%E3%83%AC%E3%83%93%E6%9D%B1%E4%BA%AC%E6%9D%AF%E9%9D%92%E8%91%89%E8%B3%9E">GⅡ テレビ東京杯青葉賞</a><a href="?r=%E3%83%87%E3%82%A4%E3%83%AA%E3%83%BC%E6%9D%AF%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ デイリー杯２歳ステークス</a><a href="?r=%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B8%E3%83%BC%E3%83%A9%E3%83%B3%E3%83%89%E3%83%88%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC">GⅡ ニュージーランドトロフィー</a><a href="?r=%E3%83%95%E3%82%B8%E3%83%86%E3%83%AC%E3%83%93%E8%B3%9E%E3%82%B9%E3%83%97%E3%83%AA%E3%83%B3%E3%82%B0%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ フジテレビ賞スプリングステークス</a><a href="?r=%E3%83%97%E3%83%AD%E3%82%AD%E3%82%AA%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ プロキオンステークス</a><a href="?r=%E4%B8%AD%E5%B1%B1%E8%A8%98%E5%BF%B5">GⅡ 中山記念</a><a href="?r=%E4%BA%AC%E7%8E%8B%E6%9D%AF%E3%82%B9%E3%83%97%E3%83%AA%E3%83%B3%E3%82%B0%E3%82%AB%E3%83%83%E3%83%97">GⅡ 京王杯スプリングカップ</a><a href="?r=%E4%BA%AC%E7%8E%8B%E6%9D%AF%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 京王杯２歳ステークス</a><a href="?r=%E4%BA%AC%E9%83%BD%E5%A4%A7%E8%B3%9E%E5%85%B8">GⅡ 京都大賞典</a><a href="?r=%E4%BA%AC%E9%83%BD%E6%96%B0%E8%81%9E%E6%9D%AF">GⅡ 京都新聞杯</a><a href="?r=%E4%BA%AC%E9%83%BD%E8%A8%98%E5%BF%B5">GⅡ 京都記念</a><a href="?r=%E5%A0%B1%E7%9F%A5%E6%9D%AF%E3%83%95%E3%82%A3%E3%83%AA%E3%83%BC%E3%82%BA%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC">GⅡ 報知杯フィリーズレビュー</a><a href="?r=%E5%A0%B1%E7%9F%A5%E6%9D%AF%E5%BC%A5%E7%94%9F%E8%B3%9E">GⅡ 報知杯弥生賞</a><a href="?r=%E5%A0%B1%E7%9F%A5%E6%9D%AF%E5%BC%A5%E7%94%9F%E8%B3%9E%E3%83%87%E3%82%A3%E3%83%BC%E3%83%97%E3%82%A4%E3%83%B3%E3%83%91%E3%82%AF%E3%83%88%E8%A8%98%E5%BF%B5">GⅡ 報知杯弥生賞ディープインパクト記念</a><a href="?r=%E5%AF%8C%E5%A3%AB%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 富士ステークス</a><a href="?r=%E6%97%A5%E7%B5%8C%E6%96%B0%E6%98%A5%E6%9D%AF">GⅡ 日経新春杯</a><a href="?r=%E6%97%A5%E7%B5%8C%E8%B3%9E">GⅡ 日経賞</a><a href="?r=%E6%9C%9D%E6%97%A5%E6%9D%AF%E3%82%BB%E3%83%B3%E3%83%88%E3%83%A9%E3%82%A4%E3%83%88%E8%A8%98%E5%BF%B5">GⅡ 朝日杯セントライト記念</a><a href="?r=%E6%9C%AD%E5%B9%8C%E8%A8%98%E5%BF%B5">GⅡ 札幌記念</a><a href="?r=%E6%9D%B1%E4%BA%AC%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E6%9D%AF%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 東京スポーツ杯２歳ステークス</a><a href="?r=%E6%9D%B1%E6%B5%B7%E3%83%86%E3%83%AC%E3%83%93%E6%9D%AF%E6%9D%B1%E6%B5%B7%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 東海テレビ杯東海ステークス</a><a href="?r=%E6%AF%8E%E6%97%A5%E6%94%BE%E9%80%81%E8%B3%9E%E3%82%B9%E3%83%AF%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 毎日放送賞スワンステークス</a><a href="?r=%E6%AF%8E%E6%97%A5%E7%8E%8B%E5%86%A0">GⅡ 毎日王冠</a><a href="?r=%E7%94%A3%E7%B5%8C%E8%B3%9E%E3%82%AA%E3%83%BC%E3%83%AB%E3%82%AB%E3%83%9E%E3%83%BC">GⅡ 産経賞オールカマー</a><a href="?r=%E7%94%A3%E7%B5%8C%E8%B3%9E%E3%82%BB%E3%83%B3%E3%83%88%E3%82%A6%E3%83%AB%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 産経賞セントウルステークス</a><a href="?r=%E7%9B%AE%E9%BB%92%E8%A8%98%E5%BF%B5">GⅡ 目黒記念</a><a href="?r=%E7%A5%9E%E6%88%B8%E6%96%B0%E8%81%9E%E6%9D%AF">GⅡ 神戸新聞杯</a><a href="?r=%E7%B4%AB%E8%8B%91%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 紫苑ステークス</a><a href="?r=%E8%AA%AD%E5%A3%B2%E3%83%9E%E3%82%A4%E3%83%A9%E3%83%BC%E3%82%BA%E3%82%AB%E3%83%83%E3%83%97">GⅡ 読売マイラーズカップ</a><a href="?r=%E9%87%91%E9%AF%B1%E8%B3%9E">GⅡ 金鯱賞</a><a href="?r=%E9%96%A2%E8%A5%BF%E3%83%86%E3%83%AC%E3%83%93%E6%94%BE%E9%80%81%E8%B3%9E%E3%83%AD%E3%83%BC%E3%82%BA%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ 関西テレビ放送賞ローズステークス</a><a href="?r=%E9%98%AA%E7%A5%9E%E3%82%AB%E3%83%83%E3%83%97">GⅡ 阪神カップ</a><a href="?r=%E9%98%AA%E7%A5%9E%E5%A4%A7%E8%B3%9E%E5%85%B8">GⅡ 阪神大賞典</a><a href="?r=%EF%BC%AD%EF%BC%A2%EF%BC%B3%E8%B3%9E%E3%82%B9%E3%83%AF%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅡ ＭＢＳ賞スワンステークス</a><a href="?r=%E3%81%8D%E3%81%95%E3%82%89%E3%81%8E%E8%B3%9E">GⅢ きさらぎ賞</a><a href="?r=%E3%81%BF%E3%82%84%E3%81%93%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ みやこステークス</a><a href="?r=%E3%82%A2%E3%82%A4%E3%83%93%E3%82%B9%E3%82%B5%E3%83%9E%E3%83%BC%E3%83%80%E3%83%83%E3%82%B7%E3%83%A5">GⅢ アイビスサマーダッシュ</a><a href="?r=%E3%82%A2%E3%83%AB%E3%83%86%E3%83%9F%E3%82%B9%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ アルテミスステークス</a><a href="?r=%E3%82%A2%E3%83%B3%E3%82%BF%E3%83%AC%E3%82%B9%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ アンタレスステークス</a><a href="?r=%E3%82%A2%E3%83%BC%E3%83%AA%E3%83%B3%E3%83%88%E3%83%B3%E3%82%AB%E3%83%83%E3%83%97">GⅢ アーリントンカップ</a><a href="?r=%E3%82%A8%E3%83%97%E3%82%BD%E3%83%A0%E3%82%AB%E3%83%83%E3%83%97">GⅢ エプソムカップ</a><a href="?r=%E3%82%A8%E3%83%AB%E3%83%A0%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ エルムステークス</a><a href="?r=%E3%82%AB%E3%83%9A%E3%83%A9%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ カペラステークス</a><a href="?r=%E3%82%AD%E3%83%BC%E3%83%B3%E3%83%A9%E3%83%B3%E3%83%89%E3%82%AB%E3%83%83%E3%83%97">GⅢ キーンランドカップ</a><a href="?r=%E3%82%B5%E3%82%A6%E3%82%B8%E3%82%A2%E3%83%A9%E3%83%93%E3%82%A2%E3%83%AD%E3%82%A4%E3%83%A4%E3%83%AB%E3%82%AB%E3%83%83%E3%83%97">GⅢ サウジアラビアロイヤルカップ</a><a href="?r=%E3%82%B7%E3%83%AA%E3%82%A6%E3%82%B9%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ シリウスステークス</a><a href="?r=%E3%82%B7%E3%83%AB%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%89%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ シルクロードステークス</a><a href="?r=%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E3%83%8B%E3%83%83%E3%83%9D%E3%83%B3%E8%B3%9E%E4%BA%AC%E9%83%BD%E9%87%91%E6%9D%AF">GⅢ スポーツニッポン賞京都金杯</a><a href="?r=%E3%82%BF%E3%83%BC%E3%82%B3%E3%82%A4%E3%82%BA%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ ターコイズステークス</a><a href="?r=%E3%83%80%E3%82%A4%E3%83%A4%E3%83%A2%E3%83%B3%E3%83%89%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ ダイヤモンドステークス</a><a href="?r=%E3%83%80%E3%83%BC%E3%83%93%E3%83%BC%E5%8D%BF%E3%83%81%E3%83%A3%E3%83%AC%E3%83%B3%E3%82%B8%E3%83%88%E3%83%AD%E3%83%95%E3%82%A3%E3%83%BC">GⅢ ダービー卿チャレンジトロフィー</a><a href="?r=%E3%83%81%E3%83%A3%E3%83%AC%E3%83%B3%E3%82%B8%E3%82%AB%E3%83%83%E3%83%97">GⅢ チャレンジカップ</a><a href="?r=%E3%83%86%E3%83%AC%E3%83%93%E8%A5%BF%E6%97%A5%E6%9C%AC%E8%B3%9E%E5%8C%97%E4%B9%9D%E5%B7%9E%E8%A8%98%E5%BF%B5">GⅢ テレビ西日本賞北九州記念</a><a href="?r=%E3%83%87%E3%82%A4%E3%83%AA%E3%83%BC%E6%9D%AF%E3%82%AF%E3%82%A4%E3%83%BC%E3%83%B3%E3%82%AB%E3%83%83%E3%83%97">GⅢ デイリー杯クイーンカップ</a><a href="?r=%E3%83%88%E3%83%A8%E3%82%BF%E8%B3%9E%E4%B8%AD%E4%BA%AC%E8%A8%98%E5%BF%B5">GⅢ トヨタ賞中京記念</a><a href="?r=%E3%83%95%E3%82%A7%E3%82%A2%E3%83%AA%E3%83%BC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ フェアリーステークス</a><a href="?r=%E3%83%95%E3%83%A9%E3%83%AF%E3%83%BC%E3%82%AB%E3%83%83%E3%83%97">GⅢ フラワーカップ</a><a href="?r=%E3%83%9E%E3%83%BC%E3%83%81%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ マーチステークス</a><a href="?r=%E3%83%9E%E3%83%BC%E3%83%A1%E3%82%A4%E3%83%89%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ マーメイドステークス</a><a href="?r=%E3%83%A6%E3%83%8B%E3%82%B3%E3%83%BC%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ ユニコーンステークス</a><a href="?r=%E3%83%A9%E3%82%B8%E3%82%AA%EF%BC%AE%EF%BC%A9%EF%BC%AB%EF%BC%AB%EF%BC%A5%EF%BC%A9%E6%9D%AF%E4%BA%AC%E9%83%BD%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ ラジオＮＩＫＫＥＩ杯京都２歳ステークス</a><a href="?r=%E3%83%A9%E3%82%B8%E3%82%AA%EF%BC%AE%EF%BC%A9%EF%BC%AB%EF%BC%AB%EF%BC%A5%EF%BC%A9%E8%B3%9E">GⅢ ラジオＮＩＫＫＥＩ賞</a><a href="?r=%E3%83%AC%E3%83%91%E3%83%BC%E3%83%89%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ レパードステークス</a><a href="?r=%E3%83%AD%E3%83%BC%E3%83%AC%E3%83%AB%E7%AB%B6%E9%A6%AC%E5%A0%B4%E8%B3%9E%E4%B8%AD%E5%B1%B1%E7%89%9D%E9%A6%AC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ ローレル競馬場賞中山牝馬ステークス</a><a href="?r=%E4%B8%83%E5%A4%95%E8%B3%9E">GⅢ 七夕賞</a><a href="?r=%E4%B8%AD%E4%BA%AC%E8%A8%98%E5%BF%B5">GⅢ 中京記念</a><a href="?r=%E4%B8%AD%E6%97%A5%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E8%B3%9E%E3%83%95%E3%82%A1%E3%83%AB%E3%82%B3%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 中日スポーツ賞ファルコンステークス</a><a href="?r=%E4%B8%AD%E6%97%A5%E6%96%B0%E8%81%9E%E6%9D%AF">GⅢ 中日新聞杯</a><a href="?r=%E4%BA%AC%E6%88%90%E6%9D%AF">GⅢ 京成杯</a><a href="?r=%E4%BA%AC%E6%88%90%E6%9D%AF%E3%82%AA%E3%83%BC%E3%82%BF%E3%83%A0%E3%83%8F%E3%83%B3%E3%83%87%E3%82%AD%E3%83%A3%E3%83%83%E3%83%97">GⅢ 京成杯オータムハンデキャップ</a><a href="?r=%E4%BA%AC%E9%83%BD%E7%89%9D%E9%A6%AC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 京都牝馬ステークス</a><a href="?r=%E4%BA%AC%E9%98%AA%E6%9D%AF">GⅢ 京阪杯</a><a href="?r=%E5%85%B1%E5%90%8C%E9%80%9A%E4%BF%A1%E6%9D%AF">GⅢ 共同通信杯</a><a href="?r=%E5%87%BD%E9%A4%A8%E3%82%B9%E3%83%97%E3%83%AA%E3%83%B3%E3%83%88%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 函館スプリントステークス</a><a href="?r=%E5%87%BD%E9%A4%A8%E8%A8%98%E5%BF%B5">GⅢ 函館記念</a><a href="?r=%E5%87%BD%E9%A4%A8%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 函館２歳ステークス</a><a href="?r=%E5%8C%97%E6%B5%B7%E9%81%93%E6%96%B0%E8%81%9E%E6%9D%AF%E3%82%AF%E3%82%A4%E3%83%BC%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 北海道新聞杯クイーンステークス</a><a href="?r=%E5%A4%95%E5%88%8A%E3%83%95%E3%82%B8%E8%B3%9E%E3%82%AA%E3%83%BC%E3%82%B7%E3%83%A3%E3%83%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 夕刊フジ賞オーシャンステークス</a><a href="?r=%E5%B0%8F%E5%80%89%E5%A4%A7%E8%B3%9E%E5%85%B8">GⅢ 小倉大賞典</a><a href="?r=%E5%B0%8F%E5%80%89%E8%A8%98%E5%BF%B5">GⅢ 小倉記念</a><a href="?r=%E5%B0%8F%E5%80%89%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 小倉２歳ステークス</a><a href="?r=%E5%B9%B3%E5%AE%89%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 平安ステークス</a><a href="?r=%E5%BA%9C%E4%B8%AD%E7%89%9D%E9%A6%AC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 府中牝馬ステークス</a><a href="?r=%E6%84%9B%E7%9F%A5%E6%9D%AF">GⅢ 愛知杯</a><a href="?r=%E6%96%B0%E6%BD%9F%E5%A4%A7%E8%B3%9E%E5%85%B8">GⅢ 新潟大賞典</a><a href="?r=%E6%96%B0%E6%BD%9F%E8%A8%98%E5%BF%B5">GⅢ 新潟記念</a><a href="?r=%E6%96%B0%E6%BD%9F%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 新潟２歳ステークス</a><a href="?r=%E6%97%A5%E5%88%8A%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E8%B3%9E%E3%82%B7%E3%83%B3%E3%82%B6%E3%83%B3%E8%A8%98%E5%BF%B5">GⅢ 日刊スポーツ賞シンザン記念</a><a href="?r=%E6%97%A5%E5%88%8A%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E8%B3%9E%E4%B8%AD%E5%B1%B1%E9%87%91%E6%9D%AF">GⅢ 日刊スポーツ賞中山金杯</a><a href="?r=%E6%9C%AD%E5%B9%8C%EF%BC%92%E6%AD%B3%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 札幌２歳ステークス</a><a href="?r=%E6%9D%B1%E4%BA%AC%E4%B8%AD%E6%97%A5%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%84%E6%9D%AF%E6%AD%A6%E8%94%B5%E9%87%8E%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 東京中日スポーツ杯武蔵野ステークス</a><a href="?r=%E6%9D%B1%E4%BA%AC%E6%96%B0%E8%81%9E%E6%9D%AF">GⅢ 東京新聞杯</a><a href="?r=%E6%A0%B9%E5%B2%B8%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 根岸ステークス</a><a href="?r=%E6%AF%8E%E6%97%A5%E6%9D%AF">GⅢ 毎日杯</a><a href="?r=%E7%A6%8F%E5%B3%B6%E7%89%9D%E9%A6%AC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 福島牝馬ステークス</a><a href="?r=%E7%A6%8F%E5%B3%B6%E8%A8%98%E5%BF%B5">GⅢ 福島記念</a><a href="?r=%E8%91%B5%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ 葵ステークス</a><a href="?r=%E9%96%A2%E5%B1%8B%E8%A8%98%E5%BF%B5">GⅢ 関屋記念</a><a href="?r=%E9%98%AA%E6%80%A5%E6%9D%AF">GⅢ 阪急杯</a><a href="?r=%E9%B3%B4%E5%B0%BE%E8%A8%98%E5%BF%B5">GⅢ 鳴尾記念</a><a href="?r=%EF%BC%A3%EF%BC%A2%EF%BC%A3%E8%B3%9E">GⅢ ＣＢＣ賞</a><a href="?r=%EF%BC%AB%EF%BC%A2%EF%BC%B3%E4%BA%AC%E9%83%BD%E8%B3%9E%E3%83%95%E3%82%A1%E3%83%B3%E3%82%BF%E3%82%B8%E3%83%BC%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">GⅢ ＫＢＳ京都賞ファンタジーステークス</a><a href="?r=%E4%B8%AD%E5%B1%B1%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%89%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97">J・GⅠ 中山グランドジャンプ</a><a href="?r=%E4%B8%AD%E5%B1%B1%E5%A4%A7%E9%9A%9C%E5%AE%B3">J・GⅠ 中山大障害</a><a href="?r=%E4%BA%AC%E9%83%BD%E3%83%8F%E3%82%A4%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97">J・GⅡ 京都ハイジャンプ</a><a href="?r=%E6%9D%B1%E4%BA%AC%E3%83%8F%E3%82%A4%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97">J・GⅡ 東京ハイジャンプ</a><a href="?r=%E9%98%AA%E7%A5%9E%E3%82%B9%E3%83%97%E3%83%AA%E3%83%B3%E3%82%B0%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97">J・GⅡ 阪神スプリングジャンプ</a><a href="?r=%E4%BA%AC%E9%83%BD%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">J・GⅢ 京都ジャンプステークス</a><a href="?r=%E5%B0%8F%E5%80%89%E3%82%B5%E3%83%9E%E3%83%BC%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97">J・GⅢ 小倉サマージャンプ</a><a href="?r=%E6%96%B0%E6%BD%9F%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">J・GⅢ 新潟ジャンプステークス</a><a href="?r=%E6%9D%B1%E4%BA%AC%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">J・GⅢ 東京ジャンプステークス</a><a href="?r=%E9%98%AA%E7%A5%9E%E3%82%B8%E3%83%A3%E3%83%B3%E3%83%97%E3%82%B9%E3%83%86%E3%83%BC%E3%82%AF%E3%82%B9">J・GⅢ 阪神ジャンプステークス</a></div>
+<footer>
+カジ競馬 ／ データ出典: JRA-VAN Data Lab.（公式データ）<br>
+本ページは情報提供を目的としたもので、的中や利益を保証するものではありません。<br>
+<a href="/privacy/">プライバシーポリシー・運営者情報</a>
+</footer>
+</div>
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const gcls=g=>/G[Ⅰ1]/.test(g)?'g1':/G[Ⅱ2]/.test(g)?'g2':'g3';
+  const pct=(a,b)=>b?(100*a/b).toFixed(0)+'%':'—';
+  let DATA=null;
+  const params=new URLSearchParams(location.search);
+
+  function rateTable(obj, headLabel, order){
+    const keys=order?order.filter(k=>obj[k]):Object.keys(obj).sort((a,b)=>+a-+b);
+    if(!keys.length) return '';
+    let mx=0; keys.forEach(k=>{ mx=Math.max(mx, 100*obj[k][2]/obj[k][0]); });
+    let rows='';
+    for(const k of keys){
+      const [nn,win,pl]=obj[k];
+      const fk=100*pl/nn, w=Math.max(4,Math.round(fk/Math.max(mx,1)*90));
+      rows+=`<tr><td>${esc(k)}</td><td class="n">${nn}</td>`
+          +`<td class="n">${pct(win,nn)}</td>`
+          +`<td class="n bar"><span style="width:${w}px"></span>${fk.toFixed(0)}%</td></tr>`;
+    }
+    return `<div class="scroll"><table><tr><th>${headLabel}</th><th class="n">頭数</th>`
+      +`<th class="n">勝率</th><th class="n">複勝率</th></tr>${rows}</table></div>`;
+  }
+
+  function show(name){
+    const o=DATA[name];
+    if(!o){ $('#body').innerHTML='<p class="note">その重賞のデータが見つかりませんでした。</p>'; return; }
+    document.title=name+' のデータ（過去'+o.runs+'年）— カジ競馬';
+    const p1=o.pop['1']||[0,0,0];
+    let h=`<h1><span class="gb ${gcls(o.grade)}">${esc(o.grade)}</span> ${esc(name)}</h1>`
+      +`<p class="sub">${o.jyo.join('・')} ／ ${esc(o.surf)}${o.dist}m ／ 過去${o.runs}回のデータ</p>`;
+    h+=`<h2>1番人気は信頼できるか</h2>`
+      +`<p>過去${p1[0]}回で、1番人気の複勝率は <b class="hot">${pct(p1[2],p1[0])}</b>、`
+      +`勝率は ${pct(p1[1],p1[0])} でした。</p>`;
+    h+='<h2>人気別の成績</h2>'+rateTable(o.pop,'人気');
+    h+='<h2>枠順の成績</h2>'+rateTable(o.waku,'枠');
+    h+='<h2>脚質の成績（このレースでどう走ったか）</h2>';
+    // 逃げ+先行 と 差し+追込 の複勝率を比べて、前傾か後傾かを一言で
+    (function(){
+      const st=o.style, fr=['逃げ','先行'], bk=['差し','追込'];
+      let fn=0,fp=0,bn=0,bp=0;
+      fr.forEach(k=>{ if(st[k]){ fn+=st[k][0]; fp+=st[k][2]; }});
+      bk.forEach(k=>{ if(st[k]){ bn+=st[k][0]; bp+=st[k][2]; }});
+      if(fn>=10&&bn>=10){
+        const fr3=100*fp/fn, bk3=100*bp/bn, d=fr3-bk3;
+        const msg = d>=8 ? `<b class="hot">前が有利</b>な傾向です（逃げ・先行の複勝率 ${fr3.toFixed(0)}% ＞ 差し・追込 ${bk3.toFixed(0)}%）。`
+                  : d<=-8 ? `<b class="hot">後ろから届く</b>傾向です（差し・追込の複勝率 ${bk3.toFixed(0)}% ＞ 逃げ・先行 ${fr3.toFixed(0)}%）。`
+                  : `脚質による差は小さめです（前 ${fr3.toFixed(0)}% / 後 ${bk3.toFixed(0)}%）。`;
+        h+=`<p>${msg}</p>`;
+      }
+    })();
+    h+=rateTable(o.style,'脚質',['逃げ','先行','差し','追込']);
+    h+='<h2>近年の勝ち馬</h2><div class="scroll"><table>'
+      +'<tr><th>年</th><th>勝ち馬</th><th class="n">人気</th><th class="n">単勝配当</th><th class="n">頭数</th></tr>';
+    for(const r of o.runnings){
+      h+=`<tr><td>${r.date.slice(0,4)}/${r.date.slice(4,6)}/${r.date.slice(6,8)}</td>`
+        +`<td>${esc(r.winner||'—')}</td><td class="n">${r.wpop||'—'}</td>`
+        +`<td class="n">${r.tan?r.tan.toLocaleString()+'円':'—'}</td><td class="n">${r.fn}</td></tr>`;
+    }
+    h+='</table></div>';
+    h+='<p class="note">脚質は各年の最初のコーナー通過順÷頭数から機械的に付けています。'
+      +'コースのペース傾向を見る目安で、個々の馬の脚質とは限りません。</p>';
+    $('#body').innerHTML=h;
+    history.replaceState(null,'','?r='+encodeURIComponent(name));
+    $('#sel').value=name;
+  }
+
+  fetch('/data/jusho/data.json',{cache:'no-cache'}).then(r=>r.json()).then(j=>{
+    DATA=j;
+    const names=Object.keys(j).sort((a,b)=>j[b].runs-j[a].runs);
+    const sel=$('#sel');
+    // G1を先頭に、あとは五十音でなく施行回数順
+    for(const nm of names){
+      const o=j[nm];
+      sel.appendChild(new Option(`${o.grade}  ${nm}`, nm));
+    }
+    // 一覧リンク（G1だけ手早く飛べるように）
+    const g1=names.filter(n=>/G[Ⅰ1]/.test(j[n].grade)).sort();
+    $('#g1list').innerHTML=g1.map(n=>`<a href="?r=${encodeURIComponent(n)}">${n}</a>`).join('');
+    sel.onchange=()=>show(sel.value);
+    const want=params.get('r');
+    show(want && j[want] ? want : (g1.includes('有馬記念')?'有馬記念':names[0]));
+  }).catch(()=>{ $('#body').innerHTML='<p class="note">データを読み込めませんでした。</p>'; });
+})();
+</script>
+<script>
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>

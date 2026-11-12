@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JRA重賞 傾向分析 ｜ SEVENTHWELL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Saira+Condensed:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --panel:#0d0e10; --panel2:#141518; --line:#26282d;
+  --txt:#f0f0f0; --muted:#8a8f98;
+  --red:#d8423a; --gold:#e8a838; --blue:#46b8e8; --green:#73c95a;
+  --accent:#f0f0f0;
+}
+[data-theme="light"]{
+  --bg:#f4f4f2; --panel:#ffffff; --panel2:#ececea; --line:#d4d4d0;
+  --txt:#0a0a0a; --muted:#6a6f78;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:"Noto Sans JP",sans-serif;-webkit-text-size-adjust:100%}
+body{padding:18px 14px 60px;max-width:760px;margin:0 auto;position:relative;overflow-x:hidden}
+/* スキャンライン */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,0.015) 0px,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 3px);mix-blend-mode:overlay}
+.head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+h1{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:30px;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.sub{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:.05em}
+.toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.back{font-size:12px;color:var(--gold);text-decoration:none;font-family:"Space Mono",monospace}
+.themebtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:20px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:"Space Mono",monospace}
+.intro{font-size:11.5px;color:var(--muted);line-height:1.6;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:16px}
+/* GIセレクタ */
+.gi-select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+  font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:19px;padding:13px 14px;border-radius:10px;
+  margin-bottom:6px;-webkit-appearance:none;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a8f98' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center}
+.gi-meta{font-family:"Space Mono",monospace;font-size:12px;color:var(--muted);margin-bottom:18px;letter-spacing:.03em}
+.gi-meta b{color:var(--txt)}
+/* セクション */
+.sec{margin-bottom:24px}
+.sec-h{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--txt);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:8px}
+.sec-h .note{font-family:"Noto Sans JP";font-weight:400;font-size:10.5px;color:var(--muted);text-transform:none;letter-spacing:0}
+/* 枠番バー */
+.waku-grid{display:flex;flex-direction:column;gap:7px}
+.waku-row{display:flex;align-items:center;gap:9px}
+.waku-no{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:15px;flex-shrink:0;color:#000}
+.w1{background:#f3f3f3}.w2{background:#1a1a1a;color:#fff;border:1px solid #555}.w3{background:#e24b4b;color:#fff}
+.w4{background:#3b7fd4;color:#fff}.w5{background:#e8c84a}.w6{background:#5cc55c;color:#fff}
+.w7{background:#e8943a;color:#fff}.w8{background:#d96aa8;color:#fff}
+.bar-wrap{flex:1;height:24px;background:var(--panel2);border-radius:5px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:5px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.bar-val{font-family:"Space Mono",monospace;font-size:11.5px;color:var(--txt);min-width:74px;text-align:right;flex-shrink:0}
+.bar-val b{font-weight:700}.bar-val .x{color:var(--muted);font-size:10px}
+/* 脚質 */
+.style-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.style-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px 8px;text-align:center}
+.style-card .nm{font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:14px;margin-bottom:6px}
+.style-card .pct{font-family:"Space Mono",monospace;font-weight:700;font-size:22px;line-height:1}
+.style-card .cnt{font-size:10px;color:var(--muted);margin-top:3px;font-family:"Space Mono",monospace}
+/* 人気テーブル */
+.ninki-row{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--line)}
+.ninki-row:last-child{border:none}
+.ninki-lbl{font-family:"Space Mono",monospace;font-size:12px;width:64px;flex-shrink:0;color:var(--txt)}
+.ninki-bar-wrap{flex:1;height:18px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.ninki-bar{height:100%;background:var(--gold);border-radius:4px;transition:width .6s}
+.ninki-val{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);min-width:88px;text-align:right;flex-shrink:0}
+/* 馬番ヒート */
+.uma-heat{display:flex;flex-wrap:wrap;gap:5px}
+.uma-cell{width:38px;height:38px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--panel2);border:1px solid var(--line);position:relative}
+.uma-cell .n{font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:13px;line-height:1}
+.uma-cell .c{font-family:"Space Mono",monospace;font-size:8.5px;color:var(--muted);line-height:1;margin-top:1px}
+/* サマリーカード */
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.sum-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px}
+.sum-card .lbl{font-size:10.5px;color:var(--muted);margin-bottom:5px;font-family:"Space Mono",monospace;letter-spacing:.03em}
+.sum-card .v{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:24px;line-height:1}
+.sum-card .v small{font-size:13px;color:var(--muted);font-weight:500}
+.foot{font-size:10px;color:var(--muted);line-height:1.6;margin-top:24px;padding-top:14px;border-top:1px solid var(--line);font-family:"Space Mono",monospace}
+.copybtn{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:9px;
+  padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:16px;font-family:"Noto Sans JP"}
+.copybtn:active{opacity:.7}
+</style>
+</head>
+<body>
+<script>
+// テーマ早期適用
+(function(){try{var t=localStorage.getItem('sw_jusho_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+
+<div class="toprow">
+  <a class="back" href="./">← 本体に戻る</a>
+  <button class="themebtn" id="themeBtn">◑ テーマ</button>
+</div>
+<div class="head">
+  <h1>JRA重賞 傾向分析</h1>
+  <span class="sub">SEVENTHWELL ／ 過去10年</span>
+</div>
+<div class="intro">
+  主要GI20レースの過去11年（2015〜2025）の確定結果を集計。枠番・馬番・人気・脚質の傾向を表示します。データはnetkeiba確定値。あくまで過去の傾向で、未来を保証するものではありません。馬券は20歳から。
+</div>
+
+<select class="gi-select" id="giSelect"></select>
+<div class="gi-meta" id="giMeta"></div>
+
+<div id="content"></div>
+
+<button class="copybtn" id="copyBtn">この傾向をコピー</button>
+
+<div class="foot" id="foot"></div>
+
+<script>
+const GI_DATA={"フェブラリーS":{"meta":{"distance":1600,"surface":"ダ","place":"東京","turn":"左"},"years":11,"avg_field":15.8,"waku_win":{"1":0,"2":3,"3":1,"4":2,"5":2,"6":2,"7":1,"8":0},"waku_top3":{"1":0,"2":5,"3":4,"4":6,"5":7,"6":4,"7":4,"8":3},"waku_runs":{"1":21,"2":21,"3":22,"4":22,"5":22,"6":22,"7":22,"8":22},"uma_top3":{"4":2,"14":4,"10":3,"7":4,"3":3,"9":4,"12":3,"6":4,"2":1,"15":3,"11":1,"8":1},"ninki_win":{"1":5,"2":4,"4":1,"11":1},"ninki_top3":{"1":9,"5":5,"3":3,"2":5,"7":1,"4":3,"6":1,"8":2,"16":1,"9":1,"11":1,"13":1},"ninki_runs":{"1":11,"5":11,"3":11,"11":11,"4":11,"2":11,"6":11,"7":11,"10":11,"12":11,"8":11,"14":11,"13":11,"9":11,"16":10,"15":10},"style_win":{"逃げ":1,"先行":7,"差し":2,"追込":1},"style_top3":{"逃げ":2,"先行":9,"差し":11,"追込":11},"style_runs":{"逃げ":11,"先行":46,"差し":46,"追込":71},"win_ninki_avg":2.5,"fastest_agari_win_pct":18},"高松宮記念":{"meta":{"distance":1200,"surface":"芝","place":"中京","turn":"左"},"years":11,"avg_field":17.9,"waku_win":{"1":2,"2":3,"3":1,"4":0,"5":2,"6":0,"7":2,"8":1},"waku_top3":{"1":3,"2":7,"3":2,"4":6,"5":6,"6":0,"7":6,"8":3},"waku_runs":{"1":22,"2":22,"3":22,"4":22,"5":22,"6":21,"7":33,"8":33},"uma_top3":{"4":3,"15":3,"16":3,"6":2,"8":3,"3":4,"7":3,"9":3,"14":2,"2":2,"10":3,"13":1,"1":1},"ninki_win":{"4":1,"1":1,"5":1,"2":3,"3":1,"9":1,"8":1,"12":1,"6":1},"ninki_top3":{"4":2,"6":3,"3":5,"1":4,"2":8,"5":3,"10":1,"12":2,"17":2,"9":1,"8":1,"13":1},"ninki_runs":{"4":11,"6":11,"3":11,"10":11,"5":11,"2":11,"15":10,"12":11,"13":11,"14":11,"17":11,"16":11,"1":11,"8":11,"11":11,"7":11,"9":11,"18":11},"style_win":{"逃げ":1,"先行":5,"差し":4,"追込":1},"style_top3":{"逃げ":2,"先行":11,"差し":14,"追込":6},"style_runs":{"逃げ":11,"先行":39,"差し":69,"追込":78},"win_ninki_avg":4.9,"fastest_agari_win_pct":9},"大阪杯":{"meta":{"distance":2000,"surface":"芝","place":"阪神","turn":"右"},"years":11,"avg_field":14.3,"waku_win":{"1":0,"2":0,"3":3,"4":2,"5":2,"6":2,"7":1,"8":1},"waku_top3":{"1":2,"2":1,"3":6,"4":5,"5":5,"6":5,"7":6,"8":3},"waku_runs":{"1":15,"2":16,"3":19,"4":20,"5":21,"6":22,"7":22,"8":22},"uma_top3":{"3":2,"7":4,"4":2,"9":3,"8":5,"5":4,"13":4,"15":1,"6":1,"2":2,"12":1,"1":1,"14":1,"11":2},"ninki_win":{"4":2,"2":5,"1":2,"9":1,"8":1},"ninki_top3":{"4":7,"1":6,"6":3,"2":7,"5":1,"7":2,"9":1,"8":2,"3":2,"10":1,"11":1},"ninki_runs":{"4":11,"1":11,"6":11,"2":11,"3":11,"8":11,"12":10,"5":11,"7":11,"14":8,"13":9,"10":11,"11":11,"9":11,"15":5,"16":4},"style_win":{"逃げ":2,"先行":3,"差し":4,"追込":2},"style_top3":{"逃げ":4,"先行":7,"差し":10,"追込":12},"style_runs":{"逃げ":11,"先行":30,"差し":54,"追込":62},"win_ninki_avg":3.4,"fastest_agari_win_pct":18},"桜花賞":{"meta":{"distance":1600,"surface":"芝","place":"阪神","turn":"右"},"years":11,"avg_field":17.8,"waku_win":{"1":0,"2":2,"3":1,"4":3,"5":2,"6":1,"7":2,"8":0},"waku_top3":{"1":4,"2":4,"3":3,"4":4,"5":7,"6":4,"7":4,"8":3},"waku_runs":{"1":21,"2":21,"3":22,"4":22,"5":22,"6":22,"7":33,"8":33},"uma_top3":{"6":3,"7":2,"1":3,"13":2,"12":3,"10":2,"14":2,"9":5,"8":2,"16":1,"4":2,"17":1,"3":2,"18":1,"2":1,"11":1},"ninki_win":{"5":1,"3":2,"8":1,"2":5,"7":1,"1":1},"ninki_top3":{"5":2,"7":4,"8":3,"3":6,"2":7,"6":3,"1":6,"9":1,"4":1},"ninki_runs":{"5":11,"7":11,"8":11,"3":11,"16":11,"4":11,"6":11,"15":11,"1":11,"2":11,"12":11,"9":11,"11":11,"10":11,"13":11,"14":11,"18":9,"17":11},"style_win":{"逃げ":1,"先行":3,"差し":2,"追込":5},"style_top3":{"逃げ":2,"先行":9,"差し":11,"追込":11},"style_runs":{"逃げ":11,"先行":45,"差し":62,"追込":78},"win_ninki_avg":3.4,"fastest_agari_win_pct":36},"皐月賞":{"meta":{"distance":2000,"surface":"芝","place":"中山","turn":"右"},"years":11,"avg_field":17.2,"waku_win":{"1":2,"2":1,"3":0,"4":2,"5":0,"6":3,"7":2,"8":1},"waku_top3":{"1":2,"2":4,"3":2,"4":8,"5":3,"6":6,"7":5,"8":3},"waku_runs":{"1":21,"2":22,"3":22,"4":22,"5":22,"6":22,"7":30,"8":28},"uma_top3":{"2":1,"5":1,"7":7,"18":2,"3":2,"11":3,"10":3,"14":3,"12":3,"4":1,"1":2,"16":1,"13":2,"8":1,"6":1},"ninki_win":{"3":2,"8":1,"9":1,"7":1,"1":2,"2":3,"5":1},"ninki_top3":{"3":7,"2":4,"4":4,"8":4,"1":6,"9":2,"12":1,"7":2,"6":1,"5":2},"ninki_runs":{"3":11,"2":10,"4":11,"6":11,"10":11,"1":11,"11":11,"9":11,"8":11,"15":11,"5":11,"7":11,"12":11,"13":11,"14":11,"16":10,"18":7,"17":8},"style_win":{"逃げ":0,"先行":3,"差し":4,"追込":4},"style_top3":{"逃げ":0,"先行":10,"差し":12,"追込":11},"style_runs":{"逃げ":11,"先行":34,"差し":70,"追込":74},"win_ninki_avg":3.9,"fastest_agari_win_pct":36},"ヴィクトリアM":{"meta":{"distance":1600,"surface":"芝","place":"東京","turn":"左"},"years":11,"avg_field":17.2,"waku_win":{"1":0,"2":2,"3":5,"4":0,"5":1,"6":1,"7":1,"8":1},"waku_top3":{"1":2,"2":5,"3":6,"4":4,"5":4,"6":3,"7":2,"8":7},"waku_runs":{"1":21,"2":22,"3":21,"4":21,"5":21,"6":22,"7":30,"8":31},"uma_top3":{"5":3,"7":2,"18":2,"13":1,"10":2,"15":1,"3":2,"4":2,"16":4,"6":4,"9":2,"12":2,"8":1,"1":1,"11":1,"2":2,"17":1},"ninki_win":{"5":2,"7":1,"6":1,"8":1,"1":3,"4":2,"14":1},"ninki_top3":{"5":4,"12":1,"18":1,"7":4,"1":7,"2":1,"6":2,"11":2,"8":1,"4":6,"10":1,"3":2,"14":1},"ninki_runs":{"5":11,"12":11,"18":6,"3":11,"4":11,"1":11,"2":11,"7":11,"16":10,"6":11,"15":11,"9":11,"11":11,"14":11,"17":8,"10":11,"8":11,"13":11},"style_win":{"逃げ":0,"先行":2,"差し":5,"追込":4},"style_top3":{"逃げ":1,"先行":8,"差し":14,"追込":10},"style_runs":{"逃げ":11,"先行":38,"差し":63,"追込":77},"win_ninki_avg":5.1,"fastest_agari_win_pct":27},"オークス":{"meta":{"distance":2400,"surface":"芝","place":"東京","turn":"左"},"years":11,"avg_field":17.7,"waku_win":{"1":1,"2":2,"3":1,"4":0,"5":2,"6":1,"7":3,"8":1},"waku_top3":{"1":7,"2":2,"3":1,"4":5,"5":3,"6":2,"7":9,"8":4},"waku_runs":{"1":22,"2":20,"3":21,"4":22,"5":22,"6":22,"7":33,"8":33},"uma_top3":{"10":2,"14":3,"17":1,"3":1,"13":5,"2":4,"1":3,"16":2,"4":1,"7":3,"9":1,"8":2,"18":1,"5":1,"12":2,"15":1},"ninki_win":{"3":3,"1":6,"2":1,"4":1},"ninki_top3":{"3":4,"1":8,"6":2,"2":8,"5":1,"4":3,"12":1,"7":1,"13":1,"16":1,"10":2,"15":1},"ninki_runs":{"3":11,"1":11,"6":11,"13":11,"7":11,"14":11,"4":11,"12":11,"5":11,"2":11,"11":11,"8":11,"15":11,"16":11,"17":11,"10":11,"9":11,"18":8},"style_win":{"逃げ":0,"先行":1,"差し":4,"追込":6},"style_top3":{"逃げ":0,"先行":6,"差し":15,"追込":12},"style_runs":{"逃げ":11,"先行":39,"差し":71,"追込":74},"win_ninki_avg":1.9,"fastest_agari_win_pct":73},"日本ダービー":{"meta":{"distance":2400,"surface":"芝","place":"東京","turn":"左"},"years":11,"avg_field":17.7,"waku_win":{"1":1,"2":1,"3":2,"4":0,"5":1,"6":2,"7":3,"8":1},"waku_top3":{"1":5,"2":3,"3":4,"4":3,"5":1,"6":7,"7":6,"8":4},"waku_runs":{"1":22,"2":22,"3":22,"4":22,"5":22,"6":22,"7":32,"8":31},"uma_top3":{"14":1,"1":4,"11":3,"3":2,"8":1,"12":4,"4":1,"18":2,"17":2,"7":2,"13":4,"5":3,"6":1,"10":1,"15":1,"2":1},"ninki_win":{"1":3,"3":2,"2":1,"5":1,"12":1,"4":2,"9":1},"ninki_top3":{"1":8,"5":2,"3":6,"2":5,"4":3,"16":1,"12":1,"10":1,"9":2,"7":2,"6":2},"ninki_runs":{"1":11,"5":11,"3":11,"2":11,"16":11,"9":11,"7":11,"15":11,"4":11,"10":11,"13":11,"8":10,"17":11,"6":11,"14":11,"18":9,"11":11,"12":11},"style_win":{"逃げ":0,"先行":6,"差し":3,"追込":2},"style_top3":{"逃げ":1,"先行":11,"差し":14,"追込":7},"style_runs":{"逃げ":11,"先行":38,"差し":67,"追込":79},"win_ninki_avg":4.1,"fastest_agari_win_pct":18},"安田記念":{"meta":{"distance":1600,"surface":"芝","place":"東京","turn":"左"},"years":11,"avg_field":16.3,"waku_win":{"1":0,"2":0,"3":2,"4":1,"5":3,"6":0,"7":4,"8":1},"waku_top3":{"1":2,"2":2,"3":4,"4":5,"5":5,"6":2,"7":9,"8":4},"waku_runs":{"1":19,"2":19,"3":21,"4":21,"5":22,"6":22,"7":27,"8":28},"uma_top3":{"6":4,"13":4,"12":1,"8":1,"10":4,"14":3,"16":1,"4":2,"1":1,"5":4,"2":1,"11":2,"9":1,"17":1,"18":1,"7":2},"ninki_win":{"1":2,"8":2,"7":1,"9":1,"4":3,"3":1,"2":1},"ninki_top3":{"1":9,"3":5,"12":1,"8":4,"6":1,"7":1,"9":2,"5":1,"4":5,"2":4},"ninki_runs":{"1":11,"3":11,"12":11,"2":11,"11":11,"17":6,"9":11,"7":11,"16":8,"5":11,"10":11,"6":11,"14":10,"15":8,"4":11,"8":11,"13":10,"18":5},"style_win":{"逃げ":1,"先行":3,"差し":4,"追込":3},"style_top3":{"逃げ":3,"先行":6,"差し":10,"追込":14},"style_runs":{"逃げ":11,"先行":41,"差し":57,"追込":70},"win_ninki_avg":4.6,"fastest_agari_win_pct":27},"宝塚記念":{"meta":{"distance":2200,"surface":"芝","place":"阪神","turn":"右"},"years":11,"avg_field":15.2,"waku_win":{"1":0,"2":1,"3":2,"4":0,"5":1,"6":1,"7":0,"8":6},"waku_top3":{"1":5,"2":4,"3":5,"4":2,"5":4,"6":3,"7":3,"8":7},"waku_runs":{"1":17,"2":18,"3":18,"4":20,"5":21,"6":22,"7":24,"8":27},"uma_top3":{"16":3,"6":3,"1":4,"9":3,"3":2,"11":2,"2":3,"8":1,"4":1,"13":1,"12":4,"14":1,"7":3,"10":1,"5":1},"ninki_win":{"6":1,"8":1,"3":3,"7":2,"2":2,"1":2},"ninki_top3":{"6":3,"10":4,"11":1,"8":1,"1":5,"2":5,"3":3,"5":3,"4":2,"7":4,"12":2},"ninki_runs":{"6":11,"10":11,"11":11,"7":11,"3":11,"8":11,"12":10,"2":11,"13":9,"16":7,"4":11,"9":11,"5":11,"15":7,"1":11,"14":7,"17":5,"18":1},"style_win":{"逃げ":1,"先行":3,"差し":3,"追込":4},"style_top3":{"逃げ":4,"先行":6,"差し":9,"追込":14},"style_runs":{"逃げ":11,"先行":36,"差し":49,"追込":71},"win_ninki_avg":3.9,"fastest_agari_win_pct":45},"スプリンターズS":{"meta":{"distance":1200,"surface":"芝","place":"中山","turn":"右"},"years":11,"avg_field":15.8,"waku_win":{"1":2,"2":1,"3":1,"4":3,"5":1,"6":0,"7":2,"8":1},"waku_top3":{"1":8,"2":4,"3":6,"4":5,"5":3,"6":1,"7":3,"8":3},"waku_runs":{"1":22,"2":22,"3":22,"4":22,"5":21,"6":22,"7":21,"8":22},"uma_top3":{"2":5,"4":3,"6":5,"13":3,"15":1,"8":3,"9":1,"1":3,"7":2,"10":2,"3":1,"16":2,"12":1,"5":1},"ninki_win":{"1":4,"3":3,"2":1,"8":1,"9":1,"11":1},"ninki_top3":{"1":6,"11":3,"9":3,"3":5,"2":4,"5":3,"7":3,"13":1,"10":2,"8":1,"6":1,"4":1},"ninki_runs":{"1":11,"11":11,"9":10,"4":11,"3":11,"6":11,"12":11,"15":11,"8":11,"7":11,"14":11,"5":11,"2":11,"10":11,"13":11,"16":10},"style_win":{"逃げ":0,"先行":5,"差し":3,"追込":3},"style_top3":{"逃げ":4,"先行":10,"差し":11,"追込":8},"style_runs":{"逃げ":11,"先行":37,"差し":59,"追込":67},"win_ninki_avg":3.9,"fastest_agari_win_pct":9},"秋華賞":{"meta":{"distance":2000,"surface":"芝","place":"京都","turn":"右"},"years":11,"avg_field":17.2,"waku_win":{"1":0,"2":0,"3":3,"4":2,"5":0,"6":3,"7":2,"8":1},"waku_top3":{"1":2,"2":2,"3":4,"4":7,"5":4,"6":5,"7":6,"8":3},"waku_runs":{"1":20,"2":21,"3":22,"4":22,"5":22,"6":22,"7":30,"8":30},"uma_top3":{"18":2,"9":3,"6":2,"7":4,"3":1,"15":1,"14":4,"4":1,"11":2,"13":2,"2":2,"5":2,"8":3,"12":2,"10":2},"ninki_win":{"1":5,"3":3,"4":2,"2":1},"ninki_top3":{"1":6,"5":5,"8":2,"3":6,"4":4,"2":6,"10":2,"9":1,"6":1},"ninki_runs":{"1":11,"5":11,"8":11,"7":11,"16":10,"2":11,"12":11,"4":11,"9":11,"15":11,"10":11,"11":11,"13":11,"6":11,"17":8,"14":11,"3":11,"18":6},"style_win":{"逃げ":0,"先行":1,"差し":7,"追込":3},"style_top3":{"逃げ":2,"先行":3,"差し":13,"追込":15},"style_runs":{"逃げ":11,"先行":38,"差し":64,"追込":76},"win_ninki_avg":2.2,"fastest_agari_win_pct":27},"菊花賞":{"meta":{"distance":3000,"surface":"芝","place":"京都","turn":"右"},"years":11,"avg_field":17.9,"waku_win":{"1":0,"2":4,"3":1,"4":0,"5":1,"6":1,"7":3,"8":1},"waku_top3":{"1":0,"2":6,"3":1,"4":2,"5":4,"6":4,"7":10,"8":6},"waku_runs":{"1":22,"2":22,"3":22,"4":22,"5":22,"6":22,"7":32,"8":33},"uma_top3":{"4":3,"11":3,"17":4,"3":3,"13":4,"14":5,"12":1,"9":3,"7":2,"5":1,"10":1,"18":1,"16":1,"15":1},"ninki_win":{"5":1,"1":4,"7":1,"3":1,"4":2,"2":2},"ninki_top3":{"5":2,"2":6,"1":7,"9":1,"6":2,"10":2,"13":2,"7":3,"3":2,"8":1,"4":5},"ninki_runs":{"5":11,"2":11,"1":11,"6":11,"3":11,"7":11,"8":11,"11":11,"10":11,"12":11,"4":11,"13":11,"18":10,"9":11,"15":11,"17":11,"14":11,"16":11},"style_win":{"逃げ":2,"先行":1,"差し":6,"追込":2},"style_top3":{"逃げ":2,"先行":5,"差し":15,"追込":11},"style_runs":{"逃げ":11,"先行":41,"差し":62,"追込":83},"win_ninki_avg":2.8,"fastest_agari_win_pct":55},"天皇賞・秋":{"meta":{"distance":2000,"surface":"芝","place":"東京","turn":"左"},"years":11,"avg_field":14.7,"waku_win":{"1":1,"2":0,"3":1,"4":5,"5":2,"6":1,"7":1,"8":0},"waku_top3":{"1":3,"2":1,"3":5,"4":6,"5":6,"6":5,"7":5,"8":2},"waku_runs":{"1":15,"2":18,"3":19,"4":20,"5":21,"6":21,"7":24,"8":24},"uma_top3":{"8":3,"14":2,"16":1,"12":1,"7":6,"2":2,"4":2,"9":7,"10":1,"5":3,"6":2,"1":1,"3":2},"ninki_win":{"1":8,"2":2,"3":1},"ninki_top3":{"1":9,"10":1,"6":5,"7":2,"2":5,"13":1,"4":2,"3":4,"5":1,"9":1,"8":2},"ninki_runs":{"1":11,"10":11,"6":11,"5":11,"4":11,"17":2,"15":7,"3":11,"2":11,"8":11,"16":4,"9":11,"13":8,"18":2,"12":10,"11":11,"7":11,"14":8},"style_win":{"逃げ":0,"先行":2,"差し":5,"追込":4},"style_top3":{"逃げ":4,"先行":4,"差し":13,"追込":12},"style_runs":{"逃げ":11,"先行":31,"差し":55,"追込":65},"win_ninki_avg":1.4,"fastest_agari_win_pct":27},"エリザベス女王杯":{"meta":{"distance":2200,"surface":"芝","place":"京都","turn":"右"},"years":11,"avg_field":17.0,"waku_win":{"1":2,"2":1,"3":1,"4":1,"5":0,"6":3,"7":0,"8":3},"waku_top3":{"1":6,"2":4,"3":3,"4":3,"5":3,"6":6,"7":3,"8":5},"waku_runs":{"1":20,"2":22,"3":22,"4":22,"5":22,"6":22,"7":27,"8":30},"uma_top3":{"12":3,"18":3,"8":1,"3":2,"9":2,"1":4,"5":2,"4":1,"10":1,"7":2,"2":3,"6":1,"11":3,"13":2,"16":2,"15":1},"ninki_win":{"6":1,"3":4,"5":1,"1":3,"10":1,"4":1},"ninki_top3":{"6":1,"1":6,"4":3,"3":7,"12":3,"2":2,"5":4,"9":4,"7":2,"10":1},"ninki_runs":{"6":11,"1":11,"4":11,"3":11,"8":11,"7":11,"11":11,"5":11,"18":5,"14":11,"2":11,"9":11,"17":8,"15":11,"10":11,"13":11,"12":11,"16":9},"style_win":{"逃げ":0,"先行":1,"差し":7,"追込":3},"style_top3":{"逃げ":2,"先行":4,"差し":16,"追込":11},"style_runs":{"逃げ":11,"先行":34,"差し":67,"追込":75},"win_ninki_avg":3.6,"fastest_agari_win_pct":55},"マイルCS":{"meta":{"distance":1600,"surface":"芝","place":"京都","turn":"右"},"years":11,"avg_field":17.3,"waku_win":{"1":1,"2":1,"3":1,"4":0,"5":1,"6":1,"7":2,"8":4},"waku_top3":{"1":3,"2":6,"3":5,"4":4,"5":2,"6":2,"7":6,"8":5},"waku_runs":{"1":22,"2":22,"3":22,"4":22,"5":22,"6":22,"7":27,"8":31},"uma_top3":{"16":3,"10":2,"5":3,"8":2,"15":2,"18":1,"11":1,"4":2,"1":2,"2":1,"3":4,"14":2,"7":2,"12":1,"13":2,"6":2,"17":1},"ninki_win":{"4":3,"3":2,"5":2,"1":3,"6":1},"ninki_top3":{"4":5,"2":5,"1":5,"3":5,"7":4,"5":4,"6":2,"8":1,"10":1,"15":1},"ninki_runs":{"4":11,"2":11,"1":11,"3":11,"5":11,"10":11,"9":11,"17":9,"8":11,"7":11,"18":5,"14":11,"13":11,"6":11,"15":11,"12":11,"11":11,"16":11},"style_win":{"逃げ":1,"先行":3,"差し":3,"追込":4},"style_top3":{"逃げ":1,"先行":10,"差し":17,"追込":5},"style_runs":{"逃げ":11,"先行":42,"差し":67,"追込":70},"win_ninki_avg":3.4,"fastest_agari_win_pct":27},"ジャパンC":{"meta":{"distance":2400,"surface":"芝","place":"東京","turn":"左"},"years":11,"avg_field":16.4,"waku_win":{"1":5,"2":1,"3":3,"4":1,"5":0,"6":0,"7":1,"8":0},"waku_top3":{"1":9,"2":5,"3":5,"4":3,"5":2,"6":2,"7":5,"8":2},"waku_runs":{"1":18,"2":20,"3":22,"4":22,"5":22,"6":21,"7":27,"8":28},"uma_top3":{"15":3,"6":3,"1":6,"12":1,"17":2,"2":5,"4":2,"8":2,"11":1,"5":2,"7":2,"3":2,"10":1,"14":1},"ninki_win":{"4":2,"1":6,"5":1,"3":2},"ninki_top3":{"4":4,"7":2,"1":10,"5":4,"6":1,"2":6,"3":5,"8":1},"ninki_runs":{"4":11,"7":11,"1":11,"17":7,"5":11,"6":11,"13":11,"3":11,"18":4,"2":11,"9":11,"15":9,"14":11,"11":11,"16":7,"10":10,"12":11,"8":11},"style_win":{"逃げ":1,"先行":2,"差し":5,"追込":3},"style_top3":{"逃げ":4,"先行":4,"差し":18,"追込":7},"style_runs":{"逃げ":11,"先行":35,"差し":59,"追込":75},"win_ninki_avg":2.3,"fastest_agari_win_pct":45},"チャンピオンズC":{"meta":{"distance":1800,"surface":"ダ","place":"中京","turn":"左"},"years":11,"avg_field":15.6,"waku_win":{"1":2,"2":2,"3":3,"4":0,"5":2,"6":1,"7":0,"8":1},"waku_top3":{"1":6,"2":5,"3":6,"4":4,"5":4,"6":3,"7":4,"8":1},"waku_runs":{"1":19,"2":22,"3":22,"4":22,"5":22,"6":22,"7":22,"8":21},"uma_top3":{"4":3,"1":2,"2":6,"8":3,"9":2,"13":3,"12":1,"5":3,"11":3,"6":2,"10":1,"3":1,"15":1,"7":2},"ninki_win":{"12":1,"6":1,"8":1,"1":4,"2":1,"4":1,"3":2},"ninki_top3":{"12":2,"3":7,"5":1,"6":2,"1":7,"10":2,"8":2,"9":3,"2":3,"4":2,"14":1,"7":1},"ninki_runs":{"12":11,"3":11,"5":11,"8":11,"2":11,"14":11,"1":11,"10":11,"7":11,"16":7,"15":11,"9":11,"13":11,"4":11,"11":11,"6":11},"style_win":{"逃げ":1,"先行":4,"差し":5,"追込":1},"style_top3":{"逃げ":3,"先行":12,"差し":7,"追込":11},"style_runs":{"逃げ":11,"先行":34,"差し":57,"追込":70},"win_ninki_avg":3.8,"fastest_agari_win_pct":36},"天皇賞・春":{"meta":{"distance":3200,"surface":"芝","place":"京都","turn":"右"},"years":11,"avg_field":15.9,"waku_win":{"1":4,"2":1,"3":0,"4":1,"5":0,"6":1,"7":2,"8":2},"waku_top3":{"1":5,"2":3,"3":3,"4":7,"5":2,"6":4,"7":3,"8":6},"waku_runs":{"1":18,"2":19,"3":21,"4":21,"5":22,"6":22,"7":25,"8":27},"uma_top3":{"1":4,"14":4,"2":1,"3":3,"8":4,"6":4,"15":1,"12":2,"11":1,"10":1,"7":3,"5":2,"16":2,"18":1},"ninki_win":{"2":5,"1":5,"3":1},"ninki_top3":{"2":6,"7":1,"10":1,"13":1,"3":2,"1":8,"4":6,"6":4,"8":1,"11":1,"5":2},"ninki_runs":{"2":11,"7":11,"10":11,"5":11,"16":8,"11":11,"1":10,"8":10,"4":11,"9":11,"14":10,"6":11,"17":8,"15":8,"3":11,"12":10,"13":10,"18":2},"style_win":{"逃げ":2,"先行":2,"差し":6,"追込":1},"style_top3":{"逃げ":2,"先行":11,"差し":14,"追込":6},"style_runs":{"逃げ":9,"先行":34,"差し":60,"追込":72},"win_ninki_avg":1.6,"fastest_agari_win_pct":45},"有馬記念":{"meta":{"distance":2500,"surface":"芝","place":"中山","turn":"右"},"years":11,"avg_field":15.8,"waku_win":{"1":1,"2":1,"3":2,"4":3,"5":3,"6":1,"7":0,"8":0},"waku_top3":{"1":4,"2":4,"3":4,"4":5,"5":8,"6":3,"7":2,"8":3},"waku_runs":{"1":20,"2":22,"3":22,"4":22,"5":22,"6":22,"7":22,"8":22},"uma_top3":{"7":3,"9":4,"11":2,"1":2,"2":2,"3":2,"10":4,"8":2,"12":1,"15":1,"6":1,"14":1,"13":1,"5":3,"16":2,"4":2},"ninki_win":{"8":1,"1":5,"3":2,"2":2,"5":1},"ninki_top3":{"8":2,"5":3,"4":2,"1":6,"2":7,"3":6,"9":1,"11":1,"6":2,"7":1,"10":1,"12":1},"ninki_runs":{"8":11,"5":11,"4":11,"12":11,"2":11,"14":11,"11":11,"1":11,"10":11,"6":11,"7":11,"9":10,"13":11,"16":10,"15":11,"3":11},"style_win":{"逃げ":1,"先行":2,"差し":4,"追込":4},"style_top3":{"逃げ":4,"先行":9,"差し":9,"追込":11},"style_runs":{"逃げ":11,"先行":37,"差し":54,"追込":72},"win_ninki_avg":2.5,"fastest_agari_win_pct":45}};
+const GI_ORDER=["フェブラリーS", "高松宮記念", "大阪杯", "桜花賞", "皐月賞", "ヴィクトリアM", "オークス", "日本ダービー", "安田記念", "宝塚記念", "スプリンターズS", "秋華賞", "菊花賞", "天皇賞・秋", "エリザベス女王杯", "マイルCS", "ジャパンC", "チャンピオンズC", "天皇賞・春", "有馬記念"];
+
+const $=s=>document.querySelector(s);
+const WCOL=["","w1","w2","w3","w4","w5","w6","w7","w8"];
+
+// 脚質の色
+const STYLE_COLOR={"逃げ":"var(--red)","先行":"var(--gold)","差し":"var(--blue)","追込":"var(--green)"};
+
+function pct(n,d){ return d>0? Math.round(n/d*100):0; }
+
+function render(giName){
+  const g=GI_DATA[giName];
+  const m=g.meta;
+  $("#giMeta").innerHTML=`<b>${m.place}</b> ${m.surface}${m.distance}m（${m.turn}回り） ／ <b>${g.years}</b>年分 ／ 平均<b>${g.avg_field}</b>頭`;
+
+  let html="";
+
+  // サマリー
+  const topWaku=Object.entries(g.waku_top3).sort((a,b)=>b[1]-a[1])[0];
+  const topStyle=Object.entries(g.style_win).sort((a,b)=>b[1]-a[1])[0];
+  html+=`<div class="summary">
+    <div class="sum-card"><div class="lbl">勝ち馬 平均人気</div><div class="v">${g.win_ninki_avg||"-"}<small> 番人気</small></div></div>
+    <div class="sum-card"><div class="lbl">最多3着内 枠</div><div class="v">${topWaku[0]}<small> 枠 (${topWaku[1]}回)</small></div></div>
+    <div class="sum-card"><div class="lbl">最多勝利 脚質</div><div class="v" style="color:${STYLE_COLOR[topStyle[0]]}">${topStyle[0]}<small> ${topStyle[1]}勝</small></div></div>
+    <div class="sum-card"><div class="lbl">上り最速馬 勝率</div><div class="v">${g.fastest_agari_win_pct}<small> %</small></div></div>
+  </div>`;
+
+  // 枠番別（複勝率=3着内/出走）
+  const maxW3pct=Math.max(...Object.keys(g.waku_top3).map(k=>pct(g.waku_top3[k],g.waku_runs[k])));
+  html+=`<div class="sec"><div class="sec-h">枠番別 複勝率 <span class="note">3着内/出走</span></div><div class="waku-grid">`;
+  for(let w=1;w<=8;w++){
+    const p=pct(g.waku_top3[w],g.waku_runs[w]);
+    const wd=maxW3pct>0? p/maxW3pct*100:0;
+    html+=`<div class="waku-row">
+      <div class="waku-no ${WCOL[w]}">${w}</div>
+      <div class="bar-wrap"><div class="bar-fill ${WCOL[w]}" style="width:${wd}%"></div></div>
+      <div class="bar-val"><b>${p}%</b> <span class="x">${g.waku_win[w]}勝/${g.waku_top3[w]}複</span></div>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  // 脚質
+  const stRuns=g.style_runs, stWin=g.style_win, stTop3=g.style_top3;
+  html+=`<div class="sec"><div class="sec-h">脚質傾向 <span class="note">1角の位置で分類</span></div><div class="style-grid">`;
+  ["逃げ","先行","差し","追込"].forEach(s=>{
+    const wp=pct(stWin[s],stRuns[s]);
+    html+=`<div class="style-card">
+      <div class="nm" style="color:${STYLE_COLOR[s]}">${s}</div>
+      <div class="pct" style="color:${STYLE_COLOR[s]}">${stWin[s]}</div>
+      <div class="cnt">勝 / 複${stTop3[s]}</div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+
+  // 人気別 勝利（1〜上位）
+  const nw=g.ninki_win, nt=g.ninki_top3, nr=g.ninki_runs;
+  const maxNwin=Math.max(...Object.values(nw),1);
+  html+=`<div class="sec"><div class="sec-h">人気別 成績 <span class="note">勝利数と3着内</span></div>`;
+  const ninkiKeys=Object.keys(nr).map(Number).sort((a,b)=>a-b).filter(k=>k<=10);
+  ninkiKeys.forEach(k=>{
+    const win=nw[k]||0, t3=nt[k]||0;
+    const wd=win/maxNwin*100;
+    html+=`<div class="ninki-row">
+      <div class="ninki-lbl">${k}人気</div>
+      <div class="ninki-bar-wrap"><div class="ninki-bar" style="width:${wd}%"></div></div>
+      <div class="ninki-val"><b style="color:var(--gold)">${win}勝</b> / 複${t3}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // 馬番別 3着内ヒート
+  const ut=g.uma_top3;
+  const maxField=Math.ceil(g.avg_field)+2;
+  const maxUma=Math.max(...Object.values(ut),1);
+  html+=`<div class="sec"><div class="sec-h">馬番別 3着内 <span class="note">数字=回数</span></div><div class="uma-heat">`;
+  for(let n=1;n<=Math.min(maxField,18);n++){
+    const c=ut[n]||0;
+    const intensity=c/maxUma;
+    const bg=intensity>0? `rgba(232,168,56,${0.12+intensity*0.7})`:"var(--panel2)";
+    const tc=intensity>0.45?"#000":"var(--txt)";
+    html+=`<div class="uma-cell" style="background:${bg}"><div class="n" style="color:${tc}">${n}</div><div class="c" style="color:${intensity>0.45?'#000':'var(--muted)'}">${c}</div></div>`;
+  }
+  html+=`</div></div>`;
+
+  $("#content").innerHTML=html;
+}
+
+function copyText(giName){
+  const g=GI_DATA[giName]; const m=g.meta;
+  let s=`【${giName} 過去${g.years}年 傾向】${m.place}${m.surface}${m.distance}m\n`;
+  s+=`平均${g.avg_field}頭 / 勝ち馬平均${g.win_ninki_avg}人気\n`;
+  // 枠複勝率トップ3
+  const wk=[];for(let w=1;w<=8;w++)wk.push([w,pct(g.waku_top3[w],g.waku_runs[w])]);
+  wk.sort((a,b)=>b[1]-a[1]);
+  s+=`▼枠複勝率: `+wk.slice(0,3).map(x=>`${x[0]}枠${x[1]}%`).join(" ")+`\n`;
+  // 脚質
+  const st=Object.entries(g.style_win).sort((a,b)=>b[1]-a[1]);
+  s+=`▼脚質勝利: `+st.map(x=>`${x[0]}${x[1]}`).join(" ")+`\n`;
+  s+=`▼上り最速勝率: ${g.fastest_agari_win_pct}%\n`;
+  s+=`#競馬 #${giName.replace(/[・()]/g,"")}`;
+  return s;
+}
+
+// 初期化
+function init(){
+  const sel=$("#giSelect");
+  GI_ORDER.forEach(name=>{
+    const o=document.createElement("option");o.value=name;o.textContent=name;sel.appendChild(o);
+  });
+  sel.onchange=()=>render(sel.value);
+  render(GI_ORDER[0]);
+
+  $("#themeBtn").onclick=()=>{
+    const cur=document.documentElement.getAttribute('data-theme')||'dark';
+    const nt=cur==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme',nt);
+    try{localStorage.setItem('sw_jusho_theme',nt);}catch(e){}
+  };
+  $("#copyBtn").onclick=()=>{
+    const t=copyText($("#giSelect").value);
+    navigator.clipboard.writeText(t).then(()=>{
+      const b=$("#copyBtn");b.textContent="コピーしました";setTimeout(()=>b.textContent="この傾向をコピー",1500);
+    });
+  };
+  $("#foot").textContent="DATA: netkeiba 2015-2025 確定結果 / 集計: SEVENTHWELL / 過去の傾向であり的中を保証しません";
+}
+init();
+</script>
+</body>
+</html>

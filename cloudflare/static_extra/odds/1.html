@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ODDS ANOMALY">
+<meta name="theme-color" content="#07080a">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>ODDS ANOMALY — 異常オッズ検知</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07080a; --panel:#0d0f13; --panel2:#11141a; --line:#1c2027;
+    --txt:#e9ebef; --muted:#7b8290; --dim:#4c525e;
+    --drop:#ff5b39;   /* 急落 / danger */
+    --rise:#3ad1ff;   /* 急騰 */
+    --vel:#ffb13a;    /* 直前急変 */
+    --div:#9bff5e;    /* 単複乖離 */
+    --grid:rgba(255,255,255,.025);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt)}
+  body{
+    font-family:"Noto Sans JP","Space Mono",monospace;
+    font-size:14px;line-height:1.5;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background-image:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+      radial-gradient(120% 80% at 50% -10%, #0e1118 0%, var(--bg) 60%);
+    background-size:34px 34px,34px 34px,100% 100%;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::after{ /* scanlines */
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
+    mix-blend-mode:overlay;opacity:.35;
+  }
+  .mono{font-family:"Space Mono",monospace}
+  .wrap{max-width:1040px;margin:0 auto;padding:14px 14px 60px}
+
+  /* ── mode tabs ── */
+  body[data-mode="jra"]{--mode:#7da2ff}
+  body[data-mode="nar"]{--mode:#ffae3a}
+  .tabs{display:flex;gap:6px;margin-bottom:14px}
+  .tab{flex:1;font-family:"Saira Condensed",sans-serif;text-transform:uppercase;letter-spacing:.16em;
+    font-weight:700;font-size:14px;padding:11px 8px;border:1px solid var(--line);border-radius:10px;
+    background:var(--panel);color:var(--muted);cursor:pointer;transition:.18s;position:relative;text-align:center}
+  .tab .s{display:block;font-family:"Noto Sans JP";font-weight:500;font-size:9px;letter-spacing:.18em;margin-top:3px;opacity:.65}
+  .tab:hover{border-color:#3a414e;color:var(--txt)}
+  .tab.on{color:#fff;border-color:var(--mode,#888);box-shadow:inset 0 0 0 1px var(--mode,#888),0 0 18px -7px var(--mode,#888)}
+  .tab.on .s{opacity:1;color:var(--mode,#888)}
+  .tab.on::after{content:"";position:absolute;left:14px;right:14px;bottom:5px;height:2px;background:var(--mode,#888);border-radius:2px}
+
+  /* ── header ── */
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+    border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+  h1{font-family:"Saira Condensed",sans-serif;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;font-size:26px;margin:0;line-height:1}
+  h1 .jp{display:block;font-family:"Noto Sans JP";font-weight:700;letter-spacing:.32em;
+    font-size:11px;color:var(--muted);margin-top:6px}
+  .clock{font-family:"Space Mono";font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dim);margin-right:5px;vertical-align:middle}
+  .dot.live{background:var(--drop);box-shadow:0 0 8px var(--drop);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+  .panel.tight{padding:10px 12px}
+  .lbl{font-family:"Saira Condensed";text-transform:uppercase;letter-spacing:.18em;
+    font-size:11px;color:var(--muted);font-weight:600}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .grow{flex:1 1 auto}
+
+  input,select,button{font-family:"Space Mono",monospace;font-size:13px}
+  input[type=text],input[type=number],select,textarea{
+    background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:9px 10px;outline:none;width:100%}
+  input:focus,textarea:focus,select:focus{border-color:#39404c}
+  textarea{font-size:12px;line-height:1.45;resize:vertical;min-height:80px}
+  label.field{display:block;margin:8px 0}
+  label.field>span{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:.04em}
+
+  button{cursor:pointer;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:9px 12px;letter-spacing:.06em;transition:.15s;white-space:nowrap}
+  button:hover{border-color:#454d59;background:#161a21}
+  button.primary{background:#171a20;border-color:#3a4350;color:#fff}
+  button.primary:hover{box-shadow:0 0 0 1px #4a5564, 0 0 14px rgba(255,91,57,.18);border-color:var(--drop)}
+  button.go{border-color:var(--drop);color:var(--drop)}
+  button.go:hover{background:rgba(255,91,57,.08);box-shadow:0 0 14px rgba(255,91,57,.2)}
+  button.sm{padding:6px 9px;font-size:11px}
+  .toggle{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+  .switch{width:34px;height:18px;border-radius:10px;background:#23262e;border:1px solid var(--line);position:relative;transition:.2s}
+  .switch::after{content:"";position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:#6a7280;transition:.2s}
+  .switch.on{background:rgba(255,91,57,.25);border-color:var(--drop)}
+  .switch.on::after{left:17px;background:var(--drop)}
+
+  details{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:14px}
+  details>summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary .lbl{margin:0}
+  details>summary::after{content:"+";color:var(--muted);font-family:"Space Mono"}
+  details[open]>summary::after{content:"–"}
+  details .body{padding:0 14px 14px}
+
+  .slider-row{display:flex;align-items:center;gap:10px;margin:10px 0}
+  .slider-row .name{flex:0 0 118px;font-size:12px;color:var(--muted)}
+  .slider-row .val{flex:0 0 58px;text-align:right;font-family:"Space Mono";font-size:12px}
+  input[type=range]{-webkit-appearance:none;flex:1;height:3px;background:#252a32;border-radius:2px;border:none;padding:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--txt);cursor:pointer;border:2px solid var(--bg)}
+
+  /* ── status ticker ── */
+  .ticker{display:flex;gap:14px;flex-wrap:wrap;font-family:"Space Mono";font-size:11px;color:var(--muted);
+    border:1px dashed var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px}
+  .ticker b{color:var(--txt);font-weight:700}
+
+  /* ── alerts ── */
+  .alerts{display:grid;gap:10px}
+  .card{position:relative;border:1px solid var(--line);border-radius:11px;background:var(--panel);
+    padding:12px 14px 12px 16px;overflow:hidden;cursor:pointer;transition:.15s}
+  .card:hover{border-color:#3a414e}
+  .card.sel{border-color:#5b6373;box-shadow:inset 0 0 0 1px #2a313c}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent,var(--dim))}
+  .card .top{display:flex;align-items:center;gap:10px}
+  .uma{font-family:"Saira Condensed";font-weight:700;font-size:20px;min-width:30px;text-align:center;
+    border:1px solid var(--line);border-radius:6px;padding:1px 0;color:#fff}
+  .nm{font-weight:500;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .score{font-family:"Space Mono";font-weight:700;font-size:20px;color:var(--accent,var(--txt));text-align:right;line-height:1}
+  .score small{display:block;font-size:9px;color:var(--muted);letter-spacing:.18em;font-weight:400}
+  .bar{height:3px;background:#1b1f26;border-radius:2px;margin:9px 0 8px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--accent,var(--txt));border-radius:2px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .tag{font-family:"Space Mono";font-size:10px;letter-spacing:.04em;padding:3px 7px;border-radius:5px;
+    border:1px solid;background:transparent}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-family:"Space Mono"}
+  .stat{background:var(--panel2);border-radius:7px;padding:6px 7px;text-align:center}
+  .stat .k{font-size:9px;color:var(--muted);letter-spacing:.06em}
+  .stat .v{font-size:14px;font-weight:700;margin-top:2px}
+  .v.up{color:var(--rise)} .v.down{color:var(--drop)}
+  .spark{position:absolute;right:12px;bottom:10px;width:88px;height:30px;opacity:.9}
+  .note{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+  .empty{text-align:center;color:var(--dim);padding:26px 10px;font-size:12px}
+
+  /* ── chart ── */
+  #chartWrap{position:relative}
+  #chart{width:100%;height:300px;display:block}
+  .chart-ctrls{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
+
+  table{width:100%;border-collapse:collapse;font-family:"Space Mono";font-size:11px}
+  th,td{text-align:right;padding:5px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--muted);font-weight:400;position:sticky;top:0;background:var(--panel)}
+  td:first-child,th:first-child{text-align:left}
+  .scroll{overflow:auto;max-height:300px}
+  .hint{font-size:11px;color:var(--dim);line-height:1.5}
+  code{font-family:"Space Mono";background:var(--panel2);padding:1px 5px;border-radius:4px;color:#cdd3dc;font-size:11px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:#15181e;border:1px solid var(--line);border-radius:8px;padding:10px 16px;font-size:12px;
+    z-index:10000;transition:.25s;pointer-events:none;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ── horse detail modal ── */
+  .hm-overlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.66);backdrop-filter:blur(3px);
+    display:flex;align-items:flex-end;justify-content:center;padding:0}
+  .hm-card{width:100%;max-width:560px;max-height:88vh;overflow:auto;background:var(--panel);
+    border:1px solid var(--line);border-radius:16px 16px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+    animation:hmUp .22s ease}
+  @keyframes hmUp{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
+  .hm-head{display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+  .hm-title{flex:1;min-width:0}
+  .hm-title #hmName{font-family:"Noto Sans JP";font-weight:700;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hm-sub{font-family:"Space Mono";font-size:11px;color:var(--muted);margin-top:3px}
+  .hm-x{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:50%;
+    width:34px;height:34px;font-size:14px;cursor:pointer;flex:0 0 auto}
+  .hm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .hm-cell{background:var(--panel2);border-radius:9px;padding:9px 8px;text-align:center}
+  .hm-cell .k{font-size:9px;color:var(--muted);letter-spacing:.05em}
+  .hm-cell .v{font-family:"Space Mono";font-size:16px;font-weight:700;margin-top:3px}
+  .hm-cell .v.dn{color:var(--drop)} .hm-cell .v.up{color:var(--rise)}
+  .hm-sec{font-family:"Saira Condensed";text-transform:uppercase;letter-spacing:.14em;font-size:11px;
+    color:var(--muted);margin:14px 0 7px}
+  .hm-spark{width:100%;height:80px;background:var(--panel2);border-radius:9px}
+  .hm-tags{display:flex;gap:6px;flex-wrap:wrap}
+  .hm-row{display:flex;justify-content:space-between;font-family:"Space Mono";font-size:12px;
+    padding:5px 2px;border-bottom:1px solid var(--line)}
+  .hm-row:last-child{border-bottom:none}
+  .hm-row .l{color:var(--muted)}
+  .hm-load{color:var(--dim);font-size:11px;text-align:center;padding:10px}
+
+  /* ── race picker ── */
+  .rl-track{margin-top:10px}
+  .rl-track:first-child{margin-top:2px}
+  .rl-head{font-family:"Saira Condensed";text-transform:uppercase;letter-spacing:.12em;font-size:12px;
+    color:var(--mode,#9aa3b0);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:7px}
+  .rl-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+  .rl-chip{border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:6px 8px;cursor:pointer;
+    transition:.13s;text-align:left;min-width:0}
+  .rl-chip:hover{border-color:var(--mode,#454d59);background:#161a21}
+  .rl-chip.sel{border-color:var(--mode,#fff);box-shadow:inset 0 0 0 1px var(--mode,#fff)}
+  .rl-chip.soon{box-shadow:0 0 0 1px var(--vel) inset}
+  .rl-chip .r{font-family:"Saira Condensed";font-weight:700;font-size:14px;color:#fff}
+  .rl-chip .t{font-family:"Space Mono";font-size:10px;color:var(--muted)}
+  .rl-chip .nm{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+
+  /* ── waku badge (枠番色) ── */
+  .waku{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;
+    border-radius:4px;font-family:"Saira Condensed";font-weight:700;font-size:14px;border:1px solid rgba(255,255,255,.18)}
+  /* ── entry table ── */
+  .entry-row{display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer;transition:.12s}
+  .entry-row:last-child{border-bottom:none}
+  .entry-row:hover{background:#12161d}
+  .entry-row.sel{background:#161b23;box-shadow:inset 2px 0 0 var(--mode,#fff)}
+  .entry-row .uno{font-family:"Saira Condensed";font-weight:700;font-size:16px;min-width:22px;text-align:center;color:var(--muted)}
+  .entry-row .emark{font-size:16px;min-width:18px;text-align:center;color:var(--mode,#fff);font-weight:700}
+  .entry-row .emark.dim{color:transparent}
+  .entry-row .enm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+  .entry-row .ejk{font-family:"Space Mono";font-size:10px;color:var(--muted);margin-left:7px}
+  .entry-row .enm[data-act],.card .nm[data-act]{text-decoration:underline;text-decoration-color:var(--dim);text-underline-offset:3px;text-decoration-thickness:1px}
+  .entry-row .eod{font-family:"Space Mono";font-size:13px;font-weight:700;min-width:52px;text-align:right}
+  .entry-row .epop{font-family:"Space Mono";font-size:10px;color:var(--muted);min-width:34px;text-align:right}
+  .entry-row .etag{font-size:9px;font-family:"Space Mono";padding:2px 5px;border-radius:4px;border:1px solid}
+  /* ── exacta ── */
+  .ex-row{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--line)}
+  .ex-row:last-child{border-bottom:none}
+  .ex-pair{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
+  .ex-arrow{color:var(--muted);font-family:"Space Mono";font-size:13px}
+  .ex-name{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px}
+  .ex-conf{font-family:"Space Mono";font-weight:700;font-size:13px;min-width:42px;text-align:right}
+  .ex-why{font-size:10px;color:var(--dim);font-family:"Space Mono";min-width:64px;text-align:right}
+
+  /* ── going banner 馬場 ── */
+  #goingBanner{border-radius:11px;padding:11px 14px;margin-bottom:14px;border:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  #goingBanner.wet{border-color:var(--vel);background:linear-gradient(90deg,rgba(255,177,58,.10),transparent)}
+  #goingBanner.dry{border-color:var(--line)}
+  #goingBanner .gb-go{font-family:"Saira Condensed";font-weight:700;font-size:22px;letter-spacing:.04em}
+  #goingBanner .gb-meta{font-family:"Space Mono";font-size:11px;color:var(--muted)}
+  #goingBanner .gb-tip{flex:1;min-width:160px;font-size:11px;line-height:1.45;color:var(--txt)}
+  #goingBanner.wet .gb-go{color:var(--vel)}
+
+  /* ── money flow 資金フロー ── */
+  .flow-row{display:grid;grid-template-columns:24px 22px 1fr 56px;align-items:center;gap:8px;
+    padding:6px 2px;border-bottom:1px solid var(--line)}
+  .flow-row:last-child{border-bottom:none}
+  .flow-row .fno{font-family:"Saira Condensed";font-weight:700;font-size:14px;text-align:center;color:var(--muted)}
+  .flow-track{position:relative;height:18px;background:#10141b;border-radius:5px;overflow:hidden}
+  .flow-track .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.15)}
+  .flow-track .fill{position:absolute;top:2px;bottom:2px;border-radius:3px}
+  .flow-track .fill.in{right:50%;background:var(--drop)}
+  .flow-track .fill.out{left:50%;background:var(--rise)}
+  .flow-row .fpct{font-family:"Space Mono";font-size:11px;font-weight:700;text-align:right}
+  .flow-row .fpct.in{color:var(--drop)} .flow-row .fpct.out{color:var(--rise)}
+  .flow-name{font-family:"Space Mono";font-size:9px;color:var(--dim);grid-column:3;margin-top:-2px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ── learning 自己学習 ── */
+  .ln-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+  .ln-kpi{background:var(--panel2);border-radius:9px;padding:10px 8px;text-align:center}
+  .ln-kpi .kv{font-family:"Saira Condensed";font-weight:700;font-size:24px;color:var(--mode,#fff);line-height:1}
+  .ln-kpi .kk{font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:4px}
+  .ln-tag{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid var(--line);font-family:"Space Mono";font-size:12px}
+  .ln-tag:last-child{border-bottom:none}
+  .ln-tag .tn{flex:1}
+  .ln-tag .tb{flex:0 0 80px;height:6px;background:#10141b;border-radius:3px;overflow:hidden}
+  .ln-tag .tb>i{display:block;height:100%;background:var(--div)}
+  .ln-tag .tv{flex:0 0 92px;text-align:right;color:var(--muted)}
+  .ln-recent{margin-top:12px}
+  .ln-rec{display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px solid var(--line);font-family:"Space Mono";font-size:11px}
+  .ln-rec .rr{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .ln-rec .hit{padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700}
+  .hit.win{background:rgba(255,91,57,.18);color:var(--drop)}
+  .hit.plc{background:rgba(155,255,94,.15);color:var(--div)}
+  .hit.miss{background:#1b1f26;color:var(--dim)}
+  .hit.pend{background:#1b1f26;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ODDS ANOMALY<span class="jp" id="subJp">異常オッズ検知 / JRA netkeiba</span></h1>
+    <div class="clock"><span id="liveDot" class="dot"></span><span id="liveTxt">IDLE</span><br><span id="clk" class="mono">--:--:--</span></div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab" data-mode="jra">JRA<span class="s">中央競馬</span></div>
+    <div class="tab" data-mode="nar">NAR<span class="s">地方競馬</span></div>
+  </div>
+
+  <div id="goingBanner" style="display:none"></div>
+
+  <!-- DATA SOURCE -->
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <div class="lbl">データソース</div>
+      <div class="row" style="gap:6px">
+        <button class="sm" id="btnDemo">デモ投入</button>
+        <button class="sm" id="btnPaste">JSON/CSV貼付</button>
+        <button class="sm" id="btnClear">クリア</button>
+      </div>
+    </div>
+    <label class="field"><span>取得方式</span>
+      <select id="srcMode">
+        <option value="public">公開プロキシ（設定不要・おすすめ）</option>
+        <option value="worker">自前Worker（安定・要デプロイ）</option>
+        <option value="manual">手動JSON貼付のみ</option>
+      </select></label>
+    <label class="field" id="rowPub"><span>公開プロキシ前置きURL（落ちてたら差し替え可）</span>
+      <input type="text" id="pubPrefix" placeholder="https://api.codetabs.com/v1/proxy/?quest=" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <label class="field" id="rowProxy"><span>プロキシ取得URL（Cloudflare Worker等。{race}でレースID置換可）</span>
+      <input type="text" id="proxyUrl" placeholder="https://your-worker.workers.dev/odds?race={race}" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <div class="row">
+      <label class="field grow" style="margin:0"><span>レースID</span>
+        <input type="text" id="raceId" placeholder="例 202605021211" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+      <div style="align-self:flex-end;display:flex;gap:8px">
+        <button class="go" id="btnFetch">取得 ▸</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px;justify-content:space-between">
+      <div class="toggle" id="autoToggle"><div class="switch" id="autoSwitch"></div>自動更新</div>
+      <label class="field" style="margin:0;flex:0 0 120px"><span>間隔(秒)</span>
+        <input type="number" id="interval" value="60" min="10" step="5"></label>
+    </div>
+    <div class="row" style="margin-top:10px;gap:16px">
+      <div class="toggle" id="alertToggle"><div class="switch on" id="alertSwitch"></div>異常アラート（バイブ+音）</div>
+      <div class="toggle" id="lockToggle"><div class="switch on" id="lockSwitch"></div>発走後オートストップ</div>
+    </div>
+    <div class="hint" id="srcHint" style="margin-top:8px">※ 公開プロキシ＝デプロイ不要で即使える。race_id入れて取得、または下の「一覧取得 / 直前自動選択」。落ちてたら前置きURLを差し替え。</div>
+  </div>
+
+  <!-- RACE PICKER -->
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <div class="lbl">レース選択 / 本日の開催</div>
+      <div class="row" style="gap:6px">
+        <input type="text" id="pickDate" style="width:110px;text-align:center" placeholder="YYYYMMDD" autocapitalize="off" spellcheck="false">
+        <button class="sm" id="btnRaceList">一覧取得</button>
+      </div>
+    </div>
+    <div class="row" style="gap:8px;margin-bottom:8px">
+      <button class="go sm grow" id="btnAutoPick">⚡ 直前のレースを自動選択して監視開始</button>
+    </div>
+    <div id="raceList"><div class="hint" style="text-align:center;padding:8px">「一覧取得」でその日の全開催・全レースを表示（どこの何R か選べる）</div></div>
+  </div>
+
+  <!-- ENTRY TABLE 出走表 -->
+  <div class="panel" id="entryPanel" style="display:none">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <div class="lbl">出走表 / 枠番</div>
+      <div class="lbl mono" id="entryMeta" style="color:var(--muted)">—</div>
+    </div>
+    <div id="entryGrid"></div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker" id="ticker">
+    <span>RACE <b id="tkRace">—</b></span>
+    <span>SNAP <b id="tkSnap">0</b></span>
+    <span>HORSES <b id="tkHorses">0</b></span>
+    <span>RANGE <b id="tkRange">—</b></span>
+    <span>UPDATED <b id="tkUpd">—</b></span>
+  </div>
+
+  <!-- DETECTOR SETTINGS -->
+  <details>
+    <summary><div class="lbl">検知しきい値 / 重み</div></summary>
+    <div class="body">
+      <div class="slider-row"><div class="name" style="color:var(--drop)">🔻急落 ≦</div><input type="range" id="thDrop" min="5" max="60" value="22"><div class="val" id="vDrop">-22%</div></div>
+      <div class="slider-row"><div class="name" style="color:var(--rise)">🔺急騰 ≧</div><input type="range" id="thRise" min="5" max="80" value="28"><div class="val" id="vRise">+28%</div></div>
+      <div class="slider-row"><div class="name" style="color:var(--vel)">⚡急変速度 ≧</div><input type="range" id="thVel" min="1" max="40" value="8"><div class="val" id="vVel">8%/step</div></div>
+      <div class="slider-row"><div class="name" style="color:var(--div)">🔀単複乖離 ≧</div><input type="range" id="thDiv" min="1" max="20" value="5"><div class="val" id="vDiv">5.0pp</div></div>
+      <div class="hint" style="margin:6px 0 12px">合成スコア重み（検知優先度の配分）</div>
+      <div class="slider-row"><div class="name">対フィールド乖離</div><input type="range" id="wField" min="0" max="100" value="35"><div class="val" id="vWField">35</div></div>
+      <div class="slider-row"><div class="name">急変速度</div><input type="range" id="wVel" min="0" max="100" value="28"><div class="val" id="vWVel">28</div></div>
+      <div class="slider-row"><div class="name">変動絶対量</div><input type="range" id="wAbs" min="0" max="100" value="18"><div class="val" id="vWAbs">18</div></div>
+      <div class="slider-row"><div class="name">連続性/単複</div><input type="range" id="wExtra" min="0" max="100" value="19"><div class="val" id="vWExtra">19</div></div>
+    </div>
+  </details>
+
+  <!-- ALERTS -->
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <div class="lbl">異常検知 / スコア順</div>
+      <div class="lbl mono" id="alertCount" style="color:var(--muted)">—</div>
+    </div>
+    <div class="alerts" id="alerts"><div class="empty">データなし — デモ投入 か 取得 から開始</div></div>
+  </div>
+
+  <!-- EXACTA SUGGEST 馬単候補 -->
+  <div class="panel" id="exactaPanel" style="display:none">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <div class="lbl">馬単・狙い目（オッズ変動ベース）</div>
+      <div class="lbl mono" style="color:var(--muted)">軸 ▸ 相手</div>
+    </div>
+    <div class="hint" style="margin-bottom:10px">資金が集中した馬（急落＝評価上昇）を軸に、伸びている相手を組む。馬単オッズ非提供の市場でも、単勝の動きから「買われている向き」を推定。</div>
+    <div id="exactaList"></div>
+  </div>
+
+  <!-- MONEY FLOW 資金フロー -->
+  <div class="panel" id="flowPanel" style="display:none">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <div class="lbl">資金フロー / 直近の動き</div>
+      <div class="row" style="gap:6px">
+        <button class="sm" id="flowWin" style="border-color:var(--mode)">勝負</button>
+        <button class="sm" id="flowAll">全</button>
+      </div>
+    </div>
+    <div class="hint" style="margin-bottom:8px" id="flowHint">直近スナップ間でオッズが動いた向きと量。左=資金流入(評価↑)、右=見限られ。</div>
+    <div id="flowList"></div>
+  </div>
+
+  <!-- ANA 穴馬サーチ -->
+  <div class="panel" id="anaPanel" style="display:none">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <div class="lbl">穴馬サーチ</div>
+      <div class="lbl mono" style="color:var(--muted)">人気薄 × 強さ/資金</div>
+    </div>
+    <div class="hint" style="margin-bottom:10px">人気は無いが「土台（騎手・枠・距離適性）が強い」or「静かに資金が入っている」馬を抽出。妙味度＝割安さ × 裏付け。</div>
+    <div id="anaList"></div>
+  </div>
+
+  <!-- CHART -->
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <div class="lbl">オッズ推移</div>
+      <div class="row" style="gap:8px">
+        <button class="sm" id="btnScale">LOG</button>
+        <button class="sm" id="btnFocus">全頭表示</button>
+      </div>
+    </div>
+    <div id="chartWrap"><canvas id="chart"></canvas></div>
+    <div class="hint" id="chartReadout" style="text-align:center;margin-top:6px">—</div>
+  </div>
+
+  <!-- LEARNING 自己学習 -->
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <div class="lbl">自己学習 / 検知の答え合わせ</div>
+      <div class="row" style="gap:6px">
+        <button class="sm" id="btnReconcile">結果照合</button>
+        <button class="sm" id="btnLogClear">ログ削除</button>
+      </div>
+    </div>
+    <label class="field"><span>学習ログ保存サーバー（PHP）URL ※空ならこの端末内のみ</span>
+      <input type="text" id="logServer" placeholder="https://seventh-well.com/odds/odds-log.php" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <div class="row" style="gap:6px;margin-bottom:10px">
+      <button class="sm" id="btnSync" style="border-color:var(--mode)">サーバー同期</button>
+      <button class="sm" id="btnImportPast">過去レース取り込み</button>
+      <input type="text" id="importDate" style="flex:0 0 110px;text-align:center" placeholder="YYYYMMDD">
+    </div>
+    <div class="hint" style="margin-bottom:10px">検知を自動記録→着順と照合してヒット率に。サーバーURLを入れると全端末で共有・無限蓄積。「過去レース取り込み」で指定日の結果をまとめて学習に追加。</div>
+    <div id="learnBody"><div class="empty">まだログなし — レースを監視するとここに溜まる</div></div>
+  </div>
+
+  <!-- TENDENCY 場別傾向検索 -->
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <div class="lbl">場別・条件別の傾向検索</div>
+    </div>
+    <div class="row" style="gap:6px;margin-bottom:10px">
+      <select id="tdTrack" style="flex:1"><option value="">全場</option></select>
+      <select id="tdSurf" style="flex:0 0 90px"><option value="">芝/ダ</option><option value="芝">芝</option><option value="ダ">ダ</option></select>
+      <select id="tdGoing" style="flex:0 0 90px"><option value="">馬場</option><option value="良">良</option><option value="稍重">稍重</option><option value="重">重</option><option value="不良">不良</option></select>
+    </div>
+    <div id="tdBody"><div class="empty">結果照合が貯まると、勝ち人気傾向・勝ち枠傾向・標準タイムが出る</div></div>
+  </div>
+
+  <!-- EXT KNOWLEDGE 手入力ナレッジ -->
+  <details>
+    <summary><div class="lbl">手入力ナレッジ（騎手・馬・血統の強さ）</div></summary>
+    <div class="body">
+      <div class="hint" style="margin-bottom:8px">血統や通算成績はnetkeibaの個別ページがブロックされ自動取得できない。ここに知ってる強さを入れると◎印と穴馬サーチに反映される。形式は <code>名前:数値</code> を改行区切り。数値は0〜100（50が平均）。</div>
+      <label class="field"><span>騎手の強さ（例: 森泰斗:75）</span>
+        <textarea id="extJockey" style="min-height:60px"></textarea></label>
+      <label class="field"><span>騎手の湿馬場補正（例: キング:5、武豊:3、ルメール:-2 ／ ±10目安）</span>
+        <textarea id="extJockeyWet" style="min-height:50px"></textarea></label>
+      <label class="field"><span>馬の強さ（血統/通算成績の主観。例: ストイックノア:70）</span>
+        <textarea id="extHorse" style="min-height:60px"></textarea></label>
+      <div class="row" style="justify-content:flex-end"><button class="sm primary" id="btnExtSave">保存して反映</button></div>
+    </div>
+  </details>
+
+  <!-- RAW -->
+  <details>
+    <summary><div class="lbl">スナップショット / 書き出し</div></summary>
+    <div class="body">
+      <div class="row" style="margin:4px 0 10px;gap:8px">
+        <button class="sm" id="btnExportJson">JSON書出</button>
+        <button class="sm" id="btnExportCsv">CSV書出</button>
+        <button class="sm" id="btnUndo">最後の取得を削除</button>
+      </div>
+      <div class="scroll"><table id="rawTable"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </details>
+
+  <!-- PASTE MODAL (inline) -->
+  <div class="panel" id="pasteBox" style="display:none">
+    <div class="lbl" style="margin-bottom:8px">JSON / CSV を貼付</div>
+    <div class="hint" style="margin-bottom:8px">
+      JSON（取得毎の1スナップ or 時系列まるごと）か、長形式CSV <code>time,umaban,name,tansho,fukusho</code> を受け付ける。
+    </div>
+    <textarea id="pasteArea" placeholder='{"race":{"name":"…"},"horses":[{"num":1,"name":"…"}],"win":{"1":12.3},"place":{"1":3.1}}'></textarea>
+    <div class="row" style="margin-top:8px;justify-content:flex-end">
+      <button class="sm" id="btnTemplate">CSVテンプレ</button>
+      <button class="sm primary" id="btnPasteLoad">読み込む</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- HORSE DETAIL MODAL -->
+<div id="hModal" class="hm-overlay" style="display:none">
+  <div class="hm-card">
+    <div class="hm-head">
+      <span class="waku" id="hmWaku" style="min-width:30px;height:26px;font-size:17px">?</span>
+      <div class="hm-title"><div id="hmName">—</div><div id="hmSub" class="hm-sub">—</div></div>
+      <button class="hm-x" id="hmClose">✕</button>
+    </div>
+    <div id="hmBody"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   ODDS ANOMALY — 異常オッズ検知 (netkeiba proxy driven)
+   single-file / offline-capable / localStorage persisted
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const LS = "oddsAnomaly.v2";
+
+/* per-mode defaults. 地方(NAR)はプール薄め→変動が大きいので、しきい値高め＋対フィールド乖離重視 */
+const DEFAULTS = {
+  jra: { th:{drop:22,rise:28,vel:8, div:5}, w:{field:35,vel:28,abs:18,extra:19} },
+  nar: { th:{drop:30,rise:40,vel:12,div:6}, w:{field:45,vel:25,abs:12,extra:18} }
+};
+function newBook(mode){
+  return {
+    race:{id:"",name:"",track:"",raceNo:""}, horses:[], entries:{}, snaps:[], selected:null,
+    proxyUrl:"", raceId:"", intervalSec:60, logScale:true, focusAll:true,
+    src:"public", pubPrefix:"https://api.codetabs.com/v1/proxy/?quest=",
+    th:{...DEFAULTS[mode].th}, w:{...DEFAULTS[mode].w}
+  };
+}
+let MODE = "jra";
+let books = { jra:newBook("jra"), nar:newBook("nar") };
+let state = books.jra;          // active book (render/compute read this)
+let autoTimer = null, metrics = [], auto = false;
+let alertOn = true, lockOn = true;        // 異常アラート / 発走後オートストップ
+let knownAlerts = new Set();              // 既知の異常 (馬番:タグ) — 新規だけ通知
+let audioCtx = null;
+let wakeLock = null;                      // 画面消灯防止
+/* 手入力ナレッジ（取れない血統/成績/騎手力を補う）。localStorage保存。
+   jockey: {騎手名:0-100強さ}, horse:{馬名:0-100強さ}, jockeyWet:{騎手名:-10..+10湿走補正} */
+const EXT={jockey:{}, horse:{}, jockeyWet:{}};
+function loadExt(){ try{ const d=JSON.parse(localStorage.getItem("oddsAnomaly.ext")||"null"); if(d){ EXT.jockey=d.jockey||{}; EXT.horse=d.horse||{}; EXT.jockeyWet=d.jockeyWet||{}; } }catch(e){}
+  // 初回シード: JRA騎手の湿馬場補正（既知データ。±%を補正値に流用）
+  if(!Object.keys(EXT.jockeyWet).length){
+    EXT.jockeyWet={ "キング":5,"菅原明良":4,"田口貫太":4,"武豊":3,"横山武史":3,
+      "北村宏司":-3,"小崎綾也":-3,"ルメール":-2,"川田将雅":-2,"池添謙一":-2 };
+  }
+}
+function saveExt(){ try{ localStorage.setItem("oddsAnomaly.ext", JSON.stringify(EXT)); }catch(e){} }
+
+/* ---------- persistence ---------- */
+function save(){
+  try{ localStorage.setItem(LS, JSON.stringify({ mode:MODE, books, logServer })); }catch(e){}
+}
+function restore(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS)||"null");
+    if(d && d.books){
+      books.jra = Object.assign(newBook("jra"), d.books.jra||{});
+      books.nar = Object.assign(newBook("nar"), d.books.nar||{});
+      MODE = (d.mode==="nar"?"nar":"jra");
+      logServer = d.logServer||"";
+      return;
+    }
+    // migrate v1 (single JRA book)
+    const old = JSON.parse(localStorage.getItem("oddsAnomaly.v1")||"null");
+    if(old){
+      const b = newBook("jra");
+      Object.assign(b.race, old.race||{});
+      b.horses=old.horses||[]; b.snaps=old.snaps||[];
+      b.proxyUrl=old.proxyUrl||""; b.raceId=old.raceId||""; b.intervalSec=old.intervalSec||60;
+      if(old.th) Object.assign(b.th,old.th);
+      if(old.w)  Object.assign(b.w,old.w);
+      if(typeof old.logScale==="boolean") b.logScale=old.logScale;
+      books.jra=b; MODE="jra";
+    }
+  }catch(e){}
+}
+
+/* ---------- helpers ---------- */
+const num = v => { const n=parseFloat(String(v).replace(/[^\d.\-]/g,"")); return isFinite(n)?n:null; };
+const pad = n => String(n).padStart(2,"0");
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200); }
+function hhmmss(d){ d=new Date(d); return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds()); }
+function hhmm(d){ d=new Date(d); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+
+/* netkeiba 場コード（race_id 5〜6桁目）。JRAは確実、NARは判明分のみ */
+const JRA_TRACK={"01":"札幌","02":"函館","03":"福島","04":"新潟","05":"東京","06":"中山","07":"中京","08":"京都","09":"阪神","10":"小倉"};
+const NAR_TRACK={"30":"門別","35":"盛岡","36":"水沢","42":"浦和","43":"船橋","44":"大井","45":"川崎","46":"金沢","47":"笠松","48":"名古屋","50":"園田","51":"姫路","54":"高知","55":"佐賀"};
+function trackOf(rid){ const c=rid.slice(4,6); const map=MODE==="nar"?NAR_TRACK:JRA_TRACK; return map[c]||(MODE==="nar"?"NAR:"+c:"場"+c); }
+
+/* 枠番カラー（競馬標準）。テキスト色も返す（黒/白背景の可読性用） */
+const WAKU=[null,
+  {bg:"#ffffff",fg:"#111"},  // 1 白
+  {bg:"#1a1a1a",fg:"#fff"},  // 2 黒
+  {bg:"#e8002a",fg:"#fff"},  // 3 赤
+  {bg:"#1062d6",fg:"#fff"},  // 4 青
+  {bg:"#f4d000",fg:"#111"},  // 5 黄
+  {bg:"#13a64a",fg:"#fff"},  // 6 緑
+  {bg:"#f08300",fg:"#111"},  // 7 橙
+  {bg:"#f7b3c8",fg:"#111"}]; // 8 桃
+function wakuOf(num){ const h=horseInfo(num); return h && h.waku ? h.waku : null; }
+function wakuStyle(num){ const w=wakuOf(num); const c=w?WAKU[w]:null; return c?`background:${c.bg};color:${c.fg}`:""; }
+function horseInfo(num){ return (state.entries && state.entries[String(num)]) || null; }
+function horseName(num){ const h=horseInfo(num); if(h&&h.name) return h.name; const e=state.horses.find(x=>x.num===String(num)); return (e&&e.name)||""; }
+function jockeyOf(num){ const h=horseInfo(num); return h&&h.jockey?h.jockey:""; }
+
+/* db.netkeiba 馬個別ページ（codetabs経由で取得可）。馬IDは出馬表の /horse/{id} から拾う */
+const HORSE_CACHE={};   // id -> {sire,record,prize}
+function nkHorsePage(hid){ return "https://db.netkeiba.com/horse/"+hid; }
+function getHorsePageURL(hid){
+  if(state.src==="public"){ const p=(state.pubPrefix||"").trim(); return p? p+encodeURIComponent(nkHorsePage(hid)) : null; }
+  if(state.src==="worker"){ try{ const u=new URL(state.proxyUrl.trim()); return u.origin+"/horse?id="+hid; }catch(e){ return null; } }
+  return null;
+}
+function parseHorsePage(html){
+  const o={record:null, prize:null, sire:null, damsire:null};
+  const rec=html.match(/(\d+戦\d+勝)/); if(rec) o.record=rec[1];
+  const chaku=html.match(/\[?\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*-\s*(\d+)\s*\]?/); if(chaku) o.chaku=chaku.slice(1,5).map(Number);
+  const pzs=[...html.matchAll(/賞金[^0-9]{0,20}?([\d,]+(?:\.\d+)?)\s*万/g)].map(m=>parseFloat(m[1].replace(/,/g,""))).filter(v=>isFinite(v));
+  if(pzs.length){ const mx=Math.max(...pzs); o.prize = mx>=10000? (mx/10000).toFixed(1)+"億" : mx.toLocaleString()+"万"; }
+  // 血統テーブル(blood_table): 父=先頭, 母父=母ブロックの父。リンクtextを順に
+  const bt=html.match(/blood_table[\s\S]*?<\/table>/);
+  if(bt){ const names=[...bt[0].matchAll(/\/horse\/(?:ped\/)?\d+\/?"[^>]*>\s*([^<]{2,24}?)\s*</g)].map(m=>m[1].trim()).filter(x=>x&&x!=="血統");
+    if(names.length){ o.sire=names[0]; o.damsire=names[Math.min(2,names.length-1)]; } }
+  return o;
+}
+async function fetchHorseInfo(hid){
+  if(!hid) return null;
+  if(HORSE_CACHE[hid]) return HORSE_CACHE[hid];
+  const url=getHorsePageURL(hid); if(!url) return null;
+  try{
+    let html;
+    if(state.src==="worker"){ const r=await fetch(url); const t=await r.text();
+      try{ const j=JSON.parse(t); if(j.info){ HORSE_CACHE[hid]=j.info; return j.info; } html=t; }catch(_){ html=t; } }
+    else { html=await fetchDecoded(url); }
+    const info=parseHorsePage(html); HORSE_CACHE[hid]=info; return info;
+  }catch(e){ return null; }
+}
+
+/* EUC-JP混在のnetkeiba HTMLを正しくデコード */
+async function fetchDecoded(url){
+  const res=await fetch(url,{headers:{Accept:"text/html,*/*"}});
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  const buf=await res.arrayBuffer();
+  try{ return new TextDecoder("euc-jp",{fatal:false}).decode(buf); }
+  catch(e){ return new TextDecoder("utf-8",{fatal:false}).decode(buf); }
+}
+
+/* shutuba.html → {馬番:{num,name,waku}} を埋める + 馬場/天候/コース */
+function parseShutuba(html){
+  const entries={}; const order=[];
+  const rows=html.match(/<tr[^>]*class="[^"]*HorseList[^"]*"[\s\S]*?<\/tr>/g)||[];
+  rows.forEach(r=>{
+    const w=r.match(/Waku(\d)/);
+    const u=r.match(/class="[^"]*Umaban[^"]*"[^>]*>\s*(\d{1,2})/) || r.match(/>(\d{1,2})<\/td>/);
+    const n=r.match(/\/horse\/(\d+)[^"]*"[^>]*>([^<]{1,30})</);
+    if(!u||!n) return;
+    const num=String(parseInt(u[1],10)), name=n[2].trim(), hid=n[1];
+    if(entries[num]) return;
+    // 騎手: Jockey クラスのセル、または /jockey/ リンク
+    let jockey="";
+    const jc=r.match(/class="[^"]*Jockey[^"]*"([\s\S]{0,160}?)<\/td>/);
+    if(jc){ const jm=jc[1].match(/\/jockey\/[^"]*"[^>]*>\s*([^<]{1,16}?)\s*</) || jc[1].match(/>\s*([^<>\s]{2,16})\s*</); if(jm) jockey=jm[1].trim(); }
+    if(!jockey){ const jm=r.match(/\/jockey\/(?:result\/recent\/)?\d+[^"]*"[^>]*>\s*([^<]{1,16}?)\s*</); if(jm) jockey=jm[1].trim(); }
+    entries[num]={num, name, waku:w?+w[1]:null, jockey, hid};
+    // 斤量: 行内の 50.0〜60.0 の小数を拾う（馬体重と区別: 3桁(増減)は別）
+    const kin=r.match(/<td[^>]*>\s*(\d{2}\.\d)\s*<\/td>/);
+    if(kin){ const v=+kin[1]; if(v>=48&&v<=63) entries[num].kinryo=v; }
+    order.push(num);
+  });
+  // 馬場・天候・コース（RaceData01ブロック）
+  const cond={going:null, weather:null, surface:null, dist:null, raceName:null};
+  const d01=html.match(/RaceData01[\s\S]{0,400}/);
+  if(d01){
+    const txt=d01[0].replace(/<[^>]+>/g," ").replace(/\s+/g," ");
+    const g=txt.match(/馬場[:：]?\s*(良|稍重|重|不良)/); if(g) cond.going=g[1];
+    const we=txt.match(/天候[:：]?\s*(晴|曇|雨|小雨|雪|小雪)/); if(we) cond.weather=we[1];
+    const c=txt.match(/(芝|ダ|ダート)\s*(\d{3,4})m/); if(c){ cond.surface=c[1]==="芝"?"芝":"ダ"; cond.dist=+c[2]; }
+  }
+  const rn=html.match(/RaceName"?[^>]*>\s*([^<\n]{1,40}?)\s*</); if(rn) cond.raceName=rn[1].trim();
+  return {entries, order, cond};
+}
+
+/* netkeiba 生オッズ {"1":{馬番:[単勝]},"2":{馬番:[複下,複上]}} → {win,place} */
+function nkToMaps(data){
+  const wsrc=data["1"]||{}, psrc=data["2"]||{}, win={}, place={};
+  for(const k in wsrc){ const a=wsrc[k]; const v=num(Array.isArray(a)?a[0]:a); if(v) win[String(parseInt(k,10))]=v; }
+  for(const k in psrc){ const a=psrc[k];
+    if(Array.isArray(a)){ const lo=num(a[0]),hi=num(a[1]); if(lo) place[String(parseInt(k,10))]= hi?[lo,hi]:lo; }
+    else { const v=num(a); if(v) place[String(parseInt(k,10))]=v; } }
+  return {win,place};
+}
+
+/* ============================================================
+   DATA INGEST
+   ============================================================ */
+
+// Normalize a fetched/parsed object into either a single snapshot or full series.
+function ingest(obj, sourceLabel){
+  if(typeof obj==="string"){ try{ obj=JSON.parse(obj); }catch(e){ throw new Error("JSON解析失敗(プロキシ応答かも)"); } }
+  if(!obj || typeof obj!=="object") throw new Error("形式不明");
+  // 公開プロキシのラッパ (allorigins /get 等は {contents:"...json文字列..."})
+  if(typeof obj.contents==="string"){ try{ obj=JSON.parse(obj.contents); }catch(e){ throw new Error("プロキシcontents解析失敗"); } }
+
+  // CASE 0: netkeiba 生レスポンス（{odds:{data:{...}}} / {data:{"1":..}} / {"1":..,"2":..}）
+  let nk=null;
+  if(obj.odds && obj.odds.data) nk=obj.odds.data;
+  else if(obj.data && (obj.data["1"]||obj.data["2"])) nk=obj.data;
+  else if(obj["1"]||obj["2"]) nk=obj;
+  if(nk){
+    const {win,place}=nkToMaps(nk);
+    if(Object.keys(win).length){
+      state.snaps.push({ ts:Date.now(), label:sourceLabel||("#"+(state.snaps.length+1)), t:null, win, place });
+      ensureHorsesFromSnaps();
+      return 1;
+    }
+  }
+
+  // CASE 0b: netkeiba NAR形 {ary_odds:{馬番:{Odds,Ninki}}}（単勝のみ。複勝はこの口に無い）
+  if(obj.ary_odds && typeof obj.ary_odds==="object"){
+    const win={};
+    for(const k in obj.ary_odds){ const o=obj.ary_odds[k]; const v=num(o&&o.Odds); if(v && v>0) win[String(parseInt(k,10))]=v; }
+    if(Object.keys(win).length){
+      state.snaps.push({ ts:Date.now(), label:sourceLabel||("#"+(state.snaps.length+1)), t:null, win, place:{} });
+      ensureHorsesFromSnaps();
+      return 1;
+    }
+  }
+
+  // race meta
+  if(obj.race){
+    state.race.id   = obj.race.id   ?? state.race.id;
+    state.race.name = obj.race.name ?? state.race.name;
+    state.race.track= obj.race.track?? state.race.track;
+    state.race.raceNo=obj.race.raceNo??state.race.raceNo;
+  }
+  // horses
+  if(Array.isArray(obj.horses) && obj.horses.length){
+    state.horses = obj.horses.map(h=>({ num:String(h.num ?? h.umaban ?? h.no), name:h.name ?? h.bamei ?? "" }));
+  }
+
+  // CASE A: full time-series
+  if(Array.isArray(obj.snapshots) && obj.snapshots.length){
+    state.snaps = obj.snapshots.map((s,i)=>normalizeSnap(s,i));
+    ensureHorsesFromSnaps();
+    return state.snaps.length;
+  }
+
+  // CASE B: single current-odds snapshot (win/place maps)
+  if(obj.win || obj.tansho){
+    const snap = normalizeSnap(obj, state.snaps.length, sourceLabel);
+    state.snaps.push(snap);
+    ensureHorsesFromSnaps();
+    return 1;
+  }
+  throw new Error("オッズが見つからない");
+}
+
+function normalizeSnap(s, idx, label){
+  const winSrc = s.win || s.tansho || s.odds || {};
+  const placeSrc = s.place || s.fukusho || {};
+  const win={}, place={};
+  for(const k in winSrc){ const v=num(winSrc[k]); if(v) win[String(k)]=v; }
+  for(const k in placeSrc){
+    let v=placeSrc[k];
+    if(Array.isArray(v)) v=(num(v[0])+num(v[1]))/2;          // 複勝レンジ→中央値
+    else if(typeof v==="string" && v.includes("-")){ const p=v.split("-"); v=(num(p[0])+num(p[1]))/2; }
+    else v=num(v);
+    if(v) place[String(k)]=v;
+  }
+  return {
+    ts: s.ts || Date.now(),
+    label: s.label || label || ("#"+(idx+1)),
+    t: (s.t!=null? num(s.t): null),
+    win, place
+  };
+}
+
+function ensureHorsesFromSnaps(){
+  if(state.horses.length) return;
+  const set = new Set();
+  state.snaps.forEach(s=>Object.keys(s.win).forEach(n=>set.add(n)));
+  state.horses = [...set].sort((a,b)=>(+a)-(+b)).map(n=>({num:n,name:(state.entries&&state.entries[n]&&state.entries[n].name)||""}));
+}
+
+// long-format CSV: time,umaban,name,tansho,fukusho
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) throw new Error("空");
+  const delim = lines[0].includes("\t")?"\t":",";
+  let header = lines[0].split(delim).map(h=>h.trim().toLowerCase());
+  const looksHeader = header.some(h=>/time|時刻|経過|分前|umaban|馬番|name|馬名|tan|単|fuku|複|win|place/.test(h));
+  let rows = lines.slice(looksHeader?1:0);
+  const idx = (...names)=>{ for(const n of names){ const i=header.indexOf(n); if(i>=0) return i; } return -1; };
+  let ci = looksHeader ? {
+    t: idx("time","時刻","経過","分前","t"),
+    u: idx("umaban","馬番","num","no","horse"),
+    n: idx("name","馬名","bamei"),
+    w: idx("tansho","単勝","win","単","tan","odds"),
+    p: idx("fukusho","複勝","place","複")
+  } : {t:0,u:1,n:2,w:3,p:4};
+
+  // group by time (preserve first-seen order)
+  const order=[], byTime=new Map();
+  for(const ln of rows){
+    const c = ln.split(delim).map(x=>x.trim());
+    const tkey = ci.t>=0 ? (c[ci.t]||"") : "0";
+    const u = ci.u>=0 ? c[ci.u] : null;
+    if(!u) continue;
+    if(!byTime.has(tkey)){ byTime.set(tkey,{win:{},place:{},names:{}}); order.push(tkey); }
+    const g=byTime.get(tkey);
+    const w=ci.w>=0?num(c[ci.w]):null; if(w) g.win[String(u)]=w;
+    const p=ci.p>=0?num(c[ci.p]):null; if(p) g.place[String(u)]=p;
+    if(ci.n>=0 && c[ci.n]) g.names[String(u)]=c[ci.n];
+  }
+  if(!order.length) throw new Error("行を解釈できない");
+  // build snapshots
+  const snaps = order.map((tk,i)=>({ ts:Date.now()-(order.length-i)*60000, label:tk||("#"+(i+1)),
+    t:num(tk), win:byTime.get(tk).win, place:byTime.get(tk).place }));
+  // horses + names
+  const names={}; order.forEach(tk=>Object.assign(names, byTime.get(tk).names));
+  const set=new Set(); snaps.forEach(s=>Object.keys(s.win).forEach(n=>set.add(n)));
+  state.horses=[...set].sort((a,b)=>(+a)-(+b)).map(n=>({num:n,name:names[n]||""}));
+  state.snaps=snaps;
+  return snaps.length;
+}
+
+/* ============================================================
+   METRICS / ANOMALY DETECTION
+   ============================================================ */
+function series(numKey){ return state.snaps.map(s=>s.win[numKey] ?? null); }
+function lastPlace(numKey){ for(let i=state.snaps.length-1;i>=0;i--){ const v=state.snaps[i].place[numKey]; if(v) return v; } return null; }
+
+function compute(){
+  metrics = [];
+  const ns = state.snaps.length;
+  if(ns<1){ return; }
+
+  // field implied-support (latest) for divergence normalization
+  const latest = state.snaps[ns-1];
+  let winSum=0, placeSum=0;
+  state.horses.forEach(h=>{ const w=latest.win[h.num]; if(w) winSum+=1/w; const p=lastPlace(h.num); if(p) placeSum+=1/p; });
+
+  // first pass: per-horse total change vs field
+  const totals=[];
+  state.horses.forEach(h=>{
+    const s=series(h.num).filter(v=>v!=null);
+    if(s.length>=2){ totals.push((s[s.length-1]-s[0])/s[0]*100); }
+  });
+  const fMean = totals.length? totals.reduce((a,b)=>a+b,0)/totals.length : 0;
+  const fStd  = totals.length>1? Math.sqrt(totals.reduce((a,b)=>a+(b-fMean)**2,0)/totals.length) : 1;
+
+  state.horses.forEach(h=>{
+    const raw = series(h.num);
+    const s = raw.filter(v=>v!=null);
+    if(s.length<1) return;
+    const first=s[0], last=s[s.length-1];
+    const totalPct = s.length>=2 ? (last-first)/first*100 : 0;
+
+    // step changes + timing
+    let steps=[], stepRates=[];
+    for(let i=1;i<s.length;i++){
+      const p=(s[i]-s[i-1])/s[i-1]*100; steps.push(p);
+    }
+    const recentPct = steps.length? steps[steps.length-1] : 0;
+
+    // velocity: %/step (and %/min if timestamps differ)
+    let velPerStep = steps.length? Math.abs(recentPct) : 0;
+    let velPerMin = null;
+    if(ns>=2){
+      const dtMin=(state.snaps[ns-1].ts-state.snaps[ns-2].ts)/60000;
+      if(dtMin>0.05 && steps.length) velPerMin = recentPct/dtMin;
+    }
+
+    // monotonic drop streak (consecutive negative steps from the end)
+    let dropStreak=0; for(let i=steps.length-1;i>=0;i--){ if(steps[i]<-0.5) dropStreak++; else break; }
+
+    // field-relative z
+    const zTotal = fStd>0 ? (totalPct-fMean)/fStd : 0;
+
+    // 単複乖離: normalized win-share vs place-share (pp)
+    const w=last, p=lastPlace(h.num);
+    const winShare  = (w && winSum)  ? (1/w)/winSum*100   : null;
+    const placeShare= (p && placeSum)? (1/p)/placeSum*100 : null;
+    const divPP = (winShare!=null && placeShare!=null) ? (placeShare-winShare) : null; // +: 単勝人気以上に複勝で買われ
+
+    // normalized sub-scores 0..1
+    const nAbs   = Math.min(Math.abs(totalPct),60)/60;
+    const nField = Math.min(Math.abs(zTotal),3)/3;
+    const nVel   = Math.min(Math.abs(recentPct),30)/30;
+    const nExtra = Math.max( Math.min(dropStreak,5)/5, divPP!=null?Math.min(Math.abs(divPP),15)/15:0 );
+
+    // オッズ帯の関連度: 本命〜中穴(2〜10倍)を厚く、万馬券級は減衰。
+    //   1.4倍≈0.92, 3倍≈1.0, 7倍≈0.95, 15倍≈0.7, 30倍≈0.42, 60倍≈0.2, 150倍≈0.05
+    const band = last!=null ? Math.min(1, 1.02*Math.exp(-Math.pow(Math.log(last/3.5),2)/2.6) + 0.05) : 0.5;
+    // 方向の重み: 急落(資金流入=評価上昇)を主役に、急騰(見限られ)は軽め
+    const dirW = totalPct<0 ? 1.0 : 0.45;
+
+    const W=state.w, wsum=(W.field+W.vel+W.abs+W.extra)||1;
+    const base = 100*(W.field*nField + W.vel*nVel + W.abs*nAbs + W.extra*nExtra)/wsum;
+    const score = base * band * dirW;
+
+    // tags
+    const th=state.th, tags=[];
+    if(totalPct<=-th.drop)         tags.push({t:"🔻急落",  c:"drop", v:totalPct});
+    if(totalPct>= th.rise && band>=0.35) tags.push({t:"🔺急騰",  c:"rise", v:totalPct}); // 万馬券級の急騰は無視
+    if(Math.abs(recentPct)>=th.vel && band>=0.3)tags.push({t:"⚡直前急変",c:"vel",  v:recentPct});
+    if(dropStreak>=3)              tags.push({t:"🔁連続下落",c:"drop", v:dropStreak});
+    if(divPP!=null && Math.abs(divPP)>=th.div) tags.push({t:"🔀単複乖離",c:"div", v:divPP});
+
+    const accent = tags.length ? tags[0].c : "none";
+
+    metrics.push({
+      num:h.num, name:h.name, raw, first, last, totalPct, recentPct,
+      velPerStep, velPerMin, dropStreak, zTotal, winShare, placeShare, divPP,
+      placeOdds:p, score, band, tags, accent
+    });
+  });
+
+  metrics.sort((a,b)=> b.score-a.score);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const ACC = {drop:"var(--drop)",rise:"var(--rise)",vel:"var(--vel)",div:"var(--div)",none:"var(--dim)"};
+
+function fmt(v,suf="",sign=false){ if(v==null||!isFinite(v)) return "—"; const s=(sign&&v>0?"+":"")+v.toFixed(1); return s+suf; }
+
+function sparkSVG(raw, accent){
+  const pts = raw.map((v,i)=>({i,v})).filter(p=>p.v!=null);
+  if(pts.length<2) return "";
+  const xs=pts.map(p=>p.i), vs=pts.map(p=>Math.log(p.v));
+  const x0=Math.min(...xs),x1=Math.max(...xs),mn=Math.min(...vs),mx=Math.max(...vs);
+  const W=88,H=30,pad=3;
+  const X=i=>pad+(x1===x0?0:(i-x0)/(x1-x0))*(W-2*pad);
+  const Y=v=>{ const lv=Math.log(v); return pad+(mx===mn?0.5:(lv-mn)/(mx-mn))*(H-2*pad); }; // 高odds=下→上(値小さいほど下=人気)
+  const d=pts.map((p,k)=>(k?"L":"M")+X(p.i).toFixed(1)+" "+(H-Y(p.v)).toFixed(1)).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}"><path d="${d}" fill="none" stroke="${ACC[accent]}" stroke-width="1.4" stroke-linejoin="round" opacity=".95"/></svg>`;
+}
+
+function tagColor(c){ return {drop:"--drop",rise:"--rise",vel:"--vel",div:"--div"}[c]||"--dim"; }
+
+function interpret(m){
+  const bits=[];
+  const tset=new Set(m.tags.map(t=>t.t));
+  if(tset.has("🔻急落"))  bits.push(`単勝 ${m.first.toFixed(1)}→${m.last.toFixed(1)}倍 (${fmt(m.totalPct,'%',true)})。資金流入＝評価急上昇`);
+  if(tset.has("🔺急騰"))  bits.push(`${m.first.toFixed(1)}→${m.last.toFixed(1)}倍 (${fmt(m.totalPct,'%',true)})。見限られ`);
+  if(tset.has("⚡直前急変")) bits.push(`直近 ${fmt(m.recentPct,'%',true)}${m.velPerMin!=null?` / ${fmt(m.velPerMin,'%/分',true)}`:''}`);
+  if(tset.has("🔁連続下落")) bits.push(`${m.dropStreak}連続で下落中`);
+  if(tset.has("🔀単複乖離")) bits.push(m.divPP>0?`複勝が単勝支持以上に買われ (+${m.divPP.toFixed(1)}pp)＝置きにいく玄人資金の気配`:`複勝で見限られ (${m.divPP.toFixed(1)}pp)`);
+  return bits.join(" / ");
+}
+
+function renderAlerts(){
+  const host=$("#alerts");
+  const shown = metrics.filter(m=>m.tags.length>0);
+  $("#alertCount").textContent = shown.length? `${shown.length} 件検知 / 全${metrics.length}頭` : `異常なし / 全${metrics.length}頭`;
+  if(!metrics.length){ host.innerHTML='<div class="empty">データなし — デモ投入 か 取得 から開始</div>'; return; }
+  const list = shown.length? shown : metrics.slice(0,3);
+  host.innerHTML = list.map(m=>{
+    const acc=ACC[m.accent];
+    const tags=m.tags.map(t=>{const cv=`var(${tagColor(t.c)})`; return `<span class="tag" style="color:${cv};border-color:${cv}">${t.t}</span>`;}).join("");
+    const upd = m.totalPct<0?"down":(m.totalPct>0?"up":"");
+    const note = interpret(m);
+    return `<div class="card ${state.selected===m.num?'sel':''}" data-num="${m.num}" style="--accent:${acc}">
+      <div class="top">
+        <span class="waku" style="${wakuStyle(m.num)}">${wakuOf(m.num)||'?'}</span>
+        <div class="uma">${m.num}</div>
+        <div class="nm" data-act="detail">${horseName(m.num)||m.name||'—'}</div>
+        <div class="score">${m.score.toFixed(0)}<small>SCORE</small></div>
+      </div>
+      <div class="bar"><i style="width:${Math.min(m.score,100)}%"></i></div>
+      ${tags?`<div class="tags">${tags}</div>`:""}
+      <div class="stats">
+        <div class="stat"><div class="k">単勝 現</div><div class="v">${m.last?.toFixed(1)??'—'}</div></div>
+        <div class="stat"><div class="k">総変動</div><div class="v ${upd}">${fmt(m.totalPct,'%',true)}</div></div>
+        <div class="stat"><div class="k">直前</div><div class="v ${m.recentPct<0?'down':m.recentPct>0?'up':''}">${fmt(m.recentPct,'%',true)}</div></div>
+        <div class="stat"><div class="k">複勝</div><div class="v">${m.placeOdds?m.placeOdds.toFixed(1):'—'}</div></div>
+      </div>
+      ${note?`<div class="note">${note}</div>`:""}
+      ${sparkSVG(m.raw,m.accent)}
+    </div>`;
+  }).join("");
+  host.querySelectorAll(".card").forEach(c=>c.onclick=(ev)=>{
+    const n=c.dataset.num;
+    if(ev.target.closest('[data-act="detail"]')){ openHorse(n); return; }
+    state.selected = (state.selected===n?null:n); state.focusAll=true;
+    renderAlerts(); drawChart();
+  });
+}
+
+/* ---------- chart ---------- */
+const cv=$("#chart"), ctx=cv.getContext("2d");
+let chartGeom=null;
+function drawChart(){
+  const dpr=devicePixelRatio||1;
+  const w=cv.clientWidth, h=cv.clientHeight;
+  cv.width=w*dpr; cv.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  const PL=38,PR=10,PT=12,PB=22, iw=w-PL-PR, ih=h-PT-PB;
+  const ns=state.snaps.length;
+  if(ns<1 || !state.horses.length){ ctx.fillStyle="#3a414e";ctx.font="12px 'Space Mono'";ctx.textAlign="center";ctx.fillText("no data",w/2,h/2); chartGeom=null; return; }
+
+  // y range
+  let vals=[]; state.horses.forEach(hr=>state.snaps.forEach(s=>{const v=s.win[hr.num]; if(v) vals.push(v);}));
+  if(!vals.length){ chartGeom=null; return; }
+  let mn=Math.min(...vals), mx=Math.max(...vals);
+  const log=state.logScale;
+  const tY=v=> log ? (Math.log(v)-Math.log(mn))/(Math.log(mx)-Math.log(mn)||1) : (v-mn)/((mx-mn)||1);
+  const Y=v=> PT+ih-tY(v)*ih;                  // 低オッズ(人気)=上
+  const X=i=> PL + (ns===1?0:(i/(ns-1))*iw);
+
+  // grid + y labels
+  ctx.font="9px 'Space Mono'";ctx.textAlign="right";ctx.textBaseline="middle";
+  const ticks = log ? niceLog(mn,mx) : niceLin(mn,mx,5);
+  ticks.forEach(v=>{ const y=Y(v); ctx.strokeStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(w-PR,y);ctx.stroke();
+    ctx.fillStyle="#5a616d";ctx.fillText(v>=10?v.toFixed(0):v.toFixed(1),PL-5,y); });
+  // x labels (first / mid / last)
+  ctx.textAlign="center";ctx.textBaseline="top";
+  [0,Math.floor((ns-1)/2),ns-1].forEach(i=>{ if(i<0||i>=ns)return; const s=state.snaps[i];
+    ctx.fillStyle="#5a616d"; ctx.fillText(s.label||hhmm(s.ts), X(i), h-15); });
+
+  // lines
+  const sel=state.selected;
+  const metaByNum={}; metrics.forEach(m=>metaByNum[m.num]=m);
+  state.horses.forEach(hr=>{
+    const m=metaByNum[hr.num]||{};
+    const anomalous=(m.tags&&m.tags.length>0);
+    const isSel = sel===hr.num;
+    const dim = (sel && !isSel) || (!state.focusAll && !anomalous && !isSel);
+    let stroke = dim ? "rgba(120,128,140,.18)" : (m.accent && m.accent!=="none" ? ACC[m.accent] : "rgba(180,188,200,.55)");
+    let lw = isSel?2.6 : (anomalous?1.8:1);
+    ctx.lineWidth=lw; ctx.strokeStyle=stroke; ctx.lineJoin="round";
+    if((isSel||anomalous)&&!dim){ ctx.shadowColor=stroke; ctx.shadowBlur=isSel?10:5; } else ctx.shadowBlur=0;
+    ctx.beginPath(); let started=false;
+    state.snaps.forEach((s,i)=>{ const v=s.win[hr.num]; if(!v){return;} const x=X(i),y=Y(v); if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y); });
+    ctx.stroke(); ctx.shadowBlur=0;
+    // end dot + label for anomalous/selected
+    if((isSel||anomalous)&&!dim){
+      const lv=state.snaps[ns-1].win[hr.num]; if(lv){ const x=X(ns-1),y=Y(lv);
+        ctx.fillStyle=stroke;ctx.beginPath();ctx.arc(x,y,2.6,0,7);ctx.fill();
+        ctx.fillStyle=stroke;ctx.font="bold 10px 'Space Mono'";ctx.textAlign="right";ctx.textBaseline="middle";
+        ctx.fillText(hr.num, x-6, y); }
+    }
+  });
+  chartGeom={PL,PT,iw,ih,ns,X,Y,mn,mx};
+  $("#btnScale").textContent = log?"LOG":"LINEAR";
+  $("#btnFocus").textContent = state.focusAll?"異常のみ":"全頭表示";
+}
+function niceLin(mn,mx,n){ const a=[];for(let i=0;i<=n;i++)a.push(mn+(mx-mn)*i/n);return a; }
+function niceLog(mn,mx){ const out=[]; const steps=[1,1.5,2,3,5,7,10,15,20,30,50,70,100,150,200,300,500];
+  steps.forEach(s=>{ if(s>=mn*0.9 && s<=mx*1.1) out.push(s); }); if(out.length<2) return niceLin(mn,mx,4); return out; }
+
+// chart hover/touch readout
+function readoutAt(clientX){
+  if(!chartGeom){ return; }
+  const r=cv.getBoundingClientRect();
+  const x=clientX-r.left;
+  const {PL,iw,ns}=chartGeom;
+  let i=Math.round((x-PL)/(iw||1)*(ns-1)); i=Math.max(0,Math.min(ns-1,i));
+  const s=state.snaps[i];
+  const sel=state.selected;
+  if(sel){ const v=s.win[sel]; $("#chartReadout").textContent=`${s.label||hhmm(s.ts)} · 馬番${sel} = ${v?v.toFixed(1)+'倍':'—'}`; }
+  else { $("#chartReadout").textContent=`${s.label||hhmm(s.ts)} · ${hhmm(s.ts)} (タップで馬選択)`; }
+}
+cv.addEventListener("mousemove",e=>readoutAt(e.clientX));
+cv.addEventListener("touchmove",e=>{ if(e.touches[0]) readoutAt(e.touches[0].clientX); },{passive:true});
+
+/* ---------- raw table ---------- */
+function renderRaw(){
+  const thead=$("#rawTable thead"), tbody=$("#rawTable tbody");
+  if(!state.snaps.length){ thead.innerHTML=""; tbody.innerHTML=""; return; }
+  const cols=state.horses.map(h=>h.num);
+  thead.innerHTML="<tr><th>SNAP</th>"+cols.map(c=>`<th>${c}</th>`).join("")+"</tr>";
+  tbody.innerHTML=state.snaps.map(s=>"<tr><td>"+(s.label||hhmm(s.ts))+"</td>"+
+    cols.map(c=>{const v=s.win[c];return `<td>${v?v.toFixed(1):'·'}</td>`;}).join("")+"</tr>").join("");
+}
+
+/* ---------- ticker ---------- */
+function renderTicker(){
+  $("#tkRace").textContent = state.race.name || state.race.id || state.raceId || "—";
+  $("#tkSnap").textContent = state.snaps.length;
+  $("#tkHorses").textContent = state.horses.length;
+  if(state.snaps.length){
+    const a=state.snaps[0], b=state.snaps[state.snaps.length-1];
+    $("#tkRange").textContent = (a.label||hhmm(a.ts))+" → "+(b.label||hhmm(b.ts));
+    $("#tkUpd").textContent = hhmmss(b.ts);
+  } else { $("#tkRange").textContent="—"; $("#tkUpd").textContent="—"; }
+}
+
+function renderEntries(){
+  const panel=$("#entryPanel"), grid=$("#entryGrid");
+  const nums = state.horses.map(h=>h.num);
+  const hasEntries = state.entries && Object.keys(state.entries).length;
+  if(!nums.length){ panel.style.display="none"; return; }
+  panel.style.display="block";
+  $("#entryMeta").textContent = (state.race.track||"")+(state.race.raceNo?" "+state.race.raceNo+"R":"")+" / "+nums.length+"頭"+(hasEntries?"":" (馬名取得中…)");
+  const mByNum={}; metrics.forEach(m=>mByNum[m.num]=m);
+  const marks=assignMarks();
+  // 馬番順
+  const sorted=[...nums].sort((a,b)=>(+a)-(+b));
+  grid.innerHTML = sorted.map(n=>{
+    const m=mByNum[n]||{};
+    const od = m.last!=null ? m.last.toFixed(1) : "—";
+    const pop = m.last!=null ? rankOf(n) : null;
+    const tag = (m.tags&&m.tags.length)? `<span class="etag" style="color:var(${tagColor(m.tags[0].c)});border-color:var(${tagColor(m.tags[0].c)})">${m.tags[0].t}</span>` : "";
+    const trend = m.totalPct!=null ? (m.totalPct<-3?'down':(m.totalPct>3?'up':'')) : '';
+    const mk = marks[n] ? `<span class="emark">${marks[n]}</span>` : `<span class="emark dim"></span>`;
+    return `<div class="entry-row ${state.selected===n?'sel':''}" data-num="${n}">
+      ${mk}
+      <span class="waku" style="${wakuStyle(n)}">${wakuOf(n)||'?'}</span>
+      <span class="uno">${n}</span>
+      <span class="enm" data-act="detail">${horseName(n)||'—'}${jockeyOf(n)?`<span class="ejk">${jockeyOf(n)}</span>`:''}</span>
+      ${tag}
+      <span class="eod ${trend==='down'?'v down':trend==='up'?'v up':''}">${od}</span>
+      <span class="epop">${pop?pop+'番人気':''}</span>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".entry-row").forEach(r=>r.onclick=(ev)=>{
+    const n=r.dataset.num;
+    if(ev.target.closest('[data-act="detail"]')){ openHorse(n); return; }
+    state.selected=(state.selected===n?null:n); state.focusAll=true;
+    renderAlerts(); renderEntries(); drawChart();
+  });
+}
+function rankOf(num){
+  const arr=state.horses.map(h=>{ const m=metrics.find(x=>x.num===h.num); return {num:h.num, od:m&&m.last!=null?m.last:Infinity}; })
+    .filter(x=>isFinite(x.od)).sort((a,b)=>a.od-b.od);
+  const i=arr.findIndex(x=>x.num===String(num)); return i>=0?i+1:null;
+}
+
+/* 馬名タップ→詳細モーダル。基本情報は即表示、血統/通算成績はdb.netkeibaから後追い取得 */
+async function openHorse(num){
+  num=String(num);
+  const e=horseInfo(num)||{}; const m=metrics.find(x=>x.num===num)||{};
+  const marks=assignMarks();
+  $("#hmWaku").textContent=wakuOf(num)||"?"; $("#hmWaku").setAttribute("style",wakuStyle(num)+";min-width:30px;height:26px;font-size:17px");
+  $("#hmName").textContent=(marks[num]?marks[num]+" ":"")+(horseName(num)||"—");
+  $("#hmSub").textContent=`${num}番 / 枠${wakuOf(num)||'?'}${e.jockey?' / '+e.jockey:''}${e.kinryo?' / '+e.kinryo+'kg':''}`;
+  const od = m.last!=null?m.last.toFixed(1):"—";
+  const pop = m.last!=null?(rankOf(num)+"番人気"):"—";
+  const tot = m.totalPct!=null?(m.totalPct>0?"+":"")+m.totalPct.toFixed(1)+"%":"—";
+  const rec = m.recentPct!=null?(m.recentPct>0?"+":"")+m.recentPct.toFixed(1)+"%":"—";
+  const tags=(m.tags&&m.tags.length)?m.tags.map(t=>`<span class="tag" style="color:var(${tagColor(t.c)});border-color:var(${tagColor(t.c)})">${t.t}</span>`).join(""):'<span class="hm-row"><span class="l">検知なし</span></span>';
+  const spark = m.raw ? sparkSVG(m.raw, m.accent||"none").replace('class="spark"','class="hm-spark"').replace('width="88"','width="100%"').replace('viewBox="0 0 88 30"','viewBox="0 0 320 80" preserveAspectRatio="none"') : "";
+  // 大きめのスパークを別生成
+  const big = m.raw ? bigSpark(m.raw, m.accent||"none") : '<div class="hm-load">オッズ推移なし</div>';
+  $("#hmBody").innerHTML=`
+    <div class="hm-grid">
+      <div class="hm-cell"><div class="k">単勝 現在</div><div class="v">${od}</div></div>
+      <div class="hm-cell"><div class="k">人気</div><div class="v">${pop.replace('番人気','')}</div></div>
+      <div class="hm-cell"><div class="k">複勝</div><div class="v">${m.placeOdds?m.placeOdds.toFixed(1):'—'}</div></div>
+      <div class="hm-cell"><div class="k">総変動</div><div class="v ${m.totalPct<0?'dn':m.totalPct>0?'up':''}">${tot}</div></div>
+      <div class="hm-cell"><div class="k">直前</div><div class="v ${m.recentPct<0?'dn':m.recentPct>0?'up':''}">${rec}</div></div>
+      <div class="hm-cell"><div class="k">検知スコア</div><div class="v">${m.score!=null?Math.round(m.score):'—'}</div></div>
+    </div>
+    <div class="hm-sec">オッズ推移</div>${big}
+    <div class="hm-sec">検知</div><div class="hm-tags">${tags}</div>
+    <div class="hm-sec">血統・通算成績</div>
+    <div id="hmPed"><div class="hm-load">db.netkeibaから取得中…</div></div>`;
+  $("#hModal").style.display="flex";
+  // 血統・成績を後追い
+  if(e.hid){
+    const info=await fetchHorseInfo(e.hid);
+    const ped=$("#hmPed"); if(!ped) return;
+    if(info){
+      ped.innerHTML=`
+        ${info.record?`<div class="hm-row"><span class="l">通算成績</span><span>${info.record}</span></div>`:''}
+        ${info.chaku?`<div class="hm-row"><span class="l">着別 (1-2-3-着外)</span><span>${info.chaku.join("-")}</span></div>`:''}
+        ${info.prize?`<div class="hm-row"><span class="l">獲得賞金</span><span>${info.prize}</span></div>`:''}
+        ${info.sire?`<div class="hm-row"><span class="l">父</span><span>${info.sire}</span></div>`:''}
+        ${info.damsire?`<div class="hm-row"><span class="l">母父</span><span>${info.damsire}</span></div>`:''}
+        ${(!info.record&&!info.sire)?'<div class="hm-load">取得できず（ページ構造変化かも）</div>':''}`;
+    } else { ped.innerHTML='<div class="hm-load">取得失敗（プロキシ/通信）</div>'; }
+  } else {
+    $("#hmPed").innerHTML='<div class="hm-load">馬IDなし（出馬表未取得 or デモ）</div>';
+  }
+}
+function bigSpark(raw, accent){
+  const pts=raw.map((v,i)=>({i,v})).filter(p=>p.v!=null);
+  if(pts.length<2) return '<div class="hm-load">推移データ不足</div>';
+  const W=320,H=80,pad=6;
+  const xs=pts.map(p=>p.i), x0=Math.min(...xs),x1=Math.max(...xs);
+  const vs=pts.map(p=>Math.log(p.v)),mn=Math.min(...vs),mx=Math.max(...vs);
+  const X=i=>pad+(x1===x0?0:(i-x0)/(x1-x0))*(W-2*pad);
+  const Y=v=>{const lv=Math.log(v);return pad+(mx===mn?0.5:(lv-mn)/(mx-mn))*(H-2*pad);};
+  const ACC={drop:"#ff5b39",rise:"#3ad1ff",vel:"#ffb13a",div:"#9bff5e",none:"#b4bcc8"};
+  const d=pts.map((p,k)=>(k?"L":"M")+X(p.i).toFixed(1)+" "+(H-Y(p.v)).toFixed(1)).join(" ");
+  const last=pts[pts.length-1];
+  return `<svg class="hm-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${ACC[accent]||ACC.none}" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(last.i).toFixed(1)}" cy="${(H-Y(last.v)).toFixed(1)}" r="3" fill="${ACC[accent]||ACC.none}"/></svg>`;
+}
+function closeHorse(){ $("#hModal").style.display="none"; }
+
+/* 馬単・狙い目: 単勝の動きから推定。
+   軸候補スコア = 急落(資金流入)＋低オッズ＋連続下落。相手 = 軸以外で「伸びてる/支持厚い」順。 */
+function renderExacta(){
+  const panel=$("#exactaPanel"), host=$("#exactaList");
+  if(metrics.length<3 || state.snaps.length<2){ panel.style.display="none"; return; }
+  // 軸スコア: 急落(totalPct<0)を主に。低オッズと連続下落も加点
+  const axisScore=m=>{
+    if(m.last==null) return -1;
+    let s=0;
+    if(m.totalPct<0) s+=Math.min(-m.totalPct,40)*1.5;      // 急落＝買われた
+    s+=Math.max(0,(20-m.last))*0.8;                         // 低オッズ＝信頼
+    s+=m.dropStreak*4;                                      // 連続下落
+    if(m.recentPct<0) s+=Math.min(-m.recentPct,20);         // 直前も買われ
+    return s;
+  };
+  const ranked=[...metrics].filter(m=>m.last!=null).sort((a,b)=>axisScore(b)-axisScore(a));
+  const axis=ranked[0];
+  if(!axis || axisScore(axis)<=0){ panel.style.display="none"; return; }
+  panel.style.display="block";
+
+  // 相手: 軸以外を「支持の厚さ＋伸び」で。急騰(見限られ)は減点
+  const partnerScore=m=>{
+    let s=Math.max(0,(25-m.last))*1.0;       // 売れてるほど高い
+    if(m.totalPct<0) s+=Math.min(-m.totalPct,30)*0.8; // 買われてる相手も妙味
+    if(m.totalPct>15) s-=m.totalPct*0.5;     // 急騰は嫌う
+    return s;
+  };
+  const partners=ranked.filter(m=>m.num!==axis.num).sort((a,b)=>partnerScore(b)-partnerScore(a)).slice(0,4);
+  const maxc=Math.max(axisScore(axis),1);
+  host.innerHTML = partners.map(p=>{
+    const conf=Math.round(50+Math.min(49, (partnerScore(p)/ (partnerScore(partners[0])||1))*40 + (axisScore(axis)/maxc)*9));
+    const why = p.totalPct<-5?`相手も-${Math.abs(p.totalPct).toFixed(0)}%`:(p.last<=axis.last?`人気上位`:`${rankOf(p.num)}番人気`);
+    return `<div class="ex-row">
+      <div class="ex-pair">
+        <span class="waku" style="${wakuStyle(axis.num)}">${wakuOf(axis.num)||'?'}</span>
+        <b>${axis.num}</b><span class="ex-name">${horseName(axis.num)}</span>
+        <span class="ex-arrow">▸</span>
+        <span class="waku" style="${wakuStyle(p.num)}">${wakuOf(p.num)||'?'}</span>
+        <b>${p.num}</b><span class="ex-name">${horseName(p.num)}</span>
+      </div>
+      <span class="ex-why">${why}</span>
+      <span class="ex-conf" style="color:var(--mode,#fff)">${conf}</span>
+    </div>`;
+  }).join("") +
+  `<div class="hint" style="margin-top:8px">軸 <b>${axis.num} ${horseName(axis.num)}</b>：${axis.totalPct<0?`単勝 ${axis.first.toFixed(1)}→${axis.last.toFixed(1)}倍 (${axis.totalPct.toFixed(0)}%) で資金集中`:`現在${rankOf(axis.num)}番人気`}。馬単は <b>${axis.num}→相手</b> の方向。裏(相手→軸)は保険。</div>`;
+}
+
+function renderAll(){ compute(); renderAlerts(); renderEntries(); renderExacta(); renderGoing(); renderFlow(); renderAna(); drawChart(); renderRaw(); renderTicker(); renderLearn(); save(); }
+
+/* 穴馬サーチ: 人気薄(オッズ高/支持低)×裏付け(土台スコア or 静かな資金流入) */
+function renderAna(){
+  const panel=$("#anaPanel"), host=$("#anaList");
+  if(!metrics.length){ panel.style.display="none"; return; }
+  panel.style.display="block";
+  const n=state.horses.length||1;
+  const rows=metrics.filter(m=>m.last!=null).map(m=>{
+    const pop=rankOf(m.num)||n;                       // 人気順位(小=人気)
+    const unpop=Math.max(0,(pop-(n*0.4)))/n;          // 人気薄度 0..~
+    const fund=fundamentalScore(m.num);               // 土台(オッズ非依存)
+    const fundN=Math.max(0,(fund-50))/60;             // 0..~
+    const quietInflow=(m.totalPct<0 && pop>=Math.ceil(n*0.4))? Math.min(-m.totalPct,30)/30 : 0; // 人気薄なのに買われ
+    // 妙味: 割安(人気薄) × 裏付け(土台 or 静か資金)
+    const value = (unpop*0.6) * (fundN*0.7 + quietInflow*0.8 + 0.15) * 100;
+    return {m, pop, fund, value, quietInflow};
+  }).filter(x=>x.pop>=Math.ceil(n*0.4) && x.value>3)   // 上位人気は穴じゃない
+    .sort((a,b)=>b.value-a.value).slice(0,5);
+  if(!rows.length){ host.innerHTML='<div class="empty">際立った穴馬なし（人気薄で裏付けのある馬が出たらここに）</div>'; return; }
+  const why=x=>{
+    const b=[];
+    if(x.quietInflow>0.1) b.push(`静かに資金 ${x.m.totalPct.toFixed(0)}%`);
+    const jk=jockeyOf(x.m.num); const tend=tendency({track:state.race.track,surface:state.race.surface});
+    if(tend&&tend.jockeyHist&&jk&&tend.jockeyHist[jk]) b.push(`${jk}が好調`);
+    if(EXT.jockey[jk]!=null&&EXT.jockey[jk]>=60) b.push(`${jk}◎`);
+    if(EXT.horse[x.m.name]!=null&&EXT.horse[x.m.name]>=60) b.push(`馬の力上位`);
+    const w=wakuOf(x.m.num); if(tend&&tend.wakuHist&&w&&tend.wakuHist[w]) b.push(`好走枠${w}`);
+    return b.length?b.join(" / "):`土台 ${Math.round(x.fund)}`;
+  };
+  host.innerHTML=rows.map(x=>`<div class="entry-row" data-num="${x.m.num}" style="cursor:pointer">
+    <span class="emark" style="color:var(--vel)">穴</span>
+    <span class="waku" style="${wakuStyle(x.m.num)}">${wakuOf(x.m.num)||'?'}</span>
+    <span class="uno">${x.m.num}</span>
+    <span class="enm">${horseName(x.m.num)||'—'}${jockeyOf(x.m.num)?`<span class="ejk">${jockeyOf(x.m.num)}</span>`:''}<div class="flow-name" style="position:static">${why(x)}</div></span>
+    <span class="eod">${x.m.last.toFixed(1)}</span>
+    <span class="epop">${x.pop}番人気</span>
+    <span class="ex-conf" style="color:var(--vel);min-width:34px;text-align:right">${Math.round(x.value)}</span>
+  </div>`).join("");
+  host.querySelectorAll(".entry-row").forEach(r=>r.onclick=()=>{
+    const num=r.dataset.num; state.selected=(state.selected===num?null:num); state.focusAll=true;
+    renderAlerts(); renderEntries(); renderAna(); drawChart();
+  });
+}
+
+/* ── 馬場バナー：不良/重なら脚質補正の枠組みを提示（保存ハンデ知識と接続） ── */
+function renderGoing(){
+  const b=$("#goingBanner"); const g=state.race.going;
+  if(!g){ b.style.display="none"; return; }
+  b.style.display="flex";
+  const wet = (g==="重"||g==="不良"||g==="稍重");
+  const heavy = (g==="重"||g==="不良");
+  b.className = wet?"wet":"dry";
+  const surf = state.race.surface||""; const dist=state.race.dist?state.race.dist+"m":"";
+  const meta = [surf+dist, state.race.weather?("天候"+state.race.weather):""].filter(Boolean).join(" / ");
+  let tip;
+  if(heavy && surf==="ダ") tip="不良ダート＝脚抜き良く時計速い。<b>逃げ・先行が止まりにくい</b>。前で粘れる馬の急落は信頼、差し追込の人気馬は割引。";
+  else if(heavy && surf==="芝") tip="不良芝＝力の要る馬場。<b>前残り＋パワー型有利</b>、軽い差し馬は届きにくい。";
+  else if(wet) tip="湿った馬場。前有利に振れやすい。先行馬への資金流入は素直に取り、人気の差し馬は様子見。";
+  else tip="";
+  b.innerHTML = `<span class="gb-go">馬場:${g}</span>`+
+    (meta?`<span class="gb-meta">${meta}</span>`:"")+
+    (tip?`<span class="gb-tip">${tip}</span>`:"");
+}
+
+/* ── 資金フロー：直近スナップ間のオッズ変化を左右バーで ── */
+let flowScope="win"; // win=異常/勝負馬, all=全頭
+function renderFlow(){
+  const panel=$("#flowPanel"), host=$("#flowList");
+  if(state.snaps.length<2 || !metrics.length){ panel.style.display="none"; return; }
+  panel.style.display="block";
+  $("#flowWin").style.borderColor = flowScope==="win"?"var(--mode)":"var(--line)";
+  $("#flowAll").style.borderColor = flowScope==="all"?"var(--mode)":"var(--line)";
+  // recentPct = 直近1ステップの変化率。マイナス=オッズ下落=資金流入(in)
+  let rows=metrics.filter(m=>m.last!=null);
+  if(flowScope==="win") rows=rows.filter(m=>m.tags.length>0 || Math.abs(m.recentPct)>=3);
+  rows=rows.sort((a,b)=>a.recentPct-b.recentPct); // 流入(マイナス)が上
+  if(!rows.length){ host.innerHTML='<div class="hint" style="text-align:center;padding:8px">直近の動きなし</div>'; return; }
+  const maxAbs=Math.max(10, ...rows.map(m=>Math.abs(m.recentPct)));
+  host.innerHTML = rows.map(m=>{
+    const inflow = m.recentPct<0;
+    const w=Math.min(50, Math.abs(m.recentPct)/maxAbs*50);
+    return `<div class="flow-row" data-num="${m.num}" style="cursor:pointer">
+      <span class="waku" style="${wakuStyle(m.num)};min-width:20px;height:18px;font-size:12px">${wakuOf(m.num)||'?'}</span>
+      <span class="fno">${m.num}</span>
+      <div class="flow-track"><div class="mid"></div>
+        <div class="fill ${inflow?'in':'out'}" style="${inflow?'right:50%':'left:50%'};width:${w}%"></div></div>
+      <span class="fpct ${inflow?'in':'out'}">${m.recentPct>0?'+':''}${m.recentPct.toFixed(1)}%</span>
+      <span class="flow-name">${horseName(m.num)||''}</span>
+    </div>`;
+  }).join("");
+  host.querySelectorAll(".flow-row").forEach(r=>r.onclick=()=>{
+    const n=r.dataset.num; state.selected=(state.selected===n?null:n); state.focusAll=true;
+    renderAlerts(); renderEntries(); renderFlow(); drawChart();
+  });
+}
+
+/* ============================================================
+   FETCH (proxy)
+   ============================================================ */
+async function fetchOnce(){
+  if(state.src==="manual"){ toast("手動モード: 下のJSON貼付を使って"); return; }
+  const id=state.raceId.trim();
+  if(!id){ toast("レース未選択（IDか一覧から）"); return; }
+  // 発走後オートストップ: 発走から3分超でauto停止
+  if(lockOn && auto && state.race.postMin!=null){
+    if(jstNowMin() > state.race.postMin+3){ stopAuto(); setLive(false,"発走後STOP"); toast("発走を過ぎたので自動更新を停止"); return; }
+  }
+  const url=getOddsURL(id);
+  if(!url){ toast(state.src==="public"?"前置きURL未設定":"プロキシURL未設定"); return; }
+  setLive(true,"FETCH");
+  try{
+    const res=await fetch(url,{headers:{"Accept":"application/json, text/plain, */*"}});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const text=await res.text();
+    let data; try{ data=JSON.parse(text); }catch(_){ data=text; }
+    const added=ingest(data, hhmm(Date.now()));
+    renderAll();
+    checkNewAlerts();
+    logCurrentRace();
+    toast(`取得OK (+${added} / 計${state.snaps.length}スナップ)`);
+    setLive(auto, auto?"LIVE":"OK");
+  }catch(e){
+    console.error(e);
+    toast("取得失敗: "+e.message+(/Failed to fetch/i.test(e.message)?" (プロキシ落ち?前置きURL差替え)":""));
+    setLive(auto, auto?"LIVE":"ERR");
+  }
+}
+
+/* 新規異常を検出して通知（バイブ+音+フラッシュ）。スナップ2本目以降のみ */
+function checkNewAlerts(){
+  if(state.snaps.length<2) return;        // 初回は既知化のみ
+  const cur=new Set();
+  metrics.forEach(m=>m.tags.forEach(t=>cur.add(m.num+":"+t.t)));
+  if(!knownAlerts.size){ knownAlerts=cur; return; } // 初期化
+  const fresh=[];
+  metrics.forEach(m=>m.tags.forEach(t=>{ const k=m.num+":"+t.t; if(!knownAlerts.has(k)) fresh.push({m,t}); }));
+  knownAlerts=cur;
+  if(fresh.length && alertOn){
+    notifyAlert(fresh);
+  }
+}
+function notifyAlert(fresh){
+  // バイブ
+  if(navigator.vibrate) navigator.vibrate([40,30,40,30,80]);
+  // 音（WebAudio・2音ビープ）
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    [880,1320].forEach((f,i)=>{ const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.frequency.value=f; o.type="square"; o.connect(g); g.connect(audioCtx.destination);
+      const t=audioCtx.currentTime+i*0.13; g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.18,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+      o.start(t); o.stop(t+0.13); });
+  }catch(e){}
+  // 画面フラッシュ + トースト
+  document.body.animate([{boxShadow:"inset 0 0 0 3px var(--drop)"},{boxShadow:"inset 0 0 0 0 transparent"}],{duration:600});
+  const top=fresh[0];
+  const more=fresh.length>1?` 他${fresh.length-1}件`:"";
+  toast(`⚠ ${top.t.t} ${top.m.num} ${horseName(top.m.num)||''}${more}`);
+}
+function setLive(on,txt){ $("#liveDot").classList.toggle("live",!!on); $("#liveTxt").textContent=txt||(on?"LIVE":"IDLE"); }
+async function acquireWake(){ try{ if("wakeLock" in navigator){ wakeLock=await navigator.wakeLock.request("screen"); } }catch(e){} }
+function releaseWake(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
+function startAuto(){ stopAuto(); auto=true; knownAlerts=new Set(); $("#autoSwitch").classList.add("on"); setLive(true,"LIVE");
+  acquireWake();
+  autoTimer=setInterval(fetchOnce, Math.max(10,state.intervalSec)*1000); fetchOnce(); }
+function stopAuto(){ auto=false; $("#autoSwitch").classList.remove("on"); if(autoTimer)clearInterval(autoTimer); autoTimer=null; releaseWake(); setLive(false,"IDLE"); }
+
+/* 前面復帰時：wakeLockは自動解放されるので取り直し＋取りこぼし1回取得（裏で止まってた穴埋め） */
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible" && auto){ acquireWake(); fetchOnce(); }
+});
+
+/* ---------- mode switching ---------- */
+function switchMode(m){
+  if(m!=="jra" && m!=="nar") return;
+  if(m===MODE) return;
+  stopAuto();
+  MODE=m; state=books[m]; state.selected=null;
+  applyModeChrome(); syncControls();
+  raceList=[]; renderRaceList();
+  if(state.snaps.length){ renderAll(); } else { renderTicker(); loadDemo(); }
+  save();
+}
+function applyModeChrome(){
+  document.body.dataset.mode=MODE;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.mode===MODE));
+  if(MODE==="jra"){
+    $("#subJp").textContent="異常オッズ検知 / JRA netkeiba";
+    $("#proxyUrl").placeholder="https://your-worker.workers.dev/odds?race={race}";
+    $("#raceId").placeholder="例 202605021211 (race.netkeiba)";
+  }else{
+    $("#subJp").textContent="異常オッズ検知 / 地方競馬 NAR";
+    $("#proxyUrl").placeholder="https://your-worker.workers.dev/nar?race={race}";
+    $("#raceId").placeholder="例 202545xxxxxx (nar.netkeiba)";
+  }
+  applySrcMode();
+}
+function applySrcMode(){
+  const m=state.src;
+  $("#srcMode").value=m;
+  $("#rowPub").style.display   = (m==="public")?"block":"none";
+  $("#rowProxy").style.display = (m==="worker")?"block":"none";
+  if(m==="public")      $("#srcHint").innerHTML="※ 公開プロキシ＝デプロイ不要で即動く。race_id入れて取得、または下の「一覧取得 / 直前自動選択」。落ちてたら前置きURLを差替え。"+(MODE==="nar"?" NARのAPIパスは要検証。":"");
+  else if(m==="worker") $("#srcHint").innerHTML="※ 自前Worker＝安定。プロキシ取得URLに <code>https://&lt;worker&gt;/odds?race={race}</code>。一覧は origin+/races を自動利用。";
+  else                  $("#srcHint").innerHTML="※ 手動モード＝自動取得しない。netkeibaのオッズJSONや時系列JSON/CSVを「JSON/CSV貼付」から読み込む。";
+}
+
+/* ============================================================
+   RACE PICKER — 本日の全開催ブラウザ + 直近自動選択
+   ============================================================ */
+let raceList = [];   // [{race_id, track, no, post, postMin, name}]
+
+/* netkeiba 直アクセス用エンドポイント（公開プロキシで包む） */
+function nkOddsEndpoint(id){
+  return (MODE==="nar" ? "https://nar.netkeiba.com/api/api_get_nar_odds.html"
+                       : "https://race.netkeiba.com/api/api_get_jra_odds.html")+"?race_id="+id+"&type=1";
+}
+function nkRacesEndpoint(date){
+  return (MODE==="nar" ? "https://nar.netkeiba.com/top/race_list_sub.html"
+                       : "https://race.netkeiba.com/top/race_list_sub.html")+"?kaisai_date="+date;
+}
+function nkShutubaEndpoint(id){
+  return (MODE==="nar" ? "https://nar.netkeiba.com/race/shutuba.html"
+                       : "https://race.netkeiba.com/race/shutuba.html")+"?race_id="+id;
+}
+function nkResultEndpoint(id){
+  return (MODE==="nar" ? "https://nar.netkeiba.com/race/result.html"
+                       : "https://race.netkeiba.com/race/result.html")+"?race_id="+id;
+}
+function getResultURL(id){
+  if(state.src==="public"){ const p=(state.pubPrefix||"").trim(); return p? p+encodeURIComponent(nkResultEndpoint(id)) : null; }
+  if(state.src==="worker"){ try{ const u=new URL(state.proxyUrl.trim()); return u.origin+"/result?race_id="+id+"&mode="+MODE; }catch(e){ return null; } }
+  return null;
+}
+/* result.html → [{rank,waku,num,name,pop,timeSec,last3f}] 着順（パターン抽出・列ズレ耐性） */
+function timeToSec(t){ const m=/^(\d+):(\d{2})\.(\d)$/.exec(t); if(m) return (+m[1])*60+(+m[2])+(+m[3])/10;
+  const s=/^(\d{1,3})\.(\d)$/.exec(t); return s?(+s[1])+(+s[2])/10:null; }
+function parseResult(html){
+  const out=[];
+  const trs=html.match(/<tr[\s\S]*?<\/tr>/g)||[];
+  trs.forEach(r=>{
+    if(!/class="Rank"/.test(r)) return;
+    const rk=r.match(/class="Rank"[^>]*>\s*(\d{1,2})\s*</); if(!rk) return;
+    const rank=parseInt(rk[1],10); if(!isFinite(rank)) return;
+    // 枠・馬番: "Num WakuX" セルが2つ（枠,馬番）
+    const nums=[]; r.replace(/class="Num Waku\d*"[^>]*>\s*(?:<div[^>]*>)?\s*(\d{1,2})/g,(_,n)=>{nums.push(n);return"";});
+    const waku=nums[0]?+nums[0]:null, num=nums[1]?String(parseInt(nums[1],10)):null;
+    const name=(r.match(/\/horse\/\d+[^"]*"[^>]*>([^<]{1,30})</)||[])[1]||"";
+    const jk=(r.match(/\/jockey\/(?:result\/recent\/)?\d+[^"]*"[^>]*>\s*([^<]{1,16}?)\s*</)||[])[1]||"";
+    const ninki=r.match(/Odds_Ninki[^>]*>\s*(?:<span[^>]*>)?\s*(\d{1,2})/);
+    const pop=ninki?+ninki[1]:null;
+    // セル本文配列からタイム・上3F
+    const cells=[]; r.replace(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g,(_,c)=>{cells.push(c.replace(/<[^>]+>/g,"").trim());return"";});
+    const time=cells.find(c=>/^\d:\d{2}\.\d$/.test(c))||null;
+    const decs=cells.filter(c=>/^\d{1,3}\.\d$/.test(c));
+    const last3f=decs.find(c=>{const v=+c;return v>=30&&v<=45;})||null;
+    if(!num) return;
+    out.push({rank, waku, num, name, jockey:jk, pop, timeSec:timeToSec(time), time, last3f:last3f?+last3f:null});
+  });
+  return out.sort((a,b)=>a.rank-b.rank);
+}
+
+/* ============================================================
+   自己学習ログ
+   ============================================================ */
+const LOG_KEY_BASE="oddsAnomaly.log";
+function logKey(){ return LOG_KEY_BASE+"."+MODE; }      // jra/nar で分離
+function loadLog(){ try{ return JSON.parse(localStorage.getItem(logKey())||"[]"); }catch(e){ return []; } }
+function saveLog(a){ try{ localStorage.setItem(logKey(), JSON.stringify(a.slice(-300))); }catch(e){} }
+
+/* ---- サーバー同期 (PHP+JSON) ---- */
+let logServer = "";   // restore で復元
+function upsertLocal(rec){
+  const log=loadLog(); const i=log.findIndex(r=>r.id===rec.id);
+  if(i>=0){ if(!rec.result && log[i].result) rec.result=log[i].result; log[i]=rec; } else log.push(rec);
+  saveLog(log); return log;
+}
+async function pushRec(rec){           // 1件サーバーへ（あれば）
+  if(!logServer) return;
+  try{ await fetch(logServer+"?action=put&mode="+MODE,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(rec)}); }catch(e){}
+}
+async function syncServer(){
+  if(!logServer){ toast("サーバーURL未設定（端末内のみ）"); return; }
+  try{
+    // 1) ローカルの全件をbulkで送る → 2) サーバー全件を取得してマージ保存
+    const local=loadLog();
+    if(local.length){ await fetch(logServer+"?action=bulk&mode="+MODE,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(local)}); }
+    const res=await fetch(logServer+"?action=list&mode="+MODE,{headers:{Accept:"application/json"}});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const data=await res.json();
+    const server=data.records||[];
+    // マージ（id基準・resultありを優先）
+    const byId={}; [...local,...server].forEach(r=>{ if(!r||!r.id)return; const e=byId[r.id];
+      if(!e) byId[r.id]=r; else { byId[r.id] = (r.result&&r.result.win)?r : (e.result&&e.result.win)?e : r; } });
+    const merged=Object.values(byId).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    saveLog(merged.slice(-300));
+    renderLearn(); toast(`同期完了 ローカル${local.length}+サーバー${server.length}→${merged.length}件`);
+  }catch(e){ toast("同期失敗: "+e.message+(/Failed to fetch/i.test(e.message)?" (URL/CORS確認)":"")); }
+}
+
+function logCurrentRace(){
+  if(!state.raceId || state.snaps.length<2 || !metrics.length) return;
+  const picks=metrics.filter(m=>m.tags.length>0).slice(0,5).map(m=>({
+    num:m.num, name:horseName(m.num)||m.name||"", jockey:jockeyOf(m.num), score:Math.round(m.score),
+    tags:m.tags.map(t=>t.t), totalPct:+m.totalPct.toFixed(1), recentPct:+m.recentPct.toFixed(1),
+    odds:m.last!=null?+m.last.toFixed(1):null, pop:rankOf(m.num)
+  }));
+  if(!picks.length) return;
+  const old=loadLog().find(r=>r.id===state.raceId);
+  const rec={ id:state.raceId, mode:MODE, track:state.race.track||trackOf(state.raceId),
+    no:state.race.raceNo||"", going:state.race.going||null, surface:state.race.surface||null, dist:state.race.dist||null,
+    ts:Date.now(), picks, result: old?old.result:null };
+  upsertLocal(rec);
+  pushRec(rec);   // サーバーへ（設定時）
+}
+
+async function reconcileResults(){
+  const log=loadLog();
+  const pending=log.filter(r=>!r.result && Date.now()-r.ts>4*60000);
+  if(!pending.length){ renderLearn(); toast("照合対象なし（発走後4分経過のレースが対象）"); return; }
+  let done=0; const saveMode=MODE;
+  for(const rec of pending.slice(0,8)){
+    try{
+      MODE=rec.mode;
+      const url=getResultURL(rec.id); if(!url) continue;
+      let html;
+      if(state.src==="worker"){ const r=await fetch(url); const t=await r.text();
+        try{ const j=JSON.parse(t); if(j.result){ applyResult(rec,j.result); done++; continue; } html=t; }catch(_){ html=t; } }
+      else { html=await fetchDecoded(url); }
+      const res=parseResult(html);
+      if(res.length){ applyResult(rec,res); done++; pushRec(rec); }
+    }catch(e){ console.warn("result照合失敗",rec.id,e); }
+  }
+  MODE=saveMode;
+  saveLog(log); renderLearn(); toast(`結果照合 ${done}件`);
+}
+function applyResult(rec,res){
+  const win=res.find(x=>x.rank===1);
+  rec.result={ win:win?win.num:null, place3:res.filter(x=>x.rank<=3).map(x=>x.num),
+    winWaku: win?win.waku:null, winPop: win?win.pop:null, winTimeSec: win?win.timeSec:null,
+    winLast3f: win?win.last3f:null, winJockey: win?win.jockey:null, fetched:Date.now() };
+}
+
+/* 過去レース取り込み: 指定日の全レース結果を取得して学習ログに追加（picksは無いがresultで傾向に効く） */
+async function importPast(){
+  if(state.src==="manual"){ toast("手動モードでは取り込み不可"); return; }
+  const date=($("#importDate").value||"").trim()||jstToday();
+  toast("過去レース取得中…");
+  // その日のレース一覧
+  const lurl=getRacesURL(date); if(!lurl){ toast("URL未設定"); return; }
+  let races=[];
+  try{
+    const r=await fetch(lurl); const t=await r.text();
+    if(state.src==="worker"){ try{ const j=JSON.parse(t); races=(j.races||[]).map(x=>x.race_id); }catch(_){ races=parseRaceListHTML(t).map(x=>x.race_id); } }
+    else { let html=t; try{ const j=JSON.parse(t); if(typeof j.contents==="string") html=j.contents; }catch(_){}; races=parseRaceListHTML(html).map(x=>x.race_id); }
+  }catch(e){ toast("一覧取得失敗: "+e.message); return; }
+  if(!races.length){ toast("レースが見つからない"); return; }
+  let added=0; const saveMode=MODE;
+  for(const rid of races.slice(0,30)){     // 1日最大30R
+    if(loadLog().some(r=>r.id===rid && r.result && r.result.win)) continue; // 既済はスキップ
+    try{
+      const url=getResultURL(rid); if(!url) continue;
+      let html;
+      if(state.src==="worker"){ const rr=await fetch(url); const tt=await rr.text();
+        let parsed=null; try{ const j=JSON.parse(tt); if(j.result){ parsed=j.result; } }catch(_){}
+        const res=parsed||parseResult(tt); if(!res.length) continue;
+        const rec=mkPastRec(rid); applyResult(rec,res); upsertLocal(rec); pushRec(rec); added++;
+      } else {
+        html=await fetchDecoded(url); const res=parseResult(html); if(!res.length) continue;
+        const rec=mkPastRec(rid); applyResult(rec,res); upsertLocal(rec); pushRec(rec); added++;
+      }
+    }catch(e){ /* skip */ }
+  }
+  MODE=saveMode;
+  renderLearn(); toast(`過去取り込み ${added}R 追加`);
+}
+function mkPastRec(rid){
+  return { id:rid, mode:MODE, track:trackOf(rid), no:String(parseInt(rid.slice(10),10)),
+    going:null, surface:null, dist:null, ts:Date.now()-86400000, picks:[], result:null };
+}
+
+function learnStats(){
+  const log=loadLog().filter(r=>r.result && r.result.win);
+  const byTag={}; let races=0, topWin=0, topPlace=0;
+  log.forEach(r=>{
+    races++;
+    const top=r.picks[0];
+    if(top){ if(r.result.win===top.num) topWin++; if(r.result.place3.includes(top.num)) topPlace++; }
+    r.picks.forEach(p=>p.tags.forEach(t=>{
+      byTag[t]=byTag[t]||{n:0,win:0,place:0};
+      byTag[t].n++; if(r.result.win===p.num)byTag[t].win++; if(r.result.place3.includes(p.num))byTag[t].place++;
+    }));
+  });
+  return {races, topWin, topPlace, byTag, total:loadLog().length};
+}
+
+/* 自動チューニング: 照合済みデータから「効くスコア帯/オッズ帯」を逆算 */
+function autoTune(){
+  const log=loadLog().filter(r=>r.result && r.result.win);
+  if(log.length<10) return {enough:false, n:log.length};
+  // 全picksを (score, hit) で集める。hit=複勝圏
+  const samples=[];
+  log.forEach(r=>r.picks.forEach(p=>{
+    samples.push({ score:p.score||0, odds:p.odds, totalPct:p.totalPct,
+      hit: r.result.place3.includes(p.num)?1:0, win: r.result.win===p.num?1:0 });
+  }));
+  if(samples.length<20) return {enough:false, n:log.length};
+  // スコア帯ごとの複勝率（10点刻み）
+  const bins={};
+  samples.forEach(s=>{ const b=Math.min(90,Math.floor(s.score/10)*10); bins[b]=bins[b]||{n:0,hit:0}; bins[b].n++; bins[b].hit+=s.hit; });
+  const scoreBins=Object.entries(bins).map(([b,v])=>({band:+b, n:v.n, rate:v.hit/v.n})).sort((a,b)=>a.band-b.band);
+  // 推奨しきい値: 複勝率が全体平均を明確に上回り始めるスコア
+  const base=samples.reduce((a,s)=>a+s.hit,0)/samples.length;
+  let recoScore=null;
+  scoreBins.forEach(b=>{ if(recoScore==null && b.n>=3 && b.rate>=base*1.25 && b.band>=20) recoScore=b.band; });
+  // 急落の効くオッズ帯
+  const dropOdds={lo:{n:0,hit:0},mid:{n:0,hit:0},hi:{n:0,hit:0}};
+  samples.forEach(s=>{ if(s.totalPct>=0||s.odds==null)return; const k=s.odds<=4?"lo":s.odds<=12?"mid":"hi"; dropOdds[k].n++; dropOdds[k].hit+=s.hit; });
+  return {enough:true, n:log.length, samples:samples.length, base, scoreBins, recoScore, dropOdds};
+}
+
+/* 場別傾向: 場×(芝/ダ)×馬場 で勝ち人気/勝ち枠/標準タイム集計 */
+function tendency(filter){
+  const log=loadLog().filter(r=>r.result && r.result.win);
+  const f=filter||{};
+  const rows=log.filter(r=>{
+    if(f.track && r.track!==f.track) return false;
+    if(f.surface && r.surface!==f.surface) return false;
+    if(f.going && r.going!==f.going) return false;
+    return true;
+  });
+  if(!rows.length) return null;
+  const popHist={}, wakuHist={}, timeByDist={}, jockeyHist={}; let popSum=0,popN=0;
+  rows.forEach(r=>{
+    const p=r.result.winPop; if(p){ popHist[p]=(popHist[p]||0)+1; popSum+=p; popN++; }
+    const w=r.result.winWaku; if(w){ wakuHist[w]=(wakuHist[w]||0)+1; }
+    const jk=r.result.winJockey; if(jk){ jockeyHist[jk]=(jockeyHist[jk]||0)+1; }
+    const t=r.result.winTimeSec, d=r.dist;
+    if(t&&d){ (timeByDist[d]=timeByDist[d]||[]).push(t); }
+  });
+  const stdTime={}; Object.entries(timeByDist).forEach(([d,a])=>{ a.sort((x,y)=>x-y); stdTime[d]=a[Math.floor(a.length/2)]; });
+  return { n:rows.length, popHist, wakuHist, jockeyHist, favRate:Math.round((popHist[1]||0)/rows.length*100),
+    avgPop:popN?(popSum/popN).toFixed(1):null, stdTime };
+}
+function logTracks(){ const s=new Set(); loadLog().forEach(r=>{ if(r.track)s.add(r.track); }); return [...s]; }
+
+/* ◎○▲△ 印: 異常スコア + 場の勝ち枠傾向 + 市場支持 + 不良馬場補正 を合成 */
+/* ◎○▲△ 印：オッズ/人気に依存しない「土台」で決定し、レース内でキャッシュ（毎更新で動かさない）。
+   土台 = 騎手の強さ(場別実績＋手入力テーブル) + 距離/コース傾向(勝ち枠) + 斤量 + 血統/成績(手入力があれば)。 */
+function fundamentalScore(num){
+  const e=horseInfo(num)||{};
+  let s=50;
+  // 騎手の強さ: ①この場/条件の勝ち数(学習) ②手入力騎手テーブル(0-100)
+  const jk=jockeyOf(num);
+  const tend=tendency({track:state.race.track, surface:state.race.surface});
+  if(tend&&tend.jockeyHist&&jk){ const tot=Object.values(tend.jockeyHist).reduce((a,b)=>a+b,0)||1; s+=(tend.jockeyHist[jk]||0)/tot*60; }
+  if(jk && EXT.jockey[jk]!=null) s+=(EXT.jockey[jk]-50)*0.6;          // 手入力: 50基準で増減
+  // 距離/コースの勝ち枠傾向
+  if(tend&&tend.wakuHist){ const w=wakuOf(num); if(w){ const tot=Object.values(tend.wakuHist).reduce((a,b)=>a+b,0)||1; s+=(tend.wakuHist[w]||0)/tot*40; } }
+  // 斤量: 軽いほど僅かに有利（補助的・小さめ）
+  if(e.kinryo) s+=(56-e.kinryo)*0.6;
+  // 血統/通算成績の手入力（馬名キー、0-100の強さ）
+  if(EXT.horse[e.name]!=null) s+=(EXT.horse[e.name]-50)*0.8;
+  // 不良馬場×手入力の湿走巧者騎手
+  const wet=(state.race.going==="重"||state.race.going==="不良");
+  if(wet && jk && EXT.jockeyWet[jk]!=null) s+=EXT.jockeyWet[jk]*0.8;
+  return s;
+}
+let _marksCache={raceId:null, marks:{}};
+function assignMarks(){
+  const nums=state.horses.map(h=>h.num);
+  if(!nums.length) return {};
+  // キャッシュ: 同一レースで出走馬が揃っていれば再計算しない（オッズ更新で印が動かない）
+  if(_marksCache.raceId===state.raceId && Object.keys(_marksCache.marks).length) return _marksCache.marks;
+  const scored=nums.map(n=>({num:n, s:fundamentalScore(n)})).sort((a,b)=>b.s-a.s);
+  const marks={}; const sym=["◎","○","▲","△","△"];
+  scored.slice(0,5).forEach((x,i)=>marks[x.num]=sym[i]);
+  _marksCache={raceId:state.raceId, marks};
+  return marks;
+}
+function invalidateMarks(){ _marksCache={raceId:null, marks:{}}; }
+
+function renderLearn(){
+  const host=$("#learnBody"); const log=loadLog();
+  if(!log.length){ host.innerHTML='<div class="empty">まだログなし — レースを監視するとここに溜まる</div>'; return; }
+  const s=learnStats();
+  const pct=(a,b)=>b?Math.round(a/b*100):0;
+  let html="";
+  if(s.races>0){
+    html+=`<div class="ln-kpis">
+      <div class="ln-kpi"><div class="kv">${s.races}</div><div class="kk">照合済レース</div></div>
+      <div class="ln-kpi"><div class="kv">${pct(s.topWin,s.races)}<span style="font-size:13px">%</span></div><div class="kk">トップ検知が勝利</div></div>
+      <div class="ln-kpi"><div class="kv">${pct(s.topPlace,s.races)}<span style="font-size:13px">%</span></div><div class="kk">トップ検知が複勝圏</div></div>
+    </div>`;
+    const tags=Object.entries(s.byTag).sort((a,b)=>b[1].n-a[1].n);
+    if(tags.length){
+      html+=`<div class="lbl" style="margin:4px 0 6px">タグ別 複勝圏ヒット率</div>`;
+      html+=tags.map(([t,v])=>`<div class="ln-tag">
+        <span class="tn">${t}</span>
+        <span class="tb"><i style="width:${pct(v.place,v.n)}%"></i></span>
+        <span class="tv">${pct(v.place,v.n)}% (${v.place}/${v.n})</span>
+      </div>`).join("");
+    }
+  } else {
+    html+=`<div class="hint" style="margin-bottom:10px">記録 ${log.length}件。まだ結果照合が済んでいない。発走後に「結果照合」を押すと着順を取りに行く。</div>`;
+  }
+  // 自動チューニング分析
+  const at=autoTune();
+  if(at.enough){
+    const pc=v=>Math.round(v*100);
+    const sb=at.scoreBins.filter(b=>b.n>=2);
+    html+=`<div class="lbl" style="margin:14px 0 6px">自動チューニング（${at.n}R / ${at.samples}検知から）</div>`;
+    html+=sb.map(b=>`<div class="ln-tag"><span class="tn">スコア${b.band}〜</span>
+      <span class="tb"><i style="width:${pc(b.rate)}%;background:${b.rate>=at.base*1.25?'var(--drop)':'var(--line)'}"></i></span>
+      <span class="tv">${pc(b.rate)}% (${b.n})</span></div>`).join("");
+    const d=at.dropOdds, dr=k=>d[k].n?Math.round(d[k].hit/d[k].n*100):0;
+    html+=`<div class="hint" style="margin:8px 0">急落の複勝圏率: 〜4倍 <b>${dr('lo')}%</b>(${d.lo.n}) / 〜12倍 <b>${dr('mid')}%</b>(${d.mid.n}) / 12倍超 <b>${dr('hi')}%</b>(${d.hi.n})。全体平均 ${pc(at.base)}%。</div>`;
+    if(at.recoScore!=null){
+      html+=`<div class="hint" style="margin-bottom:6px">→ スコア <b>${at.recoScore}以上</b>で複勝率が跳ねる。アラートの目安に。</div>`;
+    }
+  } else if(loadLog().filter(r=>r.result&&r.result.win).length){
+    html+=`<div class="hint" style="margin:14px 0 6px">自動チューニングは照合済10R以上で有効化（現在 ${at.n}R）。過去レース取り込みで貯めると早い。</div>`;
+  }
+  // 直近10件
+  const recent=[...log].reverse().slice(0,10);
+  html+=`<div class="ln-recent"><div class="lbl" style="margin:4px 0 6px">直近の記録</div>`;
+  html+=recent.map(r=>{
+    const top=r.picks[0]; let hit='<span class="hit pend">結果待ち</span>';
+    if(r.result&&r.result.win){
+      if(top&&r.result.win===top.num) hit='<span class="hit win">的中(勝)</span>';
+      else if(top&&r.result.place3.includes(top.num)) hit='<span class="hit plc">複勝圏</span>';
+      else hit='<span class="hit miss">外れ</span>';
+    }
+    const tg=top?top.tags[0]:'';
+    return `<div class="ln-rec">
+      <span class="rr">${r.track||''}${r.no?r.no+'R':''} ${r.going?'['+r.going+']':''} 軸${top?top.num:'-'} ${top?top.name:''} ${tg}</span>
+      ${hit}</div>`;
+  }).join("")+`</div>`;
+  host.innerHTML=html;
+  renderTendency();
+}
+
+function renderTendency(){
+  // 場セレクトを最新化
+  const sel=$("#tdTrack"); const cur=sel.value;
+  const tracks=logTracks();
+  sel.innerHTML='<option value="">全場</option>'+tracks.map(t=>`<option value="${t}">${t}</option>`).join("");
+  if(tracks.includes(cur)) sel.value=cur;
+  const host=$("#tdBody");
+  const t=tendency({track:$("#tdTrack").value||null, surface:$("#tdSurf").value||null, going:$("#tdGoing").value||null});
+  if(!t){ host.innerHTML='<div class="empty">該当データなし（結果照合を増やすと出る）</div>'; return; }
+  const pct=(a)=>Math.round(a/t.n*100);
+  // 勝ち人気分布（1〜上位）
+  const popKeys=Object.keys(t.popHist).map(Number).sort((a,b)=>a-b);
+  const popBars=popKeys.map(p=>`<div class="ln-tag"><span class="tn">${p}番人気</span>
+    <span class="tb"><i style="width:${pct(t.popHist[p])}%;background:var(--drop)"></i></span>
+    <span class="tv">${pct(t.popHist[p])}% (${t.popHist[p]})</span></div>`).join("");
+  // 勝ち枠分布
+  const wakuKeys=Object.keys(t.wakuHist).map(Number).sort((a,b)=>a-b);
+  const wakuBars=wakuKeys.map(w=>`<div class="ln-tag">
+    <span class="waku" style="${(WAKU[w]?`background:${WAKU[w].bg};color:${WAKU[w].fg}`:'')};min-width:20px;height:18px;font-size:12px">${w}</span>
+    <span class="tn" style="flex:1"></span>
+    <span class="tb"><i style="width:${pct(t.wakuHist[w])}%"></i></span>
+    <span class="tv">${pct(t.wakuHist[w])}% (${t.wakuHist[w]})</span></div>`).join("");
+  // 標準タイム
+  const fmtT=s=>{ const m=Math.floor(s/60), r=(s-m*60).toFixed(1); return m>0?`${m}:${r.padStart(4,'0')}`:r; };
+  const timeRows=Object.entries(t.stdTime).sort((a,b)=>(+a[0])-(+b[0]))
+    .map(([d,s])=>`<div class="ln-tag"><span class="tn">${d}m</span><span class="tv" style="flex:1">標準勝ちタイム ${fmtT(s)}</span></div>`).join("");
+  // 騎手の勝ち数ランキング
+  const jk=Object.entries(t.jockeyHist||{}).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const jkRows=jk.map(([name,w])=>`<div class="ln-tag"><span class="tn">${name}</span>
+    <span class="tb"><i style="width:${pct(w)}%;background:var(--vel)"></i></span>
+    <span class="tv">${w}勝 (${pct(w)}%)</span></div>`).join("");
+  host.innerHTML=`
+    <div class="ln-kpis">
+      <div class="ln-kpi"><div class="kv">${t.n}</div><div class="kk">該当レース</div></div>
+      <div class="ln-kpi"><div class="kv">${t.favRate}<span style="font-size:13px">%</span></div><div class="kk">1番人気勝率</div></div>
+      <div class="ln-kpi"><div class="kv">${t.avgPop||'—'}</div><div class="kk">平均勝ち人気</div></div>
+    </div>
+    <div class="lbl" style="margin:4px 0 6px">勝ち人気の分布</div>${popBars}
+    <div class="lbl" style="margin:12px 0 6px">勝ち枠の分布</div>${wakuBars}
+    ${jkRows?`<div class="lbl" style="margin:12px 0 6px">この条件で勝ってる騎手</div>${jkRows}`:''}
+    ${timeRows?`<div class="lbl" style="margin:12px 0 6px">距離別の標準タイム</div>${timeRows}`:''}
+    <div class="hint" style="margin-top:10px">${t.favRate>=45?'堅い決着が多い場/条件＝◎は素直に上位人気＋資金流入馬。':t.favRate<=25?'波乱含み＝中穴の急落馬に妙味。':'標準的。'} 勝ち枠が偏ってるなら、その枠の馬を印で優遇すると噛み合う。</div>`;
+}
+function getShutubaURL(id){
+  if(state.src==="public"){ const p=(state.pubPrefix||"").trim(); return p? p+encodeURIComponent(nkShutubaEndpoint(id)) : null; }
+  if(state.src==="worker"){ try{ const u=new URL(state.proxyUrl.trim()); return u.origin+"/shutuba?race_id="+id+"&mode="+MODE; }catch(e){ return null; } }
+  return null;
+}
+async function fetchEntries(id){
+  if(state.src==="manual") return;
+  const url=getShutubaURL(id); if(!url) return;
+  try{
+    let html;
+    if(state.src==="worker"){ const r=await fetch(url); const t=await r.text();
+      try{ const j=JSON.parse(t); if(j.entries){ state.entries=j.entries; invalidateMarks();
+        if(j.race){ state.race.going=j.race.going; state.race.weather=j.race.weather; state.race.surface=j.race.surface; state.race.dist=j.race.dist; }
+        state.horses=state.horses.map(h=>({...h,name:(j.entries[h.num]&&j.entries[h.num].name)||h.name})); renderAll(); return; } html=t; }catch(_){ html=t; } }
+    else { html=await fetchDecoded(url); }
+    const {entries,cond}=parseShutuba(html);
+    if(Object.keys(entries).length){
+      state.entries=entries; invalidateMarks();
+      if(cond){ state.race.going=cond.going; state.race.weather=cond.weather;
+        state.race.surface=cond.surface; state.race.dist=cond.dist;
+        if(cond.raceName && !state.race.name) state.race.name=cond.raceName; }
+      // 馬名をhorsesにも反映
+      state.horses=state.horses.map(h=>({...h, name:(entries[h.num]&&entries[h.num].name)||h.name}));
+      renderAll();
+    }
+  }catch(e){ console.warn("shutuba取得失敗",e); }
+}
+function getOddsURL(id){
+  if(state.src==="public"){ const p=(state.pubPrefix||"").trim(); return p? p+encodeURIComponent(nkOddsEndpoint(id)) : null; }
+  if(state.src==="worker"){ const b=state.proxyUrl.trim(); if(!b) return null;
+    return b.includes("{race}")? b.replace("{race}",encodeURIComponent(id)) : b+(b.includes("?")?"&":"?")+"race="+encodeURIComponent(id); }
+  return null;
+}
+function getRacesURL(date){
+  if(state.src==="public"){ const p=(state.pubPrefix||"").trim(); return p? p+encodeURIComponent(nkRacesEndpoint(date)) : null; }
+  if(state.src==="worker"){ try{ const u=new URL(state.proxyUrl.trim()); return u.origin+"/races?date="+date+"&mode="+MODE; }catch(e){ return null; } }
+  return null;
+}
+function postToMin(p){ if(!p) return null; const m=/(\d{1,2}):(\d{2})/.exec(p); return m? (+m[1])*60+(+m[2]) : null; }
+function jstNowMin(){ const d=new Date(Date.now()+9*3600e3); return d.getUTCHours()*60+d.getUTCMinutes(); }
+function jstToday(){ const d=new Date(Date.now()+9*3600e3); return ""+d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate()); }
+
+/* netkeiba race_list.html → [{race_id,track,no,post,name}] （公開プロキシ時はクライアント解析） */
+function parseRaceListHTML(html){
+  const out=[], seen=new Set(), re=/shutuba\.html\?race_id=(\d{12})/g; let m;
+  while((m=re.exec(html))){ const rid=m[1]; if(seen.has(rid))continue; seen.add(rid);
+    const win=html.slice(m.index,m.index+900);
+    const tm=win.match(/(\d{1,2}:\d{2})/), nm=win.match(/Item(?:Title|Long)"?[^>]*>\s*([^<\n]{1,40}?)\s*</i);
+    out.push({race_id:rid, track:trackOf(rid), no:parseInt(rid.slice(10),10), post:tm?tm[1]:null, name:nm?nm[1].trim():""}); }
+  if(!out.length){ [...new Set([...html.matchAll(/race_id=(\d{12})/g)].map(x=>x[1]))]
+    .forEach(rid=>out.push({race_id:rid, track:trackOf(rid), no:parseInt(rid.slice(10),10), post:null, name:""})); }
+  return out;
+}
+
+async function fetchRaceList(){
+  if(state.src==="manual"){ toast("手動モードでは一覧取得不可"); return; }
+  const date=($("#pickDate").value||"").trim()||jstToday();
+  const url=getRacesURL(date);
+  if(!url){ toast(state.src==="public"?"前置きURL未設定":"プロキシURL未設定"); return; }
+  $("#raceList").innerHTML='<div class="hint" style="text-align:center;padding:8px">取得中…</div>';
+  try{
+    const res=await fetch(url,{headers:{Accept:"text/html,application/json,*/*"}});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const text=await res.text();
+    let races;
+    if(state.src==="worker"){
+      let j=null; try{ j=JSON.parse(text); }catch(_){}
+      races = (j && Array.isArray(j.races)) ? j.races : parseRaceListHTML(text);
+    }else{
+      let html=text; try{ const j=JSON.parse(text); if(j && typeof j.contents==="string") html=j.contents; }catch(_){}
+      races = parseRaceListHTML(html);
+    }
+    raceList=(races||[]).map(r=>({...r, postMin:postToMin(r.post)}));
+    renderRaceList();
+    toast(raceList.length?`一覧取得 ${raceList.length}R`:"0件（日付/開催を確認）");
+  }catch(e){
+    $("#raceList").innerHTML='<div class="hint" style="text-align:center;padding:8px;color:var(--drop)">取得失敗: '+e.message+(/Failed to fetch/i.test(e.message)?' (プロキシ落ち?前置きURL差替え)':'')+'</div>';
+  }
+}
+
+function renderRaceList(){
+  const host=$("#raceList");
+  if(!raceList.length){ host.innerHTML='<div class="hint" style="text-align:center;padding:8px">「一覧取得」でその日の全開催・全レースを表示（どこの何R か選べる）</div>'; return; }
+  const now=jstNowMin();
+  // 場ごとにグループ化（出現順を保持）
+  const groups=[], gmap={};
+  raceList.forEach(r=>{ if(!gmap[r.track]){ gmap[r.track]={track:r.track, items:[]}; groups.push(gmap[r.track]); } gmap[r.track].items.push(r); });
+  host.innerHTML=groups.map(g=>{
+    const chips=g.items.sort((a,b)=>a.no-b.no).map(r=>{
+      const soon = r.postMin!=null && r.postMin>=now-2 && r.postMin<=now+25;
+      const sel = state.raceId===r.race_id;
+      return `<div class="rl-chip ${sel?'sel':''} ${soon?'soon':''}" data-rid="${r.race_id}" data-track="${r.track}" data-no="${r.no}" data-name="${(r.name||'').replace(/"/g,'')}">
+        <div class="r">${r.no}R</div>
+        <div class="t">${r.post||'--:--'}</div>
+        ${r.name?`<div class="nm">${r.name}</div>`:''}
+      </div>`;
+    }).join("");
+    return `<div class="rl-track"><div class="rl-head">${g.track}</div><div class="rl-chips">${chips}</div></div>`;
+  }).join("");
+  host.querySelectorAll(".rl-chip").forEach(c=>c.onclick=()=>{
+    const r=raceList.find(x=>x.race_id===c.dataset.rid)||{};
+    selectRace(c.dataset.rid, {track:c.dataset.track, no:+c.dataset.no, name:c.dataset.name, post:r.post, postMin:r.postMin});
+  });
+}
+
+function selectRace(rid, meta){
+  meta=meta||{};
+  if(state.raceId!==rid){
+    state.raceId=rid; $("#raceId").value=rid;
+    state.snaps=[]; state.horses=[]; state.entries={}; state.selected=null;  // 別レース→リセット
+    invalidateMarks();
+    state.race={id:rid, name:meta.name||"", track:meta.track||"", raceNo:String(meta.no||""), going:null, weather:null, surface:null, dist:null, postMin:(meta.postMin!=null?meta.postMin:null), post:meta.post||null};
+  }
+  renderRaceList(); renderAll();
+  toast(`選択: ${meta.track||''}${meta.no?meta.no+'R':''}`);
+  if(state.src!=="manual"){ fetchEntries(rid); fetchOnce(); }   // 出馬表+即1スナップ
+}
+
+async function autoPick(){
+  if(!raceList.length){ await fetchRaceList(); }
+  if(!raceList.length) return;
+  const now=jstNowMin();
+  const timed=raceList.filter(r=>r.postMin!=null);
+  let t;
+  if(timed.length){
+    const upcoming=timed.filter(r=>r.postMin>=now-3).sort((a,b)=>a.postMin-b.postMin);
+    t = upcoming[0] || timed.sort((a,b)=>b.postMin-a.postMin)[0];   // 無ければ最終R
+  } else { t = raceList[0]; toast("発走時刻が取れないので先頭Rを選択"); }
+  selectRace(t.race_id, t);
+  if(state.proxyUrl.trim()) startAuto();
+}
+
+/* ============================================================
+   DEMO
+   ============================================================ */
+function loadDemo(){ MODE==="nar" ? loadDemoNAR() : loadDemoJRA(); }
+
+function loadDemoJRA(){
+  // 8頭・10スナップ。馬5=急落, 馬8=急騰, 馬1=単複乖離, 馬6=直前急変
+  const horses=[
+    {num:"1",name:"サイレントノイズ"},{num:"2",name:"クロームベール"},
+    {num:"3",name:"テッペンエース"},{num:"4",name:"グレインフィルム"},
+    {num:"5",name:"ハンドレッドゲート"},{num:"6",name:"ラストファーロン"},
+    {num:"7",name:"モノクロームヒル"},{num:"8",name:"アバンダンドサン"}
+  ];
+  // 各馬の単勝オッズ系列(発走前 早→直前)
+  const W={
+    "1":[16,15.5,15.2,15,14.8,14.6,14.4,14.2,14.0,13.8], // 単勝据置だが複勝で買われる
+    "2":[6.5,6.6,6.4,6.5,6.3,6.4,6.2,6.3,6.1,6.2],
+    "3":[2.6,2.5,2.5,2.4,2.5,2.4,2.4,2.3,2.4,2.3],       // 順当人気
+    "4":[9.0,9.2,9.5,9.8,10.1,10.5,11.0,11.6,12.2,12.8], // じわ上げ
+    "5":[12.0,11.2,10.0,8.6,7.1,6.0,5.2,4.6,4.1,3.7],    // 急落・連続下落
+    "6":[8.0,8.1,7.9,8.2,8.0,8.1,7.8,7.6,6.0,4.4],       // 直前で急変
+    "7":[20,19.5,20.2,20.8,21,21.5,22,22.4,23,23.6],
+    "8":[4.0,4.3,4.8,5.6,6.7,8.0,9.6,11.2,12.4,13.6]     // 急騰・見限られ
+  };
+  // 複勝(中央値)系列の最終値だけ重要: 馬1は複勝で異様に買われている
+  const P_last={"1":2.4,"2":2.2,"3":1.4,"4":3.0,"5":1.8,"6":2.0,"7":4.8,"8":3.4};
+  const snaps=[];
+  for(let i=0;i<10;i++){
+    const win={}, place={};
+    horses.forEach(h=>{ win[h.num]=W[h.num][i]; });
+    if(i===9){ horses.forEach(h=>{ place[h.num]=P_last[h.num]; }); } // 直前のみ複勝
+    snaps.push({ ts:Date.now()-(10-i)*6*60000, label:(60-i*6)+"分前", t:60-i*6, win, place });
+  }
+  state.race={id:"DEMO-JRA",name:"DEMO 中山11R (芝・異常検知サンプル)",track:"中山",raceNo:"11",going:"良",weather:"晴",surface:"芝",dist:2000};
+  state.horses=horses; state.snaps=snaps; state.selected=null;
+  const jkJ={"1":"ルメール","2":"川田将雅","3":"武豊","4":"横山武史","5":"戸崎圭太","6":"C.デムーロ","7":"松山弘平","8":"坂井瑠星"};
+  state.entries={}; horses.forEach((h,i)=>state.entries[h.num]={num:h.num,name:h.name,waku:i+1,jockey:jkJ[h.num]||""}); // 8頭=各枠
+  renderAll(); toast("JRAデモ投入");
+}
+
+function loadDemoNAR(){
+  // 地方(ダ)9頭・10スナップ。プール薄め＝振れ幅大。馬2=急落, 馬7=急騰, 馬4=単複乖離, 馬9=直前急変
+  const horses=[
+    {num:"1",name:"ナイトシフト"},{num:"2",name:"カワサキブラック"},
+    {num:"3",name:"ダートエンペラー"},{num:"4",name:"サイレンスローカル"},
+    {num:"5",name:"グレイミラージュ"},{num:"6",name:"アウトサイダーズ"},
+    {num:"7",name:"フロントランナー"},{num:"8",name:"ミッドナイトラン"},
+    {num:"9",name:"ラストコール"}
+  ];
+  const W={
+    "1":[6.0,6.5,5.8,6.2,5.5,6.0,5.7,5.9,5.4,5.6],
+    "2":[18,15,12,9.5,7.2,5.6,4.5,3.9,3.5,3.2],          // 急落・連続下落(本命急変)
+    "3":[3.0,2.9,3.1,2.8,3.0,2.9,2.8,2.9,2.7,2.8],       // 人気安定
+    "4":[11,11.5,11,12,11.2,11.8,11.3,11.6,11.1,11.4],   // 単勝据置→複勝で買われ(乖離)
+    "5":[8,8.5,9,8.2,9.5,8.8,9.2,9.6,10,10.5],
+    "6":[25,23,26,24,27,25,28,26,29,30],
+    "7":[3.5,4,5,6.5,8,10.5,13,16,18.5,21],              // 急騰・見限られ
+    "8":[14,13.5,14.5,13,14,13.6,14.2,13.8,14.4,13.9],
+    "9":[7,7.2,7,7.3,7.1,7.2,7,5.0,3.6,2.8]              // 直前2ステップで急変
+  };
+  const P_last={"1":2.4,"2":1.5,"3":1.8,"4":1.6,"5":2.8,"6":4.5,"7":3.2,"8":3.6,"9":1.9};
+  const snaps=[];
+  for(let i=0;i<10;i++){
+    const win={}, place={};
+    horses.forEach(h=>{ win[h.num]=W[h.num][i]; });
+    if(i===9){ horses.forEach(h=>{ place[h.num]=P_last[h.num]; }); }
+    snaps.push({ ts:Date.now()-(10-i)*5*60000, label:(50-i*5)+"分前", t:50-i*5, win, place });
+  }
+  state.race={id:"DEMO-NAR",name:"DEMO 川崎11R (ダ1500・異常検知サンプル)",track:"川崎",raceNo:"11",going:"不良",weather:"雨",surface:"ダ",dist:1500};
+  state.horses=horses; state.snaps=snaps; state.selected=null;
+  const wakuMap={"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":8}; // 9頭: 8枠に9番
+  const jkN={"1":"森泰斗","2":"和田譲治","3":"笹川翼","4":"御神本訓史","5":"本田正重","6":"張田昂","7":"矢野貴之","8":"吉原寛人","9":"小久保智"};
+  state.entries={}; horses.forEach(h=>state.entries[h.num]={num:h.num,name:h.name,waku:wakuMap[h.num],jockey:jkN[h.num]||""});
+  renderAll(); toast("地方デモ投入");
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function download(name,text,type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
+function exportJSON(){
+  const obj={ race:state.race, horses:state.horses,
+    snapshots:state.snaps.map(s=>({ts:s.ts,label:s.label,t:s.t,win:s.win,place:s.place})) };
+  download((state.race.id||"odds")+".json", JSON.stringify(obj,null,2), "application/json"); }
+function exportCSV(){
+  let out="time,umaban,name,tansho,fukusho\n";
+  state.snaps.forEach(s=>state.horses.forEach(h=>{
+    const w=s.win[h.num], p=s.place[h.num];
+    if(w!=null||p!=null) out+=`${s.label||hhmm(s.ts)},${h.num},${(h.name||"").replace(/,/g,"")},${w??""},${p??""}\n`; }));
+  download((state.race.id||"odds")+".csv", out, "text/csv"); }
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+function syncControls(){
+  $("#srcMode").value=state.src; $("#pubPrefix").value=state.pubPrefix||"";
+  $("#proxyUrl").value=state.proxyUrl; $("#raceId").value=state.raceId; $("#interval").value=state.intervalSec;
+  $("#thDrop").value=state.th.drop; $("#thRise").value=state.th.rise; $("#thVel").value=state.th.vel; $("#thDiv").value=state.th.div;
+  $("#wField").value=state.w.field; $("#wVel").value=state.w.vel; $("#wAbs").value=state.w.abs; $("#wExtra").value=state.w.extra;
+  syncLabels();
+}
+function syncLabels(){
+  $("#vDrop").textContent="-"+state.th.drop+"%"; $("#vRise").textContent="+"+state.th.rise+"%";
+  $("#vVel").textContent=state.th.vel+"%/step"; $("#vDiv").textContent=state.th.div.toFixed(1)+"pp";
+  $("#vWField").textContent=state.w.field; $("#vWVel").textContent=state.w.vel; $("#vWAbs").textContent=state.w.abs; $("#vWExtra").textContent=state.w.extra;
+}
+
+$("#btnDemo").onclick=loadDemo;
+$("#btnClear").onclick=()=>{ if(!confirm("全データ削除?"))return; state.snaps=[];state.horses=[];state.entries={};state.selected=null;state.race={id:"",name:"",track:"",raceNo:"",going:null,weather:null,surface:null,dist:null}; renderAll(); toast("クリア"); };
+$("#btnFetch").onclick=()=>{ const id=state.raceId.trim(); if(id && state.src!=="manual" && !Object.keys(state.entries||{}).length) fetchEntries(id); fetchOnce(); };
+$("#autoToggle").onclick=()=>{ auto?stopAuto():startAuto(); };
+$("#interval").oninput=e=>{ state.intervalSec=Math.max(10,+e.target.value||60); if(auto)startAuto(); save(); };
+$("#srcMode").onchange=e=>{ state.src=e.target.value; applySrcMode(); save(); };
+$("#pubPrefix").oninput=e=>{ state.pubPrefix=e.target.value; save(); };
+$("#proxyUrl").oninput=e=>{ state.proxyUrl=e.target.value; save(); };
+$("#raceId").oninput=e=>{ state.raceId=e.target.value; save(); };
+
+["thDrop","thRise","thVel","thDiv"].forEach(id=>{ $("#"+id).oninput=e=>{ const k=id.replace("th","").toLowerCase(); state.th[k]=+e.target.value; syncLabels(); renderAll(); }; });
+["wField","wVel","wAbs","wExtra"].forEach(id=>{ $("#"+id).oninput=e=>{ const k=id.replace("w","").toLowerCase(); state.w[k]=+e.target.value; syncLabels(); renderAll(); }; });
+
+$("#btnScale").onclick=()=>{ state.logScale=!state.logScale; drawChart(); save(); };
+$("#btnFocus").onclick=()=>{ state.focusAll=!state.focusAll; drawChart(); };
+
+$("#btnExportJson").onclick=exportJSON;
+$("#btnExportCsv").onclick=exportCSV;
+$("#btnUndo").onclick=()=>{ if(state.snaps.length){ state.snaps.pop(); renderAll(); toast("最後のスナップ削除"); } };
+
+$("#btnPaste").onclick=()=>{ const b=$("#pasteBox"); b.style.display=b.style.display==="none"?"block":"none"; if(b.style.display==="block") b.scrollIntoView({behavior:"smooth"}); };
+$("#btnTemplate").onclick=()=>{ $("#pasteArea").value="time,umaban,name,tansho,fukusho\n60分前,1,サンプルA,12.0,3.1\n60分前,2,サンプルB,4.0,1.8\n30分前,1,サンプルA,8.5,2.6\n30分前,2,サンプルB,4.8,2.0\n直前,1,サンプルA,5.2,1.9\n直前,2,サンプルB,6.0,2.3"; };
+$("#btnPasteLoad").onclick=()=>{
+  const txt=$("#pasteArea").value.trim(); if(!txt){ toast("空"); return; }
+  try{
+    if(txt[0]==="{"||txt[0]==="["){ const obj=JSON.parse(txt); state.snaps=[]; state.horses=[]; ingest(obj,"paste"); }
+    else { parseCSV(txt); }
+    state.selected=null; renderAll(); $("#pasteBox").style.display="none"; toast("読み込みOK");
+  }catch(e){ toast("解析失敗: "+e.message); }
+};
+
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchMode(t.dataset.mode));
+$("#btnRaceList").onclick=fetchRaceList;
+$("#btnAutoPick").onclick=autoPick;
+$("#flowWin").onclick=()=>{ flowScope="win"; renderFlow(); };
+$("#flowAll").onclick=()=>{ flowScope="all"; renderFlow(); };
+$("#alertToggle").onclick=()=>{ alertOn=!alertOn; $("#alertSwitch").classList.toggle("on",alertOn);
+  if(alertOn){ try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); audioCtx.resume&&audioCtx.resume(); }catch(e){} if(navigator.vibrate)navigator.vibrate(20); } };
+$("#lockToggle").onclick=()=>{ lockOn=!lockOn; $("#lockSwitch").classList.toggle("on",lockOn); };
+$("#btnReconcile").onclick=reconcileResults;
+$("#btnLogClear").onclick=()=>{ if(!confirm("学習ログを全削除? (この端末の"+MODE.toUpperCase()+"分のみ。サーバーは消えない)"))return; localStorage.removeItem(logKey()); renderLearn(); toast("ログ削除"); };
+$("#logServer").oninput=e=>{ logServer=e.target.value.trim(); save(); };
+$("#btnSync").onclick=syncServer;
+$("#btnImportPast").onclick=importPast;
+$("#hmClose").onclick=closeHorse;
+$("#hModal").onclick=(e)=>{ if(e.target.id==="hModal") closeHorse(); };
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeHorse(); });
+["tdTrack","tdSurf","tdGoing"].forEach(id=>$("#"+id).onchange=renderTendency);
+function parseKV(text){ const o={}; (text||"").split(/[\n,、]/).forEach(line=>{ const m=/^\s*(.+?)\s*[:：]\s*(-?\d+(?:\.\d+)?)\s*$/.exec(line.trim()); if(m) o[m[1]]=+m[2]; }); return o; }
+function extToText(o){ return Object.entries(o).map(([k,v])=>k+":"+v).join("\n"); }
+$("#btnExtSave").onclick=()=>{
+  EXT.jockey=parseKV($("#extJockey").value);
+  EXT.jockeyWet=parseKV($("#extJockeyWet").value);
+  EXT.horse=parseKV($("#extHorse").value);
+  saveExt(); invalidateMarks(); renderAll();
+  toast(`反映: 騎手${Object.keys(EXT.jockey).length} 湿${Object.keys(EXT.jockeyWet).length} 馬${Object.keys(EXT.horse).length}`);
+};
+
+window.addEventListener("resize",()=>drawChart());
+setInterval(()=>{ $("#clk").textContent=hhmmss(Date.now()); },1000);
+
+/* ---------- boot ---------- */
+restore();
+loadExt();
+$("#extJockey").value=extToText(EXT.jockey);
+$("#extJockeyWet").value=extToText(EXT.jockeyWet);
+$("#extHorse").value=extToText(EXT.horse);
+state=books[MODE];
+applyModeChrome();
+syncControls();
+$("#pickDate").value=jstToday();
+$("#logServer").value=logServer;
+$("#importDate").value=jstToday();
+if(state.snaps.length){ renderAll(); } else { renderTicker(); loadDemo(); }
+
+/* PWA: Service Worker 登録（http(s)時のみ。file://では無効） */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "use_cloudflare": false,
+  "admin_base": "https://kajikeiba-turf.kajisho5.workers.dev",
+  "bases": {
+    "k": "https://kajikeiba.com",
+    "odds": "https://seventh-well.com/odds",
+    "lab": "https://seventh-well.com/lab"
+  },
+  "odds_cloudflare": true
+}

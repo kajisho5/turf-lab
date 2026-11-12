@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIが「見送り」と言ったレースで何が起きているか | カジ競馬</title>
+<meta name="description" content="AI予想が見送り判定したレースを49,281レースで実測。◎複勝率は64%→21%まで落ち、3連単の中央値は1.8倍になる。">
+<link rel="canonical" href="https://kajikeiba.com/data/miokuri/">
+<meta property="og:title" content="AIが「見送り」と言ったレースで何が起きているか">
+<meta property="og:description" content="49,281レースの実測。見送りレースでは◎複勝率が21%まで落ちる。">
+<meta property="og:url" content="https://kajikeiba.com/data/miokuri/">
+<meta property="og:image" content="https://kajikeiba.com/data/ogp.png">
+<link rel="stylesheet" href="/core/theme.css">
+<style>*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:17px;line-height:1.9;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:760px;margin:0 auto;padding:24px 18px 72px}
+h1{font-size:28px;line-height:1.4;margin:8px 0 6px}
+h2{font-size:22px;margin:44px 0 10px;border-left:5px solid var(--blue);padding-left:12px}
+.lead{color:var(--mute)}
+.snav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 18px}
+.snav a{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+  padding:4px 13px;text-decoration:none;color:var(--mute);font-size:15px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:16px;min-width:560px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mute);font-weight:700;background:var(--panel)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.raw{color:var(--txt);font-weight:700}
+.key{background:var(--panel);border-left:4px solid var(--yellow);
+  padding:16px 18px;margin:24px 0;border-radius:0 10px 10px 0}
+.key b{color:var(--txt)}
+.note{color:var(--mute);font-size:15px}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:15px}</style></head><body><div class="wrap">
+<nav class="snav"><a href="/">レース一覧</a><a href="/ai/">AI予想家</a><a href="/record/">予想の記録</a><a href="/articles/">記事</a><a href="/db/">データベース</a><a href="/calendar/">重賞カレンダー</a></nav>
+<h1>AIが「見送り」と言ったレースで何が起きているか</h1>
+<p class="lead">「当てられないレースを、当てられないと言う」——このサイトの見送り判定
+（信頼度40未満）が実際に何を弾いているのかを、検証用データ49,281レース
+（2023年以降・現行モデルで再計算）で測った。</p>
+
+<div class="ad" data-slot="miokuri-top"><!-- AD:START miokuri-top --><!-- ここにASPから貰った広告タグを貼る。貼るまで何も表示されない --><!-- AD:END miokuri-top --></div>
+
+
+<h2>見送りは全体の12%</h2>
+<p>AIの信頼度（◎がどれだけ抜けているか＋人気の裏付け）が40を切ったレースが
+「見送り」。全体の<b>11.8%</b>（5,828レース）が該当した。
+残り43,453レースが「買い対象」側になる。</p>
+<div class="scroll"><table>
+<tr><th></th><th class="n">買い対象</th><th class="n">見送り</th><th class="n">見送り÷買い</th></tr>
+<tr><td>レース数</td><td class="n">43,453</td><td class="n raw">5,828</td><td class="n">—</td></tr>
+<tr><td>◎複勝率</td><td class="n">63.5%</td><td class="n raw">20.9%</td><td class="n">—</td></tr>
+<tr><td>◎複勝回収率</td><td class="n">86.9%</td><td class="n raw">83.0%</td><td class="n">—</td></tr>
+</table></div>
+<p>まず精度: 見送りレースでも無理に◎を立てると複勝率は20.9%まで落ちる
+（買い対象は63.5%）。<b>見送り判定は「AIが実際に外しやすいレース」を
+事前に言い当てている</b>。</p>
+
+<h2>配当はどれだけ荒れるか</h2>
+<div class="scroll"><table>
+<tr><th>配当</th><th class="n">買い対象</th><th class="n">見送り</th><th class="n">見送り÷買い</th></tr>
+<tr><td>勝ち馬の単勝 中央値</td><td class="n">300円</td><td class="n raw">380円</td><td class="n">1.3倍</td></tr>
+<tr><td>勝ち馬の単勝 90%点</td><td class="n">1,430円</td><td class="n raw">1,670円</td><td class="n">1.2倍</td></tr>
+<tr><td>単勝万馬券率</td><td class="n">0.51%</td><td class="n raw">0.50%</td><td class="n">1.0倍</td></tr>
+<tr><td>3連単 中央値</td><td class="n">8,510円</td><td class="n raw">15,090円</td><td class="n">1.8倍</td></tr>
+<tr><td>3連単 90%点</td><td class="n">79,940円</td><td class="n raw">125,341円</td><td class="n">1.6倍</td></tr>
+<tr><td>3連単 99%点</td><td class="n">625,236円</td><td class="n raw">811,065円</td><td class="n">1.3倍</td></tr>
+<tr><td>3連単 10万円超率</td><td class="n">8.1%</td><td class="n raw">12.5%</td><td class="n">1.5倍</td></tr>
+</table></div>
+<p>3連単の中央値は8,510円→15,090円と<b>1.8倍</b>、
+10万円超が出る確率は1.5倍。確かに荒れやすい。
+ただし正直に言うと<b>「桁違い」ではない</b>——99%点は625,236円→811,065円で
+1.3倍、単勝万馬券率はむしろ下がる（見送りは小頭数の混戦に
+偏るため、組合せの数自体が少ない）。期間中の最高配当は8,171,760円。</p>
+
+<div class="key"><b>つまり見送り判定の価値は、配当ではなく精度の分離にある。</b>
+「AIが外しやすいレース」を事前に言い当てて（複勝率64%⇔21%）、
+勝負から外す。見送りレースで穴を狙って買い続ければ大きい配当は確かに出るが、
+控除率25%を超えて勝てる証拠はカジ競馬の全検証で一度も出ていない
+（<a href="/data/">検証一覧</a>）。逆に「当てにいく」なら、見送りを見送ることが
+そのまま複勝率64%の土台になる。</div>
+
+<h2>数字の出所</h2>
+<p class="note">検証用データ（2023年以降・49,281レース）に対し、
+本番と同じモデル（順位学習＋補助モデル）と信頼度式で判定を再計算した。
+ただし信頼度に入る「◎の人気」は確定人気を使っている。本番の朝の予想はオッズ発表前なので
+人気を予測で置いており、本番で見送りになるレースの割合はこの記事より少ない。
+配当は keiba.go.jp 公式の確定払戻。判定の閾値（信頼度40未満）は
+本番アプリの見送りバッジと同じ。数字は毎回の再生成で実測し直しており、
+この記事に手書きの数字は無い。</p>
+
+<footer>カジ競馬 — 外れも含めて全予想を<a href="/record/">記録</a>しています。
+予想は毎朝オッズ発表前に公開。</footer>
+</div></body></html>

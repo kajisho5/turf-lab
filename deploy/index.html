@@ -1,0 +1,584 @@
+<title>今日のレース一覧 — カジ競馬</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="中央競馬・地方競馬の当日レース一覧。発走時刻・距離・頭数をひと目で。18万レースの実測データ分析も公開しています。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="カジ競馬 — 今日のレース一覧">
+<meta property="og:description" content="中央・地方の当日レース一覧と、18万レースの実測データ分析。">
+<meta property="og:url" content="https://kajikeiba.com/">
+<meta property="og:image" content="https://kajikeiba.com/data/ogp.png">
+<meta property="og:site_name" content="カジ競馬">
+<meta name="twitter:card" content="summary_large_image">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css">
+<script src="/core/theme.js"></script>
+<script src="/core/table.js" defer></script>
+<style>
+/* トップページ（今日のレース一覧）
+   DADS準拠: 本文16px以上。色は core/theme.css（検証は backtest/theme.py）。
+   ★装飾は「読みやすさが上がるもの」に限る★
+     影・角丸・余白は情報の区切りを見せるために使う。飾りのための飾りは入れない。 */
+:root{--accent:var(--green)}
+:root[data-mode="nar"]{--accent:var(--orange)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+
+/* ── ヘッダ ───────────────────────────── */
+header{position:sticky;top:0;z-index:30;background:var(--bg);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:saturate(180%) blur(8px)}
+.hbar{max-width:1000px;margin:0 auto;padding:12px 16px;
+  display:flex;align-items:center;gap:12px}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--txt);
+  white-space:nowrap;letter-spacing:.02em}
+.logo span{color:var(--accent)}
+.spacer{flex:1}
+/* 中央／地方の切替。押せることが分かる形にする */
+.modesw{display:flex;border:1px solid var(--line);border-radius:999px;
+  overflow:hidden;background:var(--panel)}
+.modesw button{appearance:none;border:0;background:transparent;color:var(--mute);
+  font:inherit;font-size:16px;padding:8px 16px;cursor:pointer;white-space:nowrap;
+  transition:background .15s,color .15s}
+.modesw button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:700}
+.themebtn{transition:border-color .15s}
+
+nav.sub{border-bottom:1px solid var(--line);background:var(--bg);
+  position:sticky;top:57px;z-index:29}
+nav.sub div{max-width:1000px;margin:0 auto;padding:0 16px;display:flex;gap:22px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav.sub a{color:var(--mute);text-decoration:none;padding:11px 0;white-space:nowrap;
+  font-size:16px}
+nav.sub a:hover{color:var(--txt)}
+nav.sub a[aria-current="page"]{color:var(--txt);font-weight:700;
+  box-shadow:inset 0 -3px 0 var(--accent)}
+
+.wrap{max-width:1000px;margin:0 auto;padding:18px 16px 80px}
+
+/* ── 日付 ───────────────────────────── */
+.dates{display:flex;gap:8px;margin:2px 0 16px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;padding-bottom:2px}
+.dates button{appearance:none;border:1px solid var(--line);background:var(--panel);
+  color:var(--mute);font:inherit;font-size:16px;padding:8px 16px;border-radius:12px;
+  cursor:pointer;white-space:nowrap;line-height:1.3;transition:all .15s}
+.dates button b{display:block;color:var(--txt);font-size:17px;font-weight:700}
+.dates button:hover{border-color:var(--mute)}
+.dates button[aria-pressed="true"]{border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent) inset}
+.dates button[aria-pressed="true"] b{color:var(--accent)}
+
+/* ── 場タブ ──────────────────────────── */
+.vtabs{display:flex;gap:8px;margin:0 0 14px;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;padding-bottom:2px}
+.vtabs button{appearance:none;border:1px solid var(--line);background:var(--panel);
+  color:var(--mute);font:inherit;font-size:16px;padding:8px 18px;border-radius:999px;
+  cursor:pointer;white-space:nowrap;line-height:1.3;transition:all .15s}
+.vtabs button b{margin-left:7px;color:var(--mute);font-weight:400;font-size:16px}
+.vtabs button:hover{border-color:var(--mute)}
+.vtabs button[aria-pressed="true"]{background:var(--accent);color:var(--bg);
+  border-color:var(--accent);font-weight:700}
+.vtabs button[aria-pressed="true"] b{color:var(--bg);opacity:.85}
+.vname{color:var(--mute);margin:0 0 10px;font-size:16px}
+
+/* ── レース一覧 ───────────────────────── */
+.venue{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  overflow:hidden}
+.race{display:flex;align-items:center;gap:14px;padding:14px 16px;
+  border-bottom:1px solid var(--line);text-decoration:none;color:inherit;
+  transition:background .12s}
+.race:last-child{border-bottom:0}
+.race:hover,.race:focus{background:var(--bg);outline:none}
+/* R番号は等幅で揃える。数字が縦に並ぶと一覧として読みやすい */
+.rno{flex:0 0 52px;text-align:center;font-weight:800;font-size:18px;
+  font-variant-numeric:tabular-nums;
+  border:1px solid var(--line);border-radius:10px;padding:5px 0;
+  background:var(--bg);color:var(--txt)}
+.rmain{flex:1;min-width:0}
+.rname{display:block;font-size:17px;font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmeta{display:block;color:var(--mute);font-size:16px}
+.rtime{flex:0 0 auto;color:var(--mute);font-size:17px;
+  font-variant-numeric:tabular-nums}
+/* 重賞は色で立てる。文字だけだと一覧の中で埋もれる */
+/* ★レースの状態を色で分ける★
+   一覧を開いた人がまず知りたいのは「次はどれか」。
+   終わったものを沈めて、次の1本だけを立てる。 */
+/* ★終了レースは沈めるが、着順は読ませたい★
+   親に opacity をかけると子（着順）も薄くなって読めない（opacityは子で戻せない）。
+   だから色で沈める。着順の .rslt はそのぶん普通の濃さで出す。 */
+.race.done .rno,.race.done .rname,.race.done .rmeta{color:var(--mute)}
+.race.done .rtime{color:var(--mute)}
+.race.done .rname{font-weight:400}
+.rslt{display:block;margin-top:4px;font-size:15px;line-height:1.5;color:var(--txt)}
+.rslt .pl{display:inline-block;margin-right:12px;white-space:nowrap}
+.rslt .pl b{color:var(--accent);font-weight:800;margin-right:3px}
+.rslt:empty{display:none}
+.race.next{background:var(--stripe);
+  box-shadow:inset 4px 0 0 var(--accent)}     /* 次に発走 */
+.race.next .rno{border-color:var(--accent);color:var(--accent)}
+.badge{display:inline-block;font-size:16px;font-weight:700;border-radius:6px;
+  padding:0 8px;margin-left:8px;vertical-align:1px}
+.badge.n{background:var(--accent);color:var(--bg)}   /* 次 */
+.badge.d{background:var(--line);color:var(--mute)}   /* 終了 */
+.badge.l{background:var(--red);color:var(--bg)}      /* 発走中 */
+/* ★格付けは「重賞」の一言ではなく GⅠ/GⅡ/GⅢ を出す★
+   一覧で知りたいのは「格が重いかどうか」なので、GⅠを一番強く見せる。
+   色は theme.css の検証済みパレットのみ（コントラスト4.5:1以上）。 */
+.grade{color:var(--txt);font-weight:800}
+.gbadge{display:inline-block;margin-left:8px;font-size:15px;font-weight:800;
+  border-radius:6px;padding:1px 8px;color:var(--bg);letter-spacing:.02em}
+.gbadge.g1{background:var(--red)}      /* GⅠ */
+.gbadge.g2{background:var(--orange)}   /* GⅡ */
+.gbadge.g3{background:var(--yellow)}   /* GⅢ・Jpn・重賞 */
+
+.msg{color:var(--mute);padding:28px 4px}
+.err{color:var(--red)}
+.ad{margin:24px 0}.ad:empty{display:none}
+.skel{height:16px;background:var(--line);border-radius:6px;margin:14px 16px;
+  opacity:.5}
+
+/* トップの紹介文（クローラーにも人にも読ませる本文。DADS: 本文16px以上） */
+.intro{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
+  font-size:16px;line-height:1.9;color:var(--txt)}
+.intro h2{font-size:22px;margin:0 0 10px}
+.intro h3{font-size:18px;margin:26px 0 6px}
+.intro p{margin:0 0 12px}
+.intro ul{padding-left:22px;margin:8px 0}
+.intro li{margin:6px 0}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:16px}
+</style>
+
+<header>
+  <div class="hbar">
+    <a class="logo" href="/">カジ<span>競馬</span></a>
+    <div class="spacer"></div>
+    <button class="themebtn" type="button" style="margin-right:8px">☾</button>
+    <div class="modesw" role="group" aria-label="中央競馬と地方競馬の切替">
+      <button id="mJra" aria-pressed="true">中央競馬</button>
+      <button id="mNar" aria-pressed="false">地方競馬</button>
+    </div>
+  </div>
+</header>
+<!-- ★メニューは「入口」だけにする★
+     /data/ は記事一覧の1本目なので、ここに並べると同じものが2か所に出る。
+     プライバシーはフッタから辿れれば足りる（審査でもフッタで問題ない）。 -->
+<nav class="sub"><div>
+  <a href="/" aria-current="page">レース一覧</a>
+  <a href="/ai/">AI予想家</a>
+  <a href="/record/">予想の記録</a>
+  <a href="/articles/">記事</a>
+  <a href="/db/">データベース</a><a href="/calendar/">重賞カレンダー</a>
+  <a href="/about/">このサイトについて</a>
+</div></nav>
+
+<div class="wrap">
+  <div class="dates" id="dates"></div>
+  <div class="ad" data-slot="races-top"><!-- AD:START races-top --><!-- ここにASPから貰った広告タグを貼る。貼るまで何も表示されない --><!-- AD:END races-top --></div>
+  <div class="vtabs" id="vtabs"></div>
+  <div id="out"></div>
+
+  <!-- ★静的な紹介文★（2026-07-28追加）
+       レース一覧はJSでnetkeibaから取得して描画するため、クローラーには
+       トップページが「218文字の空ページ」に見えていた。実際にはサイト全体で
+       3,000字超のページが31本あるのに、入口が空なので中身に辿り着けない。
+       AdSenseに「有用性の低いコンテンツ」と判定された主因と見て、
+       ここにHTML直書きの説明と主要ページへの導線を置く。 -->
+  <section class="intro">
+    <h2>このサイトについて</h2>
+    <p>カジ競馬は、地方競馬と中央競馬を<strong>公開されている実データだけで検証している</strong>サイトです。
+    地方競馬全国協会（keiba.go.jp）とJRA-VAN Data Lab.の公式データを自分で集計し、
+    「どの条件なら本当に成績が上がるのか」を17万レース以上の規模で確かめています。</p>
+
+    <h3>ここが他の予想サイトと違うところ</h3>
+    <p>当サイトは<strong>「当たる予想」を売っていません。</strong>
+    検証の結果、<strong>回収率100%を超える買い方は見つかっていない</strong>からです。
+    43通りの買い方を総当たりしても天井は92.2%でした。単勝を全頭均等に買うと72.8%です。
+    自分たちのAIの本命ですら、単純に1番人気を買う戦略（複勝率75.9%）に負けています。</p>
+    <p>それを隠さずに書くことが、このサイトの立ち位置です。
+    <a href="/record/">予想の記録</a>では本命を打った全レースを、<strong>外れも含めて</strong>公開しています。
+    効かなかった検証も、見つけた自分のバグも、すべて残しています。</p>
+
+    <h3>主なコンテンツ</h3>
+    <ul>
+      <li><a href="/record/">予想の記録</a> — 本命を打った全レースの成績。外れも消していません</li>
+      <li><a href="/data/memo/">検証メモ</a> — 効いた因子・効かなかった因子・見つけたバグを短くまとめたもの。数字は必ず検証規模つき</li>
+      <li><a href="/articles/">記事一覧</a> — 「1番人気はいつ飛ぶのか」「誕生日馬券は儲かるのか」など、実測にもとづく検証記事</li>
+      <li><a href="/ai/">AI予想家の成績</a> — 13人格それぞれの実測成績。市場を超えた人格はゼロという結果も公開しています</li>
+      <li><a href="/db/">データベース</a> — 騎手・調教師・種牡馬・生産者などの成績。中央と地方の両方</li>
+      <li><a href="/calendar/">重賞カレンダー</a> — 過去の傾向つき</li>
+    </ul>
+
+    <h3>データの出どころ</h3>
+    <p>当日の出馬表・オッズはnetkeiba.comから取得しています。
+    分析と検証に使う過去データは、地方競馬全国協会が公開している月次データと、
+    JRA-VAN Data Lab.の蓄積系データです。いずれも公式に配布されているものを、
+    自分で集計し直しています。推定値で穴埋めはしません。取れない値は「データ不足」と表示します。</p>
+  </section>
+
+  <footer>
+    データ出典: netkeiba.com（当日開催情報）／
+    分析記事は地方競馬全国協会 keiba.go.jp と JRA-VAN Data Lab. の公式データ<br>
+    本サイトは情報提供を目的としたもので、的中や利益を保証するものではありません。<br><a href="/privacy/">プライバシーポリシー・運営者情報</a>
+  </footer>
+</div>
+
+<script>
+/* 今日のレース一覧
+ *
+ * ★取得は同一オリジンの /proxy.php 経由★
+ *   kajikeiba.com から netkeiba を直接 fetch すると CORS で落ちる。
+ *   proxy.php を同じドメインに置いてあるので同一オリジンになる。
+ *   絶対パスで叩く（相対だとサブディレクトリから404になる。過去に踏んだ）。
+ *
+ * ★race_list.html ではなく race_list_sub.html★
+ *   前者は中身をJSで後から差し込むので、サーバー取得しても空。後者が実体。
+ *
+ * ★netkeiba は全てUTF-8★ 過去にEUC-JPと誤認して文字化けさせた事故がある。
+ */
+const $ = s => document.querySelector(s);
+const SRC = {
+  jra: {host:'race.netkeiba.com', label:'中央競馬'},
+  nar: {host:'nar.netkeiba.com',  label:'地方競馬'}
+};
+let mode = localStorage.getItem('kk_mode') || 'jra';
+let date = null;
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const b64url = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)))
+  .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+/* netkeiba の無名条件戦 "C2111213(C212)" を「C2（十一）（十二）（十三）」に開く。
+   ★同じ関数が core/race_app.js / race.html / php/race.php にもある。直すなら全部★ */
+function prettyRaceName(name){
+  if(!name) return name;
+  const m = String(name).trim().match(/^([A-D][1-3]|\d+歳)(\d{4,})(?:\([^)]*\))?$/);
+  if(!m || m[2].length % 2) return name;
+  const gs = m[2].match(/../g).map(Number);
+  if(!gs.every(g => g >= 1 && g <= 25)) return name;
+  const dig = '〇一二三四五六七八九';
+  const k = n => n < 10 ? dig[n] : n < 20 ? '十' + (n > 10 ? dig[n - 10] : '')
+                                          : dig[Math.floor(n / 10)] + '十' + (n % 10 ? dig[n % 10] : '');
+  return m[1] + gs.map(g => '（' + k(g) + '）').join('');
+}
+
+/* レースの格付け（GⅠ/GⅡ/GⅢ/重賞）を出す
+ *
+ * ★「Icon_GradeType が付いていたら重賞」は誤りだった★
+ *   netkeiba はオープン特別や3勝クラスにも同じクラスを使う。
+ *   そのため「南相馬特別」「猪苗代特別」「福島テレビ賞」まで重賞と表示していた。
+ *   どれも重賞ではない（福島の重賞は七夕賞・福島牝馬S・ラジオNIKKEI賞）。
+ *
+ * ★番号の対応は実データで確認した（推測しない）★
+ *   1  = GⅠ    日本ダービー / 有馬記念 / 東京大賞典
+ *   2  = GⅡ    目黒記念 / フローラS / マイラーズC
+ *   3  = GⅢ    小倉記念 / 函館2歳S
+ *   4  = 重賞（格付けなし。地方の重賞はほぼこれ）
+ *   19 = Jpn1  さきたま杯
+ *   5 / 15 / 16 / 17 / 18 = OP・リステッド・3勝/2勝クラス → 重賞ではない
+ *
+ * ★地方はアイコンの中に文字が入っている★（「Jpn1」「GI」「重賞」「OP」）
+ *   文字があればそれを使う。netkeiba が新しい番号を足しても壊れない。
+ *   中央は画像なので文字が無く、その場合だけ番号で引く。
+ */
+const GRADE_NUM = {1:'GⅠ', 2:'GⅡ', 3:'GⅢ', 4:'重賞', 19:'Jpn1', 20:'Jpn2', 21:'Jpn3'};
+const GRADE_TXT = {'G1':'GⅠ','GI':'GⅠ','GⅠ':'GⅠ','G2':'GⅡ','GII':'GⅡ','GⅡ':'GⅡ',
+                   'G3':'GⅢ','GIII':'GⅢ','GⅢ':'GⅢ',
+                   'Jpn1':'Jpn1','Jpn2':'Jpn2','Jpn3':'Jpn3','重賞':'重賞'};
+function gradeOf(a){
+  const el = a.querySelector('[class*="Icon_GradeType"]');
+  if(!el) return '';
+  const txt = (el.textContent || '').replace(/\s+/g,'');
+  if(txt) return GRADE_TXT[txt] || '';     // OP など重賞でない文字はバッジを出さない
+  const m = /Icon_GradeType(\d+)/.exec(el.className || '');
+  return m ? (GRADE_NUM[+m[1]] || '') : '';
+}
+
+async function fetchList(m, ymd){
+  const url = `https://${SRC[m].host}/top/race_list_sub.html?kaisai_date=${ymd}`;
+  const r = await fetch(`/proxy.php?u=${b64url(url)}`, {cache:'no-store'});
+  if(!r.ok) throw new Error('取得に失敗しました（' + r.status + '）');
+  return new DOMParser().parseFromString(await r.text(), 'text/html');
+}
+
+/* 開催場ごとにレースを取り出す。
+   netkeiba はクラス名が中央/地方や改修で揺れるので、複数候補を順に見る。 */
+function pick(el, sels){
+  for(const s of sels){ const x = el.querySelector(s); if(x) return x; }
+  return null;
+}
+function parseList(doc){
+  const venues = [];
+  // ★外側のコンテナを一緒に拾わない★
+  //   '.RaceList_DataList, .RaceList_Box' と並べたら .RaceList_Box が
+  //   全場を内包していて「福島 36R」という重複ブロックが先頭にできた。
+  //   まず本命のセレクタで探し、0件のときだけ代替に落とす。
+  let boxes = doc.querySelectorAll('.RaceList_DataList');
+  if(!boxes.length) boxes = doc.querySelectorAll('.RaceList_Box');
+  boxes.forEach(box => {
+    const title = pick(box, ['.RaceList_DataTitle', '.RaceList_Date', 'h3']);
+    const races = [];
+    box.querySelectorAll('a[href*="race_id="]').forEach(a => {
+      const id = (a.getAttribute('href').match(/race_id=(\d+)/) || [])[1];
+      if(!id || races.some(x => x.id === id)) return;
+      const t  = pick(a, ['.RaceList_Itemtime', '.Race_Time']);
+      const nm = pick(a, ['.ItemTitle', '.RaceList_ItemTitle']);
+      const dt = pick(a, ['.RaceData', '.RaceList_ItemData']);
+      const no = pick(a, ['.Race_Num', '.RaceList_Itemnum']);
+      const nameTxt = prettyRaceName((nm ? nm.textContent : '').replace(/\s+/g,' ').trim());
+      if(!nameTxt && !t) return;                 // ナビ等のリンクを弾く
+      const dataTxt = (dt ? dt.textContent : '').replace(/\s+/g,' ').trim();
+      /* ★発走時刻の置き場所が中央と地方で違う★
+         中央: 専用の要素（.RaceList_Itemtime）にある
+         地方: その要素が無く、データ欄の先頭に「12:05 ダ1200m 9頭」と入っている
+         専用要素だけ見ていたので、地方は時刻が空になり
+         「終了」「次に発走」の判定が全く効かなかった（本番で発覚）。 */
+      let timeTxt = (t ? t.textContent : '').replace(/\s+/g,'');
+      const inData = /^(\d{1,2}:\d{2})/.exec(dataTxt);
+      if(!timeTxt && inData) timeTxt = inData[1];
+      /* ★終了は href で確実に分かる★
+         netkeiba は発走前 shutuba.html / 確定後 result.html にリンクが変わる。
+         時刻の10分ヒューリスティックより正確（結果が載っていれば必ず result）。 */
+      const finished = /result\.html/.test(a.getAttribute('href') || '');
+      races.push({
+        id,
+        no:   (no ? no.textContent : '').replace(/\s+/g,''),
+        time: timeTxt,
+        name: nameTxt,
+        data: dataTxt.replace(/^\d{1,2}:\d{2}\s*/,''),
+        grade: gradeOf(a),
+        finished
+      });
+    });
+    if(races.length){
+      venues.push({
+        name: title ? title.textContent.replace(/\s+/g,' ').trim() : '開催',
+        races
+      });
+    }
+  });
+  return venues;
+}
+
+const raceUrl = (m, id) => `/race/${encodeURIComponent(id)}/?d=${date}`;
+
+let venues = [], vi = 0;
+
+/* ★場は縦に積まず、タブで切り替える★
+   全場を縦に並べると1画面に収まらず、下の場に辿り着くまで延々スクロールになる。
+   SPAIA も場はタブで、選んだ場のレースだけを出している。 */
+function renderVenueTabs(){
+  $('#vtabs').innerHTML = venues.map((v, i) =>
+    `<button data-i="${i}" aria-pressed="${i === vi}">${esc(v.short)}<b>${v.races.length}R</b></button>`
+  ).join('');
+  $('#vtabs').querySelectorAll('button').forEach(b =>
+    b.onclick = () => { vi = +b.dataset.i; renderVenueTabs(); renderRaces(); });
+}
+
+/* 「HH:MM」を、その日の分に直す。今日でなければ状態は付けない
+   （昨日のレースを「次に発走」と出すわけにいかない） */
+function minutesOf(t){
+  const m = /^(\d{1,2}):(\d{2})$/.exec((t || '').trim());
+  return m ? (+m[1]) * 60 + (+m[2]) : null;
+}
+function nowMinutes(){
+  // 端末の時計がずれていても大きくは外れない。日本時間で見る
+  const n = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
+  return n.getHours() * 60 + n.getMinutes();
+}
+function todayYmd(){
+  const d = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
+  return d.getFullYear() + String(d.getMonth()+1).padStart(2,'0')
+       + String(d.getDate()).padStart(2,'0');
+}
+
+function renderRaces(){
+  const v = venues[vi];
+  if(!v){ $('#out').innerHTML = ''; return; }
+
+  const isToday = date === todayYmd();
+  const now = nowMinutes();
+  // 「次に発走するレース」= まだ発走していない中でいちばん早いもの
+  let nextIdx = -1;
+  if(isToday){
+    v.races.forEach((r, i) => {
+      const m = minutesOf(r.time);
+      if(m === null) return;
+      if(m >= now && (nextIdx < 0 || m < minutesOf(v.races[nextIdx].time))) nextIdx = i;
+    });
+  }
+
+  $('#out').innerHTML = `
+    <p class="vname">${esc(v.name)}${isToday && nextIdx >= 0
+      ? ` ／ 次は <strong>${esc(v.races[nextIdx].no)}</strong>（${esc(v.races[nextIdx].time)}）` : ''}</p>
+    <div class="venue">
+      ${v.races.map((r, i) => {
+        const m = minutesOf(r.time);
+        let cls = '', badge = '', done = false;
+        if(i === nextIdx && isToday){
+          const left = m - now;
+          cls = ' next';
+          badge = `<span class="badge n">${left <= 0 ? 'まもなく' : 'あと' + left + '分'}</span>`;
+        }else if(r.finished){
+          // ★結果が確定している（href が result.html）★
+          cls = ' done'; done = true;
+          badge = '<span class="badge d">終了</span>';
+        }else if(isToday && m !== null && m < now){
+          // 発走したがまだ結果未確定
+          cls = ' done';
+          badge = '<span class="badge l">発走</span>';
+        }
+        return `
+        <a class="race${cls}" href="${raceUrl(mode, r.id)}">
+          <span class="rno">${esc(r.no)}</span>
+          <span class="rmain">
+            <span class="rname${r.grade ? ' grade' : ''}">${esc(r.name || '—')}${
+              r.grade ? `<span class="gbadge g${r.grade === 'GⅠ' ? 1 : r.grade === 'GⅡ' ? 2 : 3}">${esc(r.grade)}</span>` : ''
+            }${badge}</span>
+            <span class="rmeta">${esc(r.data)}</span>
+            ${done ? `<span class="rslt" data-id="${esc(r.id)}"></span>` : ''}
+          </span>
+          <span class="rtime">${esc(r.time)}</span>
+        </a>`;
+      }).join('')}
+    </div>`;
+  hydrateResults();
+}
+
+/* ★終了レースの着順を、見えたものだけ遅延取得する★
+   結果ページ(result.html)は重い（~75KB）。一覧を開いた瞬間に全部叩くと
+   netkeiba に負荷をかけ、体感も遅い。画面に入った終了レースだけ取りに行き、
+   race_id で sessionStorage にキャッシュする（再描画・タブ往復で再取得しない）。 */
+function parseTop3(htmlText){
+  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+  const rows = [...doc.querySelectorAll('table tr')].filter(
+    tr => tr.querySelector('.Result_Num .Rank'));
+  const out = [];
+  for(const tr of rows){
+    const rank = +(tr.querySelector('.Result_Num .Rank')?.textContent || 0);
+    if(!(rank >= 1 && rank <= 3)) continue;
+    // 馬番は Num セルの2つ目（1つ目は枠番）。名前は Horse_Name のリンク。
+    const nums = [...tr.querySelectorAll('td.Num div')].map(d => d.textContent.trim());
+    const uma = nums.length >= 2 ? nums[1] : (nums[0] || '');
+    const nameEl = tr.querySelector('.Horse_Name a');
+    const name = (nameEl?.getAttribute('title') || nameEl?.textContent || '').trim();
+    out.push({rank, uma, name});
+  }
+  out.sort((a, b) => a.rank - b.rank);
+  return out.slice(0, 3);
+}
+
+async function fetchResult(id){
+  const ck = 'kk_res_' + id;
+  try{ const c = sessionStorage.getItem(ck); if(c) return JSON.parse(c); }catch(e){}
+  const url = `https://${SRC[mode].host}/race/result.html?race_id=${id}`;
+  const r = await fetch(`/proxy.php?u=${b64url(url)}`, {cache:'no-store'});
+  if(!r.ok) throw new Error('result ' + r.status);
+  const top3 = parseTop3(await r.text());
+  if(top3.length) try{ sessionStorage.setItem(ck, JSON.stringify(top3)); }catch(e){}
+  return top3;
+}
+
+let hydrateSeq = 0;
+async function hydrateResults(){
+  const marks = '①②③';
+  // 表示中は1開催ぶんだけ（renderRaces は1場ずつ描く）。最大でも十数レース。
+  // 結果は sessionStorage にキャッシュするので、場を戻しても取り直さない。
+  const els = [...$('#out').querySelectorAll('.rslt[data-id]')];
+  const seq = ++hydrateSeq;                 // 場を切り替えたら古い取得は捨てる
+  const CONC = 3;                           // 同時3本まで（netkeibaに優しく）
+  let idx = 0;
+  const worker = async () => {
+    while(idx < els.length){
+      if(seq !== hydrateSeq) return;        // 別の場に移った
+      const el = els[idx++];
+      try{
+        const top3 = await fetchResult(el.dataset.id);
+        if(seq !== hydrateSeq) return;
+        if(top3.length){
+          el.innerHTML = top3.map((h, i) =>
+            `<span class="pl"><b>${marks[i]}</b>${esc(h.uma)} ${esc(h.name)}</span>`).join('');
+        }
+      }catch(e){ /* 1本失敗しても続ける */ }
+    }
+  };
+  await Promise.all(Array.from({length: CONC}, worker));
+}
+
+function render(list){
+  venues = list.map(v => ({
+    ...v,
+    // タブは幅が限られるので「2回 福島 8日目」→「福島」に縮める
+    short: (v.name.match(/(札幌|函館|福島|新潟|東京|中山|中京|京都|阪神|小倉|門別|盛岡|水沢|浦和|船橋|大井|川崎|金沢|笠松|名古屋|園田|姫路|高知|佐賀|帯広)/) || [, v.name])[1]
+  }));
+  vi = 0;
+  if(!venues.length){
+    $('#vtabs').innerHTML = '';
+    $('#out').innerHTML = `<p class="msg">この日は${esc(SRC[mode].label)}の開催がありません。</p>`;
+    return;
+  }
+  renderVenueTabs();
+  renderRaces();
+}
+
+const ymd = d => d.getFullYear() + String(d.getMonth()+1).padStart(2,'0')
+                                + String(d.getDate()).padStart(2,'0');
+
+function buildDates(){
+  const wd = ['日','月','火','水','木','金','土'];
+  const now = new Date(), days = [];
+  for(let i = -2; i <= 2; i++){
+    const d = new Date(now); d.setDate(now.getDate() + i);
+    days.push({v: ymd(d),
+      label: (d.getMonth()+1) + '/' + d.getDate() + '(' + wd[d.getDay()] + ')',
+      sub: i === 0 ? '本日' : i === -1 ? '昨日' : i === 1 ? '明日' : ''});
+  }
+  if(!date) date = days[2].v;
+  $('#dates').innerHTML = days.map(d =>
+    `<button data-d="${d.v}" aria-pressed="${d.v === date}">${d.sub ? esc(d.sub) : '&nbsp;'}<b>${esc(d.label)}</b></button>`
+  ).join('');
+  $('#dates').querySelectorAll('button').forEach(b =>
+    b.onclick = () => { date = b.dataset.d; buildDates(); load(); });
+}
+
+async function load(){
+  document.documentElement.dataset.mode = mode;
+  $('#mJra').setAttribute('aria-pressed', mode === 'jra');
+  $('#mNar').setAttribute('aria-pressed', mode === 'nar');
+  $('#out').innerHTML = '<section class="venue">'
+    + '<div class="skel" style="width:45%"></div>'.repeat(6) + '</section>';
+  try{
+    render(parseList(await fetchList(mode, date)));
+  }catch(e){
+    // ★握り潰さない★ 原因が見えないと直せない（過去に catch(e){} で数時間溶かした）
+    $('#out').innerHTML = `<p class="msg err">読み込めませんでした：${esc(e.message)}</p>`;
+    console.error(e);
+  }
+}
+
+$('#mJra').onclick = () => { mode = 'jra'; localStorage.setItem('kk_mode', mode); load(); };
+$('#mNar').onclick = () => { mode = 'nar'; localStorage.setItem('kk_mode', mode); load(); };
+/* ★1分ごとに状態を描き直す★
+   「あと5分」と出したまま放置すると、時間が経つほど嘘になる。
+   取得はし直さない（netkeibaを1分ごとに叩かない）。描画だけ更新する。
+   ページが裏に回っている間は動かさない。 */
+setInterval(() => {
+  if(document.hidden) return;
+  if(venues.length) renderRaces();
+}, 60000);
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && venues.length) renderRaces();
+});
+
+buildDates();
+load();
+</script>
+
+<script>
+/* アクセス計測（Cookieなし・自前）。失敗しても本体に影響させない */
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>

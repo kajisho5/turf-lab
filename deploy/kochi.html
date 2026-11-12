@@ -1,0 +1,957 @@
+<!DOCTYPE html><html lang="ja"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>高知ファイナル専用 - SW TURF LAB</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e16;color:#fff;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;padding:16px;max-width:720px;margin:0 auto}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.hdr .ac{width:6px;height:34px;background:#ffd43d;border-radius:3px}
+h1{font-size:22px;font-weight:800}
+.desc{color:#b3b3b3;font-size:14px;line-height:1.6;margin:8px 0 16px}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.kochiDate{background:#171c27;border:1px solid #333;border-radius:10px;color:#fff;font-size:16px;padding:10px 12px}
+.kbtn{background:linear-gradient(135deg,#1f7a2f,#0f5a1f);color:#fff;font-weight:800;font-size:16px;padding:12px 22px;border:none;border-radius:12px;cursor:pointer}
+.tip{background:rgba(255,212,61,.1);border:1px solid rgba(255,212,61,.35);border-radius:10px;padding:10px 14px;font-size:13px;color:#ffd43d;margin-bottom:16px;line-height:1.6}
+.g1-out{margin:14px 0}
+.g1-card{background:#0c1118;border:1px solid #2a3344;border-radius:14px;padding:16px;margin-bottom:14px}
+.g1-hd{display:flex;align-items:center;gap:10px}
+.g1-badge{background:linear-gradient(135deg,#ffd43d,#ff7171);color:#0a0e16;font-weight:800;padding:3px 10px;border-radius:6px;font-size:14px;letter-spacing:1px}
+.g1-name{font-weight:800;font-size:20px;color:#ffffff}
+.g1-sub{color:#8b94a6;font-size:13px;margin:4px 0 12px}
+.g1-marks{display:flex;flex-direction:column;gap:6px}
+.g1-row{display:flex;align-items:center;gap:10px}
+.g1-mk{font-weight:800;font-size:18px;width:24px;text-align:center}
+.g1-mk.mk0{color:#ff7171}.g1-mk.mk1{color:#ffc700}.g1-mk.mk2{color:#57b8ff}.g1-mk.mk3{color:#51b883}.g1-mk.mk4{color:#51b883}
+.g1-no{font-family:monospace;color:#cccccc;width:26px;text-align:right}
+.g1-hn{flex:1;color:#ffffff;font-weight:600}
+.g1-idx{font-family:monospace;color:#ff7171;font-weight:700}
+.g1-tags{display:flex;flex-wrap:wrap;gap:5px;margin:-2px 0 4px 44px}
+.g1-chip{background:#1a2230;border:1px solid #303a4c;color:#bcc6d6;font-size:11px;padding:2px 8px;border-radius:10px}
+.g1-line{color:#cdd5e2;font-size:13px;margin-top:10px;line-height:1.5}
+.g1-line b{color:#ff8a5a;margin-right:6px}
+.g1-note{color:#6b7484;font-size:11px;margin-left:6px}
+.g1-ta{width:100%;box-sizing:border-box;margin-top:12px;background:#070b11;border:1px solid #2a3344;border-radius:8px;color:#cdd5e2;font-size:12px;padding:10px;height:130px;resize:vertical}
+.g1-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.g1-btns button{flex:1;min-width:90px;background:#1a2230;border:1px solid #3a4456;color:#e6ebf3;border-radius:8px;padding:9px;font-size:13px;font-weight:600}
+.g1-loading{color:#8b94a6;text-align:center;padding:20px}
+.g1-trend{margin-top:12px;background:#0a0f17;border:1px solid #233047;border-radius:10px;padding:10px 12px}
+.g1-trend-h{color:#9fb3d0;font-size:12px;font-weight:700;margin-bottom:6px}
+.g1-line2{color:#c2ccdb;font-size:12.5px;line-height:1.55}
+.g1-line2 b{color:#7fa9e0;margin-right:6px}
+.g1-row{cursor:pointer}
+.g1-tap{color:#5f6b80;font-size:11px;transition:transform .15s;flex:0 0 auto}
+.g1-item.open .g1-tap{transform:rotate(180deg);color:#9fb6ff}
+.g1-brk{display:none;flex-wrap:wrap;gap:5px;padding:2px 0 8px 44px}
+.g1-item.open .g1-brk{display:flex}
+.kochi-go{display:inline-block;background:#1f7a2f;color:#dfffe0;font-weight:800;font-size:11px;padding:2px 9px;border-radius:6px;margin-right:6px}
+.kochi-no{display:inline-block;background:#7a2a1f;color:#ffd8d0;font-weight:800;font-size:11px;padding:2px 9px;border-radius:6px;margin-right:6px}
+.axis-chip{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:11px;font-size:14px;font-weight:700;background:var(--div,#171c27);color:var(--muted,#b3b3b3);cursor:pointer;vertical-align:middle;border:1px solid var(--line,#333333)}.axis-chip.on{background:rgba(81,184,131,0.2);color:#51b883;border-color:#51b883}
+</style></head><body>
+<div class="hdr"><div class="ac"></div><h1>🐴 高知ファイナル 専用</h1></div>
+<div class="desc">高知競馬のファイナルレース（人気が極端に歪む特殊戦）専用ツール。⭐は「人気薄×先行」の目印（実測 複勝35%）。★かつて掲げた回収156%は再現できておらず撤回しています★</div>
+<div class="tip">⏱ ⭐判定にはオッズ（人気）が必要。<b>発走15分前ごろ</b>にオッズ確定後「取得」を押すと⭐が出ます。早いと印だけ。</div>
+<div class="ctl">
+  <input type="date" id="kochiDate" class="kochiDate">
+  <button class="kbtn" id="kochiGetBtn">⭐ 高知ファイナルを取得</button>
+</div>
+<div id="kochiOut" class="g1-out"></div>
+<script>
+let _proxyOK=null;
+
+const KOCHI_TABLES={"mean":0.256,"n":2553,"races":218,"jk":{"木村直輝":0.216,"井上瑛太":0.368,"郷間勇太":0.221,"宮川実":0.348,"岡遼太郎":0.27,"永森大智":0.341,"濱尚美":0.267,"赤岡修次":0.31,"吉原寛人":0.25,"佐原秀泰":0.227,"松井伸也":0.118,"加藤翔馬":0.139,"岩本怜":0,"仲原大生":0.267,"☆城野慈尚":0.275,"△阿部基嗣":0.316,"山田義貴":0},"wk":{"1":0.182,"2":0.237,"3":0.238,"4":0.271,"5":0.223,"6":0.301,"7":0.241,"8":0.305},"st":{"closer":0.229,"mid":0.289,"front":0.312}};
+
+const KOCHI_CURVE={"bals":[-4000,-8000,-12000,-16000,-20000,-24000,-28000,-32000,-36000,-40000,-44000,-50000,-56000,-60000,-66000,94000,90000,86000,82000,78000,72000,68000,64000,295680,289680,285680,281680,277680,273680,269680,265680,261680,257680,307490,328750,322750,316750,312750,308750,304750,300750,296750,292750,288750,284750,280750,276750,379120,373120,369120,363120,359120,353120,349120,345120,341120,337120,333120,329120,325120,321120,317120,313120,309120,305120,301120,297120,293120,289120,285120,293000,289000,283000,279000,275000,271000,281140,298410,310170,504250,500250,496250,490250,497320,493320,489320,485320,481320,477320,476360,470360,529730,701160,697160,693160,689160,685160,681160,677160,673160,667160,663160,659160,655160,651160,647160,643160,637160,631160,627160,623160,617160,613160,609160,605160,601160,597160,593160,589160,585160,624410,620410,681380,677380,671380,667380,663380,659380,655380,651380,645380,641380,635380,631380,627380,623380,619380,615380,611380,605380,601380,597380,720200,714200,710200,706200,702200,774290,770290,766290,762290,758290,815060,811060,807060,803060,799060,795060,791060,787060,783060,779060,775060,769060,765060,761060,816070,828720,824720,820720,816720,812720,808720,804720,798720,794720,862800,856800,850800,846800,842800,836800,868760,864760,860760,925360,921360,917360,911360,907360,903360,899360,895360,891360,887360,883360,879360,947400,943400,939400,935400,931400,927400,923400,919400,915400,909400,905400,901400,914280,910280,906280,902280,898280,894280,890280,886280,880280,876280,870280,866280,862280,858280,852280,848280,844280,840280,836280,832280,828280,824280,816280,812280,806280,905910,901910,895910,891910,887910,883910,879910,875910,871910,867910,893500,889500,885500,879500,873500,869500,863500,859500,855500,849500,845500,841500,837500,894640,890640,886640,880640,874640,870640,866640,862640,856640,852640,848640,844640,840640,836640,832640,828640,824640,820640,814640,810640,804640,800640,796640,792640,788640,784640,780640,774640,770640,855650,851650,847650,843650,839650,835650,831650,827650,819650,815650,811650,807650,801650,797650,793650,789650,783650,775650,771650,767650,763650,759650,755650,749650,745650,739650,733650,729650,725650,721650,717650,711650,707650,701650,695650,691650,687650,683650,677650,671650,667650,663650,659650,655650,651650,645650,641650,637650,633650,629650,625650,621650,617650,611650,605650,601650,597650,593650,589650,583650,579650,575650,569650,576690,572690,566690,560690,556690,552690,548690,540690,568960,564960,560960,556960,550960,546960,542960,538960,534960,671920,667920,663920,659920,695230,691230,687230,683230,679230,673230,718070,714070,710070,706070,700070,694070,690070,686070,682070,678070,672070,784240,780240,776240,772240,768240,762240,758240,754240,750240,746240,740240,736240,730240,726240,722240,718240,714240,708240,704240,700240,696240,690240,686240,680240,676240,695940,689940,685940,681940,677940,673940,772260,768260,762260,758260,752260,748260,862200,858200,854200,850200,844200,840200,836200,832200,828200,824200,818200,814200,810200,806200,802200,798200,794200,790200,784200,780200,774200,768200,764200,760200,754200,835310,829310,825310,821310,817310,867730,863730,859730,897510,893510,889510,885510,879510,875510,912720,908720,902720,898720,894720,913870,909870,905870,899870,895870,891870,887870,881870,877870,926460,922460,918460,914460,908460,902460,898460,892460,888460,884460,878460,874460,866460,862460,858460,854460,850460,846460,842460,838460,834460,830460,856650,927660,923660,944960,940960,936960,932960,928960,924960,920960,914960,910960,904960,1287930,1283930,1279930,1273930,1269930,1263930,1259930,1255930,1251930,1247930,1241930,1237930,1233930,1227930,1221930,1217930,1213930,1481890,1477890,1471890,1467890,1463890,1457890,1453890,1447890,1457480,1453480,1449480,1445480,1441480,1437480,1433480,1480570,1476570,1472570,1466570,1462570,1458570,1454570,1448570,1442570,1438570,1434570,1430570,1426570,1420570,1416570,1440020,1434020,1428020,1424020,1418020,1414020,1408020,1402020,1398020,1392020,1455710,1451710,1445710,1685160,1681160,1677160,1671160,1665160,1661160,1657160,1653160,1649160,1645160,1639160,1635160,1631160,1627160,1623160,1619160,1615160,1611160,1605160,1601160,1597160,1593160,1589160,1585160,1581160,1577160,1573160,1569160,1563160,1559160,1555160,1551160,1547160,1543160,1539160,1535160,1529160,1525160,1521160,1515160,1511160,1507160,1501160,1497160,1493160,1489160,1485160,1481160,1477160,1473160,1469160,1465160,1459160,1514090,1508090,1504090,1500090,1496090,1492090,1544070,1640920,1636920,1632920,1628920,1622920,1614920],"hits":[15,23,33,34,47,70,76,77,78,79,83,89,91,92,120,122,142,147,152,166,167,176,182,185,197,209,234,244,257,286,349,357,366,370,376,387,412,418,424,449,454,457,463,468,477,499,500,502,512,529,537,544,559,569,572,625,631,632],"roi":156,"hitRate":9.1,"n":638,"finalBal":1614920};
+
+const PROXY_LIST=[ "/odds/proxy.php?url=" ];
+
+function _swModal(message, withCancel){
+  return new Promise(res=>{
+    const bd=document.createElement("div"); bd.className="sw-modal-bd";
+    const cancel = withCancel ? '<button class="sw-modal-btn" data-v="0">キャンセル</button>' : '';
+    bd.innerHTML=`<div class="sw-modal"><div class="sw-modal-msg"></div><div class="sw-modal-btns">${cancel}<button class="sw-modal-btn primary" data-v="1">OK</button></div></div>`;
+    bd.querySelector(".sw-modal-msg").textContent=message;
+    document.body.appendChild(bd);
+    requestAnimationFrame(()=>bd.classList.add("show"));
+    const done=(v)=>{ bd.classList.remove("show"); setTimeout(()=>bd.remove(),180); res(v); };
+    bd.querySelectorAll(".sw-modal-btn").forEach(b=>b.onclick=()=>done(b.dataset.v==="1"));
+    bd.addEventListener("click",e=>{ if(e.target===bd && withCancel) done(false); });
+  });
+}
+
+function b64url(s){
+  const bytes=new TextEncoder().encode(s);
+  let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+/* tweet.html からの依存抽出漏れ（v356時点で欠落。fetchDecodedが呼ぶのに未定義だった） */
+function looksValid(text){
+  if(!text) return false;
+  const head=text.slice(0,200);
+  if(/error code: \d+/i.test(head)) return false;
+  if(/<title>\s*Just a moment/i.test(head)) return false;
+  const tr=text.trim();
+  if(tr.startsWith("{")||tr.startsWith("[")) return tr.length>=2;
+  return text.length>=200;
+}
+
+
+/* --- resolve_deps.py が tweet.html から補完した依存関数 --- */
+function parsePastRace(cellHtml){
+  const get=(cls)=>{ const m=cellHtml.match(new RegExp('class="'+cls+'"[^>]*>([\\s\\S]*?)</div>')); return m?m[1].replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim():""; };
+  const rid=(cellHtml.match(/\/race\/(\d{12})/)||[])[1]||null;
+  const d01=get("Data01");    // タグ除去後 "2026.05.20 門別 11" など（日付・場・着順）
+  // 着順の取得。netkeiba は着順1〜3着を色分けするため、class="Num" 以外の要素で
+  // 出すことがある（class="Num" だけを見ると1〜3着が丸ごと消える＝報告のあった不具合）。
+  // そこで「Numクラス」に依存せず、タグ除去済み Data01 の末尾トークンから着順を取る。
+  //   例 "2026.05.20 門別 3" → 3着 /  "2026.01.19 名古屋 1" → 1着
+  // 取消・除外・中止は数字にならないので null。数字が無ければ Num系クラスからも試す（保険）。
+  let rank=null;
+  const parts=d01.split(/\s+/).filter(Boolean);
+  const lastTok=parts.length?parts[parts.length-1]:"";
+  if(/^\d{1,2}$/.test(lastTok)){
+    rank=+lastTok;                 // Data01末尾が着順（"… 門別 3"）
+  } else {
+    // Data01末尾が数字でない（着順が別要素/別セルにある構造）→ セル全体から着順要素を探す。
+    // class名に依存しないよう、Data01直後〜Data02手前の最初の 1〜2桁数字spanを着順とみなす。
+    const seg = cellHtml.match(/class="Data01"[\s\S]*?(?=class="Data0[2-9]"|$)/);
+    const rm = (seg?seg[0]:cellHtml).match(/>\s*(\d{1,2})\s*<\/(?:span|div)>/);
+    if(rm) rank=+rm[1];
+    else { const nm=cellHtml.match(/class="[^"]*\bNum\b[^"]*"[^>]*>\s*(\d{1,2})\s*</); if(nm) rank=+nm[1]; }
+  }
+  const d05=get("Data05");                                   // "ダ2400 2:36.0 良"
+  const d03=get("Data03");                                   // "12頭 10番 6人 騎手 56.0"
+  const d06=get("Data06");                                   // "6-6-7-8 (38.7) 484(-16)"
+  const surf=(d05.match(/(芝|ダ)/)||[])[1]||null;
+  const dist=+((d05.match(/[芝ダ](\d{3,4})/)||[])[1]||0)||null;
+  // 馬場状態。地方(nar)は「稍」「不」の1文字略記で出ることがあるため、2文字表記も1文字も拾う。
+  //   良 / 稍(重) / 重 / 不(良)  → 正規化して 良・稍重・重・不良 に統一。
+  //   ※順序に注意: 「稍重」「不良」を先に試し、無ければ1文字略記を拾う。
+  let going=null;
+  const gm=(d05||"").match(/稍重|不良|良|稍|不|重/);
+  if(gm){ const g=gm[0]; going = g==="稍"?"稍重" : g==="不"?"不良" : g; }
+  const fieldN=+((d03.match(/(\d{1,2})頭/)||[])[1]||0)||null;
+  const pop=+((d03.match(/(\d{1,2})人/)||[])[1]||0)||null;
+  // 騎手: Data03 = "頭数 馬番 人気 騎手名 斤量"。人気と斤量の間が騎手
+  let jockey=null;
+  const jm=d03.match(/\d{1,2}人\s*([^\d\s][^\d]*?)\s*\d{2}\.\d/);
+  if(jm) jockey=jm[1].trim().replace(/\s+/g,"");
+  const passing=(d06.match(/([\d]+(?:-[\d]+){1,3})/)||[])[1]||null;   // 通過順
+  const last3f=+((d06.match(/\((\d{2}\.\d)\)/)||[])[1]||0)||null;
+  // 馬体重(増減): "480(+4)" "456(-2)" "470(0)"
+  const wm=d06.match(/(\d{3})\(\s*([+-]?\d+)\s*\)/);
+  const weight = wm? +wm[1] : null;
+  const wdiff = wm? +wm[2] : null;
+  // 走破タイム "2:36.0" → 秒
+  const tm=d05.match(/(\d+):(\d{2}(?:\.\d)?)/);
+  const time = tm? (+tm[1]*60 + parseFloat(tm[2])) : null;
+  const turn=rid?turnOfRid(rid):null;
+  // レース日付（Data01先頭 "2026.04.12"）→ YYYYMMDD
+  let rdate=null;
+  const dm=d01.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
+  if(dm) rdate = dm[1]+String(dm[2]).padStart(2,"0")+String(dm[3]).padStart(2,"0");
+  // 脚質: 通過順の最初のコーナー位置/頭数で判定
+  let style=null;
+  if(passing&&fieldN){ const first=+passing.split("-")[0]; const r=first/fieldN;
+    style = r<=0.20?"逃":(r<=0.45?"先":(r<=0.75?"差":"追")); }
+  const d02=(cellHtml.match(/class="Data02"[^>]*>([\s\S]*?)<\/div>/)||[])[1]||"";
+  const d02name=(d02.match(/>\s*([^<>\n]+?)\s*</)||d02.match(/([^<>\n]+)/)||[])[1]||"";
+  const clv=classLevelFromBlock(d02, d02name);
+  return {rid, rank, surf, dist, going, time, fieldN, pop, passing, last3f, turn, style, jockey, weight, wdiff, jump:/障/.test(d05||""), clv, rdate,
+          track: rid?trackNameOfRid(rid):null};
+}
+
+async function post(p){ const r=await fetch("predictions.php?action=save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}); return await r.json(); }
+
+function classLevelFromBlock(data02html, name){
+  const g=(data02html||"").match(/Icon_GradeType(\d)/);
+  if(g){ const v=+g[1]; if(v===1)return 10; if(v===2)return 9; if(v===3)return 8; }
+  if(/Jpn\s*Ⅰ|JpnⅠ|Jpn1/.test(data02html||"")) return 10;
+  if(/Jpn\s*Ⅱ|JpnⅡ|Jpn2/.test(data02html||"")) return 9;
+  if(/Jpn\s*Ⅲ|JpnⅢ|Jpn3/.test(data02html||"")) return 8;
+  return classLevelName(name);
+}
+
+function trackNameOfRid(rid){ const c=String(rid).slice(4,6); return (JRA_TRACK[c]||NAR_TRACK[c]||("場"+c)); }
+
+function classLevelName(name){
+  if(!name) return null;
+  const n=String(name).replace(/\s/g,"");
+  if(/オープン|ＯＰ|\(L\)|（Ｌ）|リステッド/.test(n)) return 7;
+  if(/3勝|３勝|1600万/.test(n)) return 6;
+  if(/2勝|２勝|1000万/.test(n)) return 5;
+  if(/1勝|１勝|500万/.test(n)) return 4;
+  if(/未勝利/.test(n)) return 3;
+  if(/新馬/.test(n)) return 3;
+  if(/A1|A2|Ａ1|Ａ2|A級/.test(n)) return 6;
+  if(/B1|B2|B3|Ｂ1|B級/.test(n)) return 5;
+  if(/C1|C2|C3|Ｃ1|C級/.test(n)) return 4;
+  if(/認|2歳|3歳|２歳|３歳/.test(n)) return 3;
+  if(/賞|特別|記念|杯|盃|ステークス|カップ|オープン/.test(n)) return 6; // 重賞・特別（グレード不明）
+  return null;
+}
+
+
+/* --- resolve_deps.py が tweet.html から補完した依存関数 --- */
+const JRA_TRACK={"01":"札幌","02":"函館","03":"福島","04":"新潟","05":"東京","06":"中山","07":"中京","08":"京都","09":"阪神","10":"小倉"};
+
+const NAR_JUSHO=["東京ダービー","羽田盃","東京プリンセス","ジャパンダートダービー","全日本2歳優駿","東京大賞典","川崎記念","かしわ記念","さきたま杯","マリーンカップ","スパーキングレディー","関東オークス","日本テレビ盃","レディスプレリュード","エンプレス杯","クイーン賞","兵庫ジュニアグランプリ","兵庫チャンピオンシップ","園田金盃","名古屋大賞典","名古屋グランプリ","佐賀記念","北海道2歳優駿","ブリーダーズゴールドカップ","エーデルワイス賞","北斗盃","北海優駿","王冠賞","ハイセイコー記念","ゴールドジュニア","雲取賞","京浜盃","金盃","ダイオライト記念","東京盃","勝島王冠","ロジータ記念","鎌倉記念","浦和記念","黒船賞","高知優駿","二十四万石賞","建依別賞","珊瑚冠賞","だるま夕日賞","白山大賞典","サラブレッド大賞典","笠松グランプリ","オグリキャップ記念","駿蹄賞"];
+
+const NAR_TRACK={"30":"門別","35":"盛岡","36":"水沢","42":"浦和","43":"船橋","44":"大井","45":"川崎","46":"金沢","47":"笠松","48":"名古屋","50":"園田","51":"姫路","54":"高知","55":"佐賀","65":"帯広"};
+
+const TURN_BY_TRACK={ // JRA場コード→主な回り
+  "05":"左","04":"左","07":"左",            // 東京・新潟・中京=左
+  "06":"右","08":"右","09":"右","01":"右","02":"右","03":"右","10":"右" // 中山京都阪神札幌函館福島小倉=右
+  // 新潟は直線/内回り例外あるが主回りは左で近似
+};
+
+let state={raceId:null, entries:{}, race:{}, horses:[]};
+
+/* tweet.html からの抽出漏れ。606行目で $("#date") を呼ぶのに未定義だった
+   （check_undefined.js が検出）。日付入力を読む経路で必ず例外になる */
+const $=s=>document.querySelector(s);
+
+function decodeBytes(buf){
+  const bytes=new Uint8Array(buf);
+  // 先頭2KBをlatin1で読んでcharset宣言を探す
+  let head=""; for(let i=0;i<Math.min(2048,bytes.length);i++) head+=String.fromCharCode(bytes[i]);
+  const m=head.match(/charset=["']?([\w-]+)/i);
+  if(m){
+    const cs=m[1].toLowerCase();
+    try{
+      if(/utf-?8/.test(cs)) return new TextDecoder("utf-8",{fatal:false}).decode(buf);
+      if(/euc/.test(cs))    return new TextDecoder("euc-jp",{fatal:false}).decode(buf);
+      if(/shift|sjis/.test(cs)) return new TextDecoder("shift_jis",{fatal:false}).decode(buf);
+    }catch(_){}
+  }
+  // 宣言が無い/不明: 両方fatalで試して、例外が出ない方を採用。両方OKなら日本語が多い方
+  const jpCount=(s)=>{ let n=0; for(let i=0;i<s.length;i++){ const c=s.charCodeAt(i); if((c>=0x3040&&c<=0x30ff)||(c>=0x4e00&&c<=0x9fff)) n++; } return n; };
+  let euc=null, utf=null;
+  try{ euc=new TextDecoder("euc-jp",{fatal:true}).decode(buf); }catch(_){}
+  try{ utf=new TextDecoder("utf-8",{fatal:true}).decode(buf); }catch(_){}
+  if(euc && utf) return jpCount(utf)>=jpCount(euc)? utf : euc;
+  if(utf) return utf;
+  if(euc) return euc;
+  // どちらもfatalで失敗→非厳格でUTF-8（より一般的）
+  return new TextDecoder("utf-8",{fatal:false}).decode(buf);
+}
+
+function decodeHtmlEntities(s){
+  if(s==null) return s;
+  return String(s)
+    .replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">")
+    .replace(/&quot;/g,'"').replace(/&#0?39;/g,"'").replace(/&apos;/g,"'")
+    .replace(/&nbsp;/g," ")
+    .replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(+n))
+    .replace(/&#x([0-9a-fA-F]+);/g,(m,n)=>String.fromCharCode(parseInt(n,16)));
+}
+
+function drawKochiCurveImage(){
+  const d=KOCHI_CURVE; const bals=d.bals;
+  // DADS準拠パレット
+  const C={bg1:"#0a0e16",bg2:"#121826",card:"#171c27",line:"#333333",txt:"#ffffff",
+           muted:"#b3b3b3",sub:"#cccccc",green:"#51b883",gold:"#ffd43d",red:"#ff7171",blue:"#57b8ff"};
+  const W=1200, H=675;  // 16:9
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const bgg=x.createLinearGradient(0,0,0,H); bgg.addColorStop(0,C.bg1); bgg.addColorStop(1,C.bg2);
+  x.fillStyle=bgg; x.fillRect(0,0,W,H);
+  const RR=(px,py,pw,ph,r)=>{x.beginPath();x.moveTo(px+r,py);x.arcTo(px+pw,py,px+pw,py+ph,r);x.arcTo(px+pw,py+ph,px,py+ph,r);x.arcTo(px,py+ph,px,py,r);x.arcTo(px,py,px+pw,py,r);x.closePath();};
+
+  // ===== ヘッダ =====
+  const padX=56;
+  x.fillStyle=C.gold; RR(padX,44,6,52,3); x.fill();
+  x.fillStyle=C.txt; x.font="700 36px 'Noto Sans JP',sans-serif"; x.textBaseline="alphabetic";
+  x.fillText("高知ファイナル ⭐フォメ 過去成績", padX+22, 82);
+  x.fillStyle=C.muted; x.font="500 20px 'Noto Sans JP',sans-serif";
+  x.fillText(`${d.n}戦　1回4,000円（40点・⭐2頭）を積み上げた結果`, padX+22, 112);
+
+  // ===== グラフ領域（左右に余白確保・Y軸ラベル用の左マージン） =====
+  const gL=padX+70, gR=W-padX, gT=150, gB=H-160;
+  const gw=gR-gL, gh=gB-gT;
+  const mn=Math.min(...bals,0), mx=Math.max(...bals,0);
+  const range=(mx-mn)||1;
+  const yOf=v=> gT+gh - (v-mn)/range*gh;
+  const xOf=i=> gL + i/(bals.length-1)*gw;
+
+  // 横グリッド（4分割）＋Y軸ラベル（万円・左に配置）
+  x.font="500 18px 'Noto Sans JP',sans-serif"; x.textAlign="right";
+  for(let k=0;k<=4;k++){
+    const v=mn+range*k/4; const gy=yOf(v);
+    x.strokeStyle=C.line; x.globalAlpha=(k===0||k===4)?0.6:0.3; x.lineWidth=1;
+    x.beginPath(); x.moveTo(gL,gy); x.lineTo(gR,gy); x.stroke(); x.globalAlpha=1;
+    x.fillStyle=C.muted;
+    x.fillText(`${v>=0?"+":""}${(v/10000).toFixed(0)}万`, gL-14, gy+6);
+  }
+  x.textAlign="left";
+  // ゼロライン強調
+  const zy=yOf(0);
+  x.strokeStyle=C.muted; x.globalAlpha=0.5; x.lineWidth=1.5; x.setLineDash([6,4]);
+  x.beginPath(); x.moveTo(gL,zy); x.lineTo(gR,zy); x.stroke(); x.setLineDash([]); x.globalAlpha=1;
+
+  // 収支エリア塗り（ゼロ基準・上下グラデ）
+  x.beginPath();
+  bals.forEach((v,i)=>{ const px=xOf(i),py=yOf(v); if(i===0)x.moveTo(px,py); else x.lineTo(px,py); });
+  x.lineTo(xOf(bals.length-1),zy); x.lineTo(xOf(0),zy); x.closePath();
+  const fillG=x.createLinearGradient(0,gT,0,gB);
+  fillG.addColorStop(0,"rgba(81,184,131,0.28)"); fillG.addColorStop(1,"rgba(81,184,131,0.02)");
+  x.fillStyle=fillG; x.fill();
+
+  // 収支ライン（金・太め・角丸ジョイン）
+  x.beginPath();
+  bals.forEach((v,i)=>{ const px=xOf(i),py=yOf(v); if(i===0)x.moveTo(px,py); else x.lineTo(px,py); });
+  x.strokeStyle=C.gold; x.lineWidth=3; x.lineJoin="round"; x.lineCap="round"; x.stroke();
+
+  // 最終点に丸ドット＋現在値ラベル
+  const lastX=xOf(bals.length-1), lastY=yOf(bals[bals.length-1]);
+  x.fillStyle=C.gold; x.beginPath(); x.arc(lastX,lastY,7,0,7); x.fill();
+  x.fillStyle=C.bg1; x.beginPath(); x.arc(lastX,lastY,3,0,7); x.fill();
+
+  // ピーク/最大DDの注記（控えめ）
+  const peakI=bals.indexOf(mx);
+  x.fillStyle=C.green; x.font="700 18px 'Noto Sans JP',sans-serif"; x.textAlign="center";
+  x.fillText(`最高 +${(mx/10000).toFixed(0)}万`, Math.min(gR-70,Math.max(gL+70,xOf(peakI))), yOf(mx)-16);
+  x.textAlign="left";
+
+  // ===== 下部：統計カード（4枚・elevation風） =====
+  const cardY=H-118, cardH=76, gap=16;
+  const cardW=(W-padX*2-gap*3)/4;
+  const cards=[
+    ["1回の掛け金","4,000円",C.sub,"⭐2頭・40点"],
+    ["トータル収支",`+${(d.finalBal/10000).toFixed(0)}万`,C.green,`投資 286万→446万`],
+    ["回収率(ROI)",`${d.roi}%`,C.gold,"638戦・全期間"],
+    ["的中率",`${d.hitRate}%`,C.blue,"当たれば平均589倍"],
+  ];
+  cards.forEach((c,i)=>{
+    const cx=padX+i*(cardW+gap);
+    // 影
+    x.save(); x.shadowColor="rgba(0,0,0,0.3)"; x.shadowBlur=12; x.shadowOffsetY=3;
+    x.fillStyle=C.card; RR(cx,cardY,cardW,cardH,16); x.fill(); x.restore();
+    x.strokeStyle=C.line; x.lineWidth=1; RR(cx,cardY,cardW,cardH,16); x.stroke();
+    x.fillStyle=C.muted; x.font="500 16px 'Noto Sans JP',sans-serif"; x.fillText(c[0], cx+18, cardY+26);
+    x.fillStyle=c[2]; x.font="700 32px 'Noto Sans JP',sans-serif"; x.fillText(c[1], cx+18, cardY+58);
+    if(c[3]){ x.fillStyle=C.muted; x.font="500 14px 'Noto Sans JP',sans-serif"; x.textAlign="right"; x.fillText(c[3], cx+cardW-16, cardY+26); x.textAlign="left"; }
+  });
+
+  // ===== フッター =====
+  x.fillStyle=C.muted; x.font="500 16px 'Noto Sans JP',sans-serif";
+  x.fillText("SW TURF LAB", padX, H-20);
+  x.textAlign="right"; x.fillText("※過去成績であり将来の的中・回収を保証するものではありません", W-padX, H-20); x.textAlign="left";
+  x.fillStyle=C.gold; x.fillRect(0,H-5,W,5);
+  return cv;
+}
+
+function drawKochiFormaImage(c, cond, scored){
+  const plan=kochiFormaPlan(scored);
+  if(!plan) return null;
+  const stars=scored.filter(z=>z.starFinal);
+  const top=scored.slice(0,5);
+  const nm=g=>String(g||"").slice(0,9);
+  // アプリ本来のダークテーマ
+  /* DADS準拠パレット（暗背景で全色4.5:1以上を検証済み・14px未満なし・Noto Sans JP） */
+  const C={bg1:"#0a0e16",bg2:"#121826",panel:"#171c27",line:"#333333",txt:"#ffffff",
+           muted:"#b3b3b3",sub:"#cccccc",gold:"#ffd43d",star:"#ffd43d",
+           mkO:"#ff7171",mk1:"#ffc700",mk2:"#57b8ff",mk3:"#51b883",purp:"#bb87ff"};
+  const W=1080, pad=44;
+  // 高さは動的（セクション積み上げ）。まず仮に大きめでキャンバス作り、最後にトリムはしない（固定設計）
+  const H=1400;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
+  x.fillStyle=bg; x.fillRect(0,0,W,H);
+  // 放射グロー
+  const rg=x.createRadialGradient(W/2,120,20,W/2,120,640);
+  rg.addColorStop(0,"rgba(245,185,66,0.08)"); rg.addColorStop(1,"rgba(245,185,66,0)");
+  x.fillStyle=rg; x.fillRect(0,0,W,300);
+  const rr=(px,py,pw,ph,r)=>{x.beginPath();x.moveTo(px+r,py);x.arcTo(px+pw,py,px+pw,py+ph,r);x.arcTo(px+pw,py+ph,px,py+ph,r);x.arcTo(px,py+ph,px,py,r);x.arcTo(px,py,px+pw,py,r);x.closePath();};
+  let y=64;
+  // ヘッダ
+  x.fillStyle=C.star; x.font="800 26px 'Noto Sans JP',sans-serif"; x.textBaseline="alphabetic";
+  x.fillText("🐴 高知ファイナル 専用予想", pad, y);
+  x.fillStyle=C.muted; x.font="600 16px 'Noto Sans JP',sans-serif";
+  x.fillText("SW TURF LAB", W-pad-140, y);
+  y+=14; x.strokeStyle=C.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad,y); x.lineTo(W-pad,y); x.stroke();
+  y+=42;
+  // レース名
+  x.fillStyle=C.txt; x.font="800 32px 'Noto Sans JP',sans-serif";
+  x.fillText(nm(c.name)||"ファイナルレース", pad, y);
+  const dist=cond&&cond.dist?cond.dist+"m":""; const going=cond&&cond.going?" / "+cond.going:"";
+  x.fillStyle=C.sub; x.font="500 18px 'Noto Sans JP',sans-serif";
+  x.fillText("高知　"+dist+going, pad, y+28);
+  y+=64;
+  // 印5頭
+  const sym=["◎","○","▲","△","△"]; const mkC=[C.mkO,C.mk1,C.mk2,C.mk3,C.mk3];
+  rr(pad,y,W-pad*2,64+top.length*46,14); x.fillStyle=C.panel; x.fill();
+  x.strokeStyle=C.line; x.stroke();
+  x.fillStyle=C.gold; x.font="700 18px 'Noto Sans JP',sans-serif";
+  x.fillText("AI予想", pad+22, y+34);
+  let yy=y+64;
+  top.forEach((h,i)=>{
+    x.fillStyle=mkC[i]; x.font="800 24px 'Noto Sans JP',sans-serif";
+    x.fillText(sym[i], pad+22, yy+8);
+    x.fillStyle="#fff"; x.font="700 22px 'Noto Sans JP',sans-serif";
+    x.fillText(h.num+"  "+nm(h.name), pad+70, yy+8);
+    if(h.starFinal){ x.fillStyle=C.star; x.font="700 18px 'Noto Sans JP',sans-serif"; x.fillText("⭐妙味", W-pad-110, yy+7); }
+    else if(h.pop){ x.fillStyle=C.muted; x.font="500 17px 'Noto Sans JP',sans-serif"; x.fillText(h.pop+"人気", W-pad-100, yy+7); }
+    yy+=46;
+  });
+  y=yy+30;
+  // 展開予測
+  const fronts=scored.filter(z=>z.st==="front").slice(0,3).map(z=>nm(z.name));
+  const flowTxt=fronts.length?(fronts[0]+"ら先行勢が引っ張る展開。人気薄の逃げ・先行が残りやすい"):"先行不在で紛れ大。伏兵の一発に警戒";
+  const wrapText=(txt,mx,fnt,lh,cx,cy,col)=>{ x.font=fnt; x.fillStyle=col; let line="",yc=cy; for(const ch of txt){ if(x.measureText(line+ch).width>mx){ x.fillText(line,cx,yc); line=ch; yc+=lh; } else line+=ch; } if(line)x.fillText(line,cx,yc); return yc; };
+  x.fillStyle=C.mk2; x.font="700 20px 'Noto Sans JP',sans-serif"; x.fillText("🧭 展開予測", pad, y);
+  y=wrapText(flowTxt, W-pad*2, "500 18px 'Noto Sans JP',sans-serif", 28, pad, y+30, C.sub)+30;
+  // 見どころ
+  x.fillStyle=C.mk1; x.font="700 20px 'Noto Sans JP',sans-serif"; x.fillText("💡 見どころ", pad, y);
+  const focusTxt="1番人気の勝率は実測27%(通常の半分)＝軸は3-5番人気も。"+(stars.length?("⭐妙味: "+stars.map(z=>nm(z.name)).join("・")+"（人気薄×先行は実測複勝35%）"):"今回⭐該当なし");
+  y=wrapText(focusTxt, W-pad*2, "500 18px 'Noto Sans JP',sans-serif", 28, pad, y+30, C.sub)+34;
+  // 買い目（勝負 or 見送り）
+  if(plan.sengo){
+    rr(pad,y,W-pad*2,110,14); x.fillStyle="#1e1a12"; x.fill(); x.strokeStyle=C.gold; x.stroke();
+    x.fillStyle=C.gold; x.font="800 22px 'Noto Sans JP',sans-serif"; x.fillText("⭐妙味フォメ ＝ 見送り推奨", pad+22, y+38);
+    x.fillStyle=C.sub; x.font="500 17px 'Noto Sans JP',sans-serif";
+    x.fillText("⭐(人気薄先行)が"+plan.stars+"頭。⭐2頭以上のときだけ組む方針（★回収169%は再現できず撤回★）、", pad+22, y+70);
+    x.fillText("0-1頭は妙味薄のため見送り推奨。", pad+22, y+94);
+    y+=140;
+  } else {
+    const boxH=300;
+    rr(pad,y,W-pad*2,boxH,14); const gg=x.createLinearGradient(0,y,0,y+boxH); gg.addColorStop(0,"#1e1a10"); gg.addColorStop(1,"#161206"); x.fillStyle=gg; x.fill();
+    x.strokeStyle=C.star; x.lineWidth=2; x.stroke(); x.lineWidth=1;
+    x.fillStyle=C.star; x.font="800 22px 'Noto Sans JP',sans-serif";
+    x.fillText("⭐妙味フォメ 3連単（回収率の裏付けなし・撤回済み）", pad+22, y+38);
+    // 1着・2着は共通、3着だけ2パターン
+    const drawRow=(ly,lbl,list1,list2,list3,col3)=>{
+      let sx=pad+22;
+      const cells=[["1着固定",plan.list1,C.mkO],["2着",plan.list2,C.mk2],["3着",list3,col3]];
+      cells.forEach(([l,list,col])=>{
+        x.fillStyle=col; x.font="700 16px 'Noto Sans JP',sans-serif"; x.fillText(l, sx, ly);
+        x.fillStyle="#fff"; x.font="800 22px 'Noto Sans JP',sans-serif";
+        const t=list.join(".");
+        x.fillText(t, sx, ly+28);
+        sx += Math.max(x.measureText(t).width, 110)+34;
+      });
+    };
+    // 本線（絞り＝3着7頭）
+    x.fillStyle=C.gold; x.font="700 18px 'Noto Sans JP',sans-serif";
+    x.fillText("▼ 本線（絞り "+plan.pts7+"点）", pad+22, y+72);
+    drawRow(y+100, "", plan.list1, plan.list2, plan.list3, C.mk3);
+    // 区切り線
+    x.strokeStyle=C.line; x.beginPath(); x.moveTo(pad+22,y+150); x.lineTo(W-pad-22,y+150); x.stroke();
+    // 手広く（3着9頭）
+    x.fillStyle=C.sub; x.font="700 18px 'Noto Sans JP',sans-serif";
+    x.fillText("▼ 手広く（"+plan.pts9+"点／3着を9頭に拡大）", pad+22, y+180);
+    drawRow(y+208, "", plan.list1, plan.list2, plan.list3wide, C.mk3);
+    // 配当めやす
+    x.fillStyle=C.gold; x.font="700 18px 'Noto Sans JP',sans-serif";
+    x.fillText("的中配当めやす 320〜1200倍（中央650倍・1,166R実測）", pad+22, y+boxH-22);
+    y+=boxH+18;
+    // 他の買い方。★回収率は後知恵⭐由来で撤回済み・見出しも「検証プラス」をやめた★
+    const ot=plan.other;
+    const rows=[];
+    if(ot.wideSS.length) rows.push(["ワイド ⭐×⭐", ot.wideSS.join(" / "), "—"]);
+    if(ot.wide1S.length) rows.push(["ワイド 実力1位×⭐", ot.wide1S.join(" / "), "—"]);
+    rows.push(["3連複 ⭐軸-実力上位5", "⭐"+ot.sanpukuAxis.join("・")+" - "+ot.sanpukuRel.join("."), "—"]);
+    rows.push(["⭐複勝", ot.fukuStar.join("・"), "—"]);
+    const oBoxH=54+rows.length*40;
+    rr(pad,y,W-pad*2,oBoxH,14); x.fillStyle=C.panel; x.fill(); x.strokeStyle=C.line; x.stroke();
+    x.fillStyle=C.mk3; x.font="700 18px 'Noto Sans JP',sans-serif";
+    x.fillText("他の買い方（⭐2頭以上・参考。回収率は未検証）", pad+22, y+34);
+    let oy=y+64;
+    rows.forEach(([label,combo,roi])=>{
+      x.fillStyle=C.sub; x.font="700 17px 'Noto Sans JP',sans-serif"; x.fillText(label, pad+22, oy);
+      if(roi && roi!=="—"){ x.fillStyle=C.gold; x.font="700 17px 'Noto Sans JP',sans-serif"; x.textAlign="right"; x.fillText("回収"+roi, W-pad-22, oy); x.textAlign="left"; }   // 撤回済みの回収率は出さない（roi="—"）
+      x.fillStyle="#ffffff"; x.font="700 18px 'Noto Sans JP',sans-serif"; x.fillText(combo.length>52?combo.slice(0,50)+"…":combo, pad+22, oy+22);
+      oy+=40;
+    });
+    y+=oBoxH+20;
+  }
+  // フッター注記
+  x.fillStyle=C.muted; x.font="500 16px 'Noto Sans JP',sans-serif";
+  x.fillText("※1,166Rのpayback実測。過去成績で未来を保証するものではありません。", pad, y+10);
+  x.fillStyle=C.purp; x.font="700 16px 'Noto Sans JP',sans-serif";
+  x.fillText("#SWTURFLAB #高知競馬", pad, y+40);
+  // 実際に使った高さでトリミングしたキャンバスを返す
+  const finalH=Math.min(H, y+66);
+  const out=document.createElement("canvas"); out.width=W; out.height=finalH;
+  out.getContext("2d").drawImage(cv,0,0);
+  return out;
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+async function fetchDecoded(url){
+  const inner=innerFromProxied(url);
+  if(!inner){
+    const res=await fetch(url,{headers:{Accept:"text/html,*/*"},cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    return decodeBytes(await res.arrayBuffer());
+  }
+  const order=[];
+  const up=userProxyPrefix();
+  if(up) order.push(up);
+  if(_proxyOK && !order.includes(_proxyOK)) order.push(_proxyOK);
+  for(const p of PROXY_LIST){ if(!order.includes(p)) order.push(p); }
+  let lastErr=null;
+  for(const prefix of order){
+    try{
+      const headers={Accept:"text/html,*/*"};
+      if(prefix.includes("r.jina.ai")) headers["X-Return-Format"]="html";
+      /* cache:"no-store" 必須。レース結果は時間で変わるため、
+         発走前に取得した「結果なし」HTMLがキャッシュされると、
+         レース確定後に再取得しても古い空データが返り続ける（答え合わせが永久に「結果待ち」になる） */
+      const res=await fetch(wrapProxy(prefix,inner),{headers,cache:"no-store"});
+      if(!res.ok){ lastErr=new Error("HTTP "+res.status); continue; }
+      const text=decodeBytes(await res.arrayBuffer());
+      if(!looksValid(text)){ lastErr=new Error("空応答"); continue; }
+      _proxyOK=prefix; return text;
+    }catch(e){ lastErr=e; }
+  }
+  throw lastErr||new Error("全プロキシ失敗");
+}
+
+async function fetchWinOdds(rid){
+  try{
+    const txt=await fetchDecoded(oddsURL(rid));
+    let j=null; try{ j=JSON.parse(txt); }catch(_){ return null; }
+    const out={};
+    if(j.ary_odds){ // NAR
+      for(const k in j.ary_odds){ const e=j.ary_odds[k]; const num=String(parseInt(k,10));
+        const od=parseFloat(e.Odds); const pop=e.Ninki!=null?+e.Ninki:null;
+        // オッズ0.0は取消・オッズ未確定を表す（人気だけ便宜値が入る）。有効オッズ(1.0以上)のみ採用。
+        if(isFinite(od) && od>=1.0) out[num]={odds:od, pop}; }
+    } else if(j.data && j.data.odds && j.data.odds["1"]){ // JRA
+      const d=j.data.odds["1"];
+      for(const k in d){ const num=String(parseInt(k,10)); const arr=d[k];
+        const od=parseFloat(arr[0]); const pop=arr[2]!=null?parseInt(arr[2],10):null;
+        if(isFinite(od) && od>=1.0) out[num]={odds:od, pop}; }
+    }
+    if(Object.keys(out).length) logOddsSnapshot(rid, out);
+    return Object.keys(out).length? out : null;
+  }catch(_){ return null; }
+}
+
+function g1esc(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function innerFromProxied(u){
+  // Base64版（proxy.php?u=...）を先に復元
+  const m=/proxy\.php\?u=([A-Za-z0-9\-_]+)/.exec(u);
+  if(m){ try{ return unb64url(m[1]); }catch(_){} }
+  const up=userProxyPrefix();
+  const prefixes = up ? [up, ...PROXY_LIST] : PROXY_LIST.slice();
+  for(const p of prefixes){
+    if(p && u.startsWith(p)){
+      const rest=u.slice(p.length);
+      if(p.endsWith("=")){ try{ return decodeURIComponent(rest); }catch(_){ return rest; } }
+      return rest;
+    }
+  }
+  return null;
+}
+
+function jstTodayStr(){ const d=new Date(Date.now()+9*3600e3); return ""+d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate()); }
+
+function kochiFormScore(e){ const p=(e.past||[]).slice(0,3).map(x=>x.rank).filter(x=>x!=null); if(!p.length)return 0.40; const avg=p.reduce((a,b)=>a+b,0)/p.length; return Math.max(0,Math.min(1,1-(avg-1)/11)); }
+
+function kochiFormaPlan(scored){
+  const stars=scored.filter(x=>x.starFinal);
+  const uniq=a=>[...new Set(a)];
+  const list1=stars.map(x=>String(x.num));
+  const list2=uniq(scored.slice(0,5).map(x=>String(x.num)));
+  const list3_7=uniq(scored.slice(0,7).map(x=>String(x.num)));
+  const list3_9=uniq(scored.slice(0,9).map(x=>String(x.num)));
+  const fmt=a=>a.join(".");
+  const countPts=(a1,a2,a3)=>{ let n=0; for(const x of a1)for(const y of a2){if(y===x)continue;for(const z of a3){if(z===x||z===y)continue;n++;}} return n; };
+  if(stars.length<2){
+    return {sengo:true, list1, list2, list3:list3_7, list3wide:list3_9, stars:stars.length,
+      html:`<b>⭐妙味フォメ</b> 今回⭐(人気薄先行)は${stars.length}頭＝<b>見送り推奨</b>。⭐2頭以上のときだけ組む方針。★かつての回収169%は再現できず撤回★。${stars.length?`買うなら 3連単 ${fmt(list1)}→1着 − ${fmt(list2)} − ${fmt(list3_7)}`:""}`};
+  }
+  const pts7=countPts(list1,list2,list3_7), pts9=countPts(list1,list2,list3_9);
+  // 他券種。★かつての回収率(172/166/128/115%)は後知恵⭐由来で再現できず、表示から撤去★
+  const starNums=stars.map(z=>String(z.num));
+  const wideSS=[]; for(let a=0;a<starNums.length;a++)for(let b=a+1;b<starNums.length;b++) wideSS.push(starNums[a]+"-"+starNums[b]);
+  const wide1S=starNums.filter(n=>n!==list2[0]).map(n=>list2[0]+"-"+n);
+  const other={ wideSS, wide1S, sanpukuAxis:starNums, sanpukuRel:list2, fukuStar:starNums };
+  return {sengo:false, list1, list2, list3:list3_7, list3wide:list3_9, pts7, pts9, stars:stars.length, other,
+    html:`<b>⭐妙味フォメ</b> ⭐${stars.length}頭＝<b>勝負ゾーン</b><br>3連単F <b>${fmt(list1)}</b>(人気薄先行=1着固定) − <b>${fmt(list2)}</b>(2着) − <b>${fmt(list3_7)}</b>(3着)<br>点数=<b>${pts7}点</b>(絞り)／${pts9}点(3着9頭に拡大)　的中配当めやす=<b>320〜1200倍</b>(中央650倍)　※★かつて掲げた回収169%は後知恵の⭐で算出しており再現できていません（撤回）。買える形の⭐では赤字でした★`};
+}
+
+function kochiSpecialScore(e){ let st=null; try{st=styleType(e);}catch(_){} const T=KOCHI_TABLES; const jk=(T.jk[(e.jockey||"").trim()]!=null)?T.jk[(e.jockey||"").trim()]:T.mean; const wk=(T.wk[e.waku]!=null)?T.wk[e.waku]:T.mean; const sr=(st&&T.st[st]!=null)?T.st[st]:T.mean; return {s:3.0*jk+1.5*wk+1.0*sr+1.5*kochiFormScore(e), jk, wk, sr, st}; }
+
+function kochiTweetText(c, cond, scored, stars, haveOdds){
+  /* 画像併用前提の短文（280字以内）。詳細な買い目/展開/見どころは画像に載せる。 */
+  const sym=["◎","○","▲","△","△"];
+  const top=scored.slice(0,5);
+  const nm=g=>String(g||"").slice(0,9);
+  const dist=cond.dist?cond.dist+"m":"";
+  const head=`【高知ファイナル${dist?" "+dist:""}】`;
+  // 印は4頭まで（短縮）。人気は付けない
+  const marks=top.slice(0,4).map((x,i)=>`${sym[i]}${x.num} ${nm(x.name)}`).join(" ");
+  const st=(stars||[]);
+  let core;
+  if(st.length>=2){
+    core=`⭐妙味フォメ\n⭐${st.map(x=>x.num).join("・")}(人気薄先行)を1着固定の3連単F\n▶詳しい買い目は画像で`;
+  } else if(st.length===1){
+    core=`⭐は${st[0].num}の1頭。フォメは⭐2頭以上のときだけ、今回は軽めに\n▶詳細は画像で`;
+  } else {
+    core=`今回は⭐(人気薄先行)なし＝フォメ見送り推奨。◎複勝中心に\n※1番人気の勝率は実測27%`;
+  }
+  return [head, marks, core, "#SWTURFLAB #高知競馬"].join("\n");
+}
+
+function listURL(date){
+  const base = MODE==="nar" ? "https://nar.netkeiba.com/top/race_list_sub.html" : "https://race.netkeiba.com/top/race_list_sub.html";
+  return pxy(base+"?kaisai_date="+date);
+}
+
+function logOddsSnapshot(rid, odds){
+  try{
+    if(!rid || !odds || !Object.keys(odds).length) return;
+    const date=($("#date") && $("#date").value ? $("#date").value.trim() : "") || jstTodayStr();
+    fetch("oddslog.php?action=save", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ rid:String(rid), mode:MODE, date, ts:Date.now(), odds })
+    }).catch(()=>{});
+  }catch(_){}
+}
+
+function oddsURL(rid){
+  const base = MODE==="nar"
+    ? "https://nar.netkeiba.com/api/api_get_nar_odds.html?race_id="+rid+"&type=1"
+    : "https://race.netkeiba.com/api/api_get_jra_odds.html?race_id="+rid+"&type=1&action=init";
+  return pxy(base);
+}
+
+function parseRaceListHTML(html){
+  const out=[], seen=new Set();
+  // race_id の全出現を順に拾う（shutuba/result/odds いずれのリンクでも可）
+  const re=/race_id=(\d{12})/g; let m;
+  while((m=re.exec(html))){
+    const rid=m[1]; if(seen.has(rid)) continue; seen.add(rid);
+    const win=html.slice(m.index, m.index+900);
+    const tm=win.match(/(\d{1,2}:\d{2})/);
+    const nm=win.match(/Item(?:Title|Long)"?[^>]*>\s*([^<\n]{1,40}?)\s*</i);
+    // グレード: JRA=Icon_GradeType{1|2|3}。NAR=名前内の(JpnⅠ/Ⅱ/Ⅲ)や重賞表記、主要重賞名で判定
+    const gm=win.match(/Icon_GradeType(\d+)/);
+    let grade=null; if(gm){ const g=+gm[1]; if(g===1)grade="G1"; else if(g===2)grade="G2"; else if(g===3)grade="G3"; }
+    const rawName = nm?decodeHtmlEntities(nm[1].trim()):"";
+    if(!grade){
+      // NAR: Jpn表記
+      if(/Jpn\s*[Ⅰ1]|\(GⅠ\)|\(G1\)/.test(win)||/Jpn\s*[Ⅰ1]/.test(rawName)) grade="JpnⅠ";
+      else if(/Jpn\s*[Ⅱ2]/.test(win)||/Jpn\s*[Ⅱ2]/.test(rawName)) grade="JpnⅡ";
+      else if(/Jpn\s*[Ⅲ3]/.test(win)||/Jpn\s*[Ⅲ3]/.test(rawName)) grade="JpnⅢ";
+      else if(/重賞/.test(win)) grade="重賞";
+      else if(NAR_JUSHO.some(name=>rawName.includes(name))) grade="重賞";
+    }
+    out.push({race_id:rid, track:trackOf(rid), no:parseInt(rid.slice(10),10), post:tm?tm[1]:null, name:rawName, grade});
+  }
+  return out.sort((a,b)=> a.track===b.track ? a.no-b.no : 0);
+}
+
+function parseShutuba(html){
+  const entries={}; const order=[]; const scratched=[];
+  // 馬柱は各馬が大きな行。/horse/ を含む tr を1頭として扱う
+  let rows=html.match(/<tr[^>]*class="[^"]*HorseList[^"]*"[\s\S]*?<\/tr>/g);
+  if(!rows||!rows.length){ rows=(html.match(/<tr[\s\S]*?<\/tr>/g)||[]).filter(t=>/\/horse\/[A-Za-z]?\d+/.test(t)); }
+  rows.forEach(r=>{
+    // 馬柱: 枠=<td class="WakuN">N</td>, 馬番=<td class="Waku">M</td>（数字サフィックス無し）
+    const w=r.match(/class="Waku(\d)"/);
+    let u=r.match(/class="Waku"[^>]*>\s*(\d{1,2})\s*</);   // 馬番（馬柱の正式位置）
+    if(!u) u=r.match(/class="[^"]*Umaban[^"]*"[^>]*>\s*(\d{1,2})/) || r.match(/<td[^>]*class="[^"]*Txt_C[^"]*"[^>]*>\s*(\d{1,2})\s*</);
+    // 馬名は Horse_Info セル内の馬名リンク（Horse02）から取る。近走の相手馬リンクを拾わないよう限定
+    const info=r.match(/class="Horse_Info"[\s\S]*?(?=<td|<\/tr>)/);
+    let n=null;
+    if(info){ n=info[0].match(/\/horse\/([A-Za-z]?\d+)\/?"[^>]*>\s*(?:<[^>]+>\s*)*([^<]{1,30}?)\s*</); }
+    if(!n) n=r.match(/\/horse\/([A-Za-z]?\d+)[^"]*"[^>]*title="([^"]{1,30})"/); // titleフォールバック
+    if(!n) n=r.match(/\/horse\/([A-Za-z]?\d+)[^"]*"[^>]*>\s*([^<]{1,30}?)\s*</);
+    if(!u||!n) return;
+    const num=String(parseInt(u[1],10)), name=n[2].trim(), hid=n[1];
+    // 出走取消・競走除外: entriesに入れず scratched へ退避（採点・印・買い目から完全除外）。過去走セルは判定前に除去
+    const _rCur=r.replace(/<td[^>]*class="[^"]*\bPast\b[^"]*"[\s\S]*?<\/td>/g,"");
+    if(/class="[^"]*Cancel[^"]*"/.test(_rCur) || /取消|除外/.test(_rCur.replace(/<[^>]+>/g," "))){ scratched.push({num, name, waku:(w?+w[1]:null)}); return; }
+    if(entries[num]) return;
+    let jockey="", jockeyId=null;
+    const jm=r.match(/\/jockey\/(?:result\/recent\/)?([A-Za-z0-9]{4,7})\/?[^"]*"[^>]*>\s*([^<]{1,16}?)\s*</);
+    if(jm){ jockeyId=jm[1]; jockey=jm[2].trim(); }
+    // 斤量
+    let kinryo=null; const kin=r.match(/\b(\d{2}\.\d)\b/g);
+    if(kin){ for(const k of kin){ const v=+k; if(v>=48&&v<=63){ kinryo=v; break; } } }
+    // 今走の馬体重(増減): class="Weight" セル内 "482(-4)"（当日発表後のみ。未発表は空）
+    let weight=null, wdiff=null;
+    // 所属アイコン: Icon_kakuChi=カク地(地方所属馬が交流競走に出走)。
+    //   ※地方主催レースでは地元所属馬にアイコンが付かないため、「アイコン無し=JRA」とは
+    //     断定できない。交流戦の判定にはレース名を使う（betPlan/raceFocus参照）。
+    //     ここでは参考情報として、カク地マークの有無だけ記録する。
+    let belong=null;
+    if(/Icon_MaruChi/.test(r)) belong="地";          // JRA: 地方所属馬(マル地)
+    else if(/Icon_MaruGai/.test(r)) belong="外";     // JRA: 外国馬(マル外)
+    else if(/Icon_kaku[A-Za-z]*Gai/.test(r)) belong="外";  // カク外
+    else if(/Icon_HorseMark\s+Icon_kaku[A-Za-z]*Chi/.test(r)) belong="カク地";
+    const wcell=r.match(/class="Weight"[^>]*>([\s\S]*?)<\/td>/);
+    if(wcell){ const wt=wcell[1].replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ");
+      const wm=wt.match(/(\d{3})\s*\(\s*([+-]?\d+)\s*\)/);
+      if(wm){ weight=+wm[1]; wdiff=+wm[2]; }
+      else { const wo=wt.match(/\b(\d{3})\b/); if(wo) weight=+wo[1]; }  // 増減無し(新馬等)
+    }
+    // 近走（Past セル）を最大5走パース。
+    // netkeiba は着順1〜3着の走に class="Past Ranking_1/2/3"（色分け）を付ける。
+    // 旧 /class="Past"[\s\S]*?<\/td>/ は class="Past" 完全一致前提のため、この複合クラスの
+    // セルを正しく1セルとして拾えず、好走した近走(1〜3着)が丸ごと欠落していた
+    // （＝報告のあった「3着だけ入ってない」の真因）。td単位で Past を含むセルを取る。
+    const pastCells=r.match(/<td[^>]*class="[^"]*\bPast\b[^"]*"[\s\S]*?<\/td>/g)||[];
+    const past=pastCells.map(parsePastRace)
+      .filter(p=> p.rid || p.rank!=null || p.rdate || p.dist )   // 空(休養)セルを除外
+      .slice(0,5);                                               // 有効走の中から最大5走
+    // 血統・厩舎: Horse_Info セル内 Horse01=父, (母父), 所属・調教師
+    let sire=null, damsire=null, trainer=null;
+    // 調教師ID（/trainer/ID または /trainer/result/recent/ID）
+    let trainerId=null;
+    const trm=r.match(/\/trainer\/(?:result\/recent\/)?([0-9a-z]{4,7})\/?"/);
+    if(trm && trm[1]!=="result") trainerId=trm[1];
+    if(info){
+      const txt=info[0].replace(/<[^>]+>/g,"\n").replace(/&nbsp;/g," ");
+      const lines=txt.split("\n").map(s=>s.trim()).filter(s=>s);
+      const idxName=lines.findIndex(s=>s===n[2]);
+      for(let i=0;i<lines.length;i++){
+        const ln=lines[i];
+        if(ln===n[2]) continue;
+        const ds=ln.match(/^\(([^)]{2,20})\)$/); if(ds&&!damsire){ damsire=ds[1]; continue; }
+        if(/美浦|栗東|地方|・/.test(ln) && /[・]/.test(ln) && !trainer){ trainer=ln.replace(/\s+/g,""); continue; }
+        if(!sire && /^[ァ-ヶA-Za-z][ァ-ヶーA-Za-z' .]{1,22}$/.test(ln) && (idxName<0||i<idxName)) sire=ln;
+      }
+    }
+    // ブリンカー: 馬名直後の <span class="Mark">B</span>（Horse_Info内に限定。Rank_B等の誤検出を避ける）
+    let blinker=false;
+    if(info){ blinker=/<span class="Mark">\s*B\s*<\/span>/.test(info[0]); }
+    if(!blinker){ // フォールバック: この馬のhorseリンク直後のMark
+      const re2=new RegExp('/horse/'+hid+'[^"]*"[^>]*>\\s*'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*</a>\\s*<span class="Mark">\\s*B');
+      blinker=re2.test(r);
+    }
+    // 性齢: 牡4 / 牝3 / セ7
+    let sexAge=null;
+    const barei=r.match(/class="Barei[^"]*"[^>]*>\s*([牡牝セせん騸]+)\s?(\d{1,2})/);
+    if(barei) sexAge=barei[1].replace("せん","セ").replace("騸","セ")+barei[2];
+    else { const sa=r.match(/([牡牝セせん騸]+)\s?(\d{1,2})/); if(sa) sexAge=sa[1].replace("せん","セ").replace("騸","セ")+sa[2]; }
+    // 性別記号だけ（牡/牝/セ）
+    let sex=null; if(sexAge){ const sm=sexAge.match(/^[牡牝セ]/); if(sm) sex=sm[0]; }
+    entries[num]={num, name, waku:w?+w[1]:null, jockey, jockeyId, kinryo, hid, past, sire, damsire, trainer, trainerId, blinker, weight, wdiff, sexAge, sex, belong};
+    order.push(num);
+  });
+  // コース条件
+  const cond={going:null, weather:null, surface:null, dist:null, raceName:null};
+  const d01=html.match(/RaceData01[\s\S]{0,400}/);
+  if(d01){ const txt=d01[0].replace(/<[^>]+>/g," ").replace(/\s+/g," ");
+    const g=txt.match(/馬場[:：]?\s*(良|稍重|重|不良)/); if(g) cond.going=g[1];
+    const we=txt.match(/天候[:：]?\s*(晴|曇|雨|小雨|雪|小雪)/); if(we) cond.weather=we[1];
+    const c=txt.match(/(芝|ダ|ダート)\s*(\d{3,4})m/); if(c){ cond.surface=c[1]==="芝"?"芝":"ダ"; cond.dist=+c[2]; } }
+  const rn=html.match(/RaceName"?[^>]*>\s*([^<\n]{1,40}?)\s*</); if(rn) cond.raceName=rn[1].trim();
+  // 今走の回り（race_idから）
+  cond.turn = state.raceId? turnOfRid(state.raceId) : null;
+  return {entries, order, cond};
+}
+
+function pxy(u){ return "/odds/proxy.php?u="+b64url(u); }
+
+function renderKochiBlock(c, cond, scored, haveOdds, markSrc){
+  const sym=["◎","○","▲","△","△"]; const top=scored.slice(0,5);
+  const styLbl={front:"逃げ・先行",mid:"中団",closer:"差し・追込"};
+  const card=document.createElement("div"); card.className="g1-card";
+  const surf=cond.surface||"", dist=cond.dist?cond.dist+"m":"", going=cond.going?"／"+cond.going:"";
+  let html=`<div class="g1-hd"><span class="g1-badge" style="background:#2a7a2a">高知専用</span><span class="g1-name">${g1esc(c.name)}</span></div>`;
+  html+=`<div class="g1-note" style="font-size:14px;color:#e0b060;padding:2px 0 6px">📊 ファイナル傾向（実測1,769R）: 1番人気の勝率は27%と通常の半分。3-5番人気に妙味あり</div>`;
+  html+=`<div class="g1-sub">${g1esc(c.trackName||"高知")}　${surf}${dist}${going}</div>`;
+  /* 印の出どころを明示（利用者が「Twitterのと違う」と迷わないように） */
+  html+= markSrc==="ltr"
+    ? `<div style="font-size:13px;color:#7ee07e;padding:2px 0 6px">✅ 印は本体AI（LTR）＝Xに投稿した予想と同一</div>`
+    : `<div style="font-size:13px;color:#ff9a8a;padding:2px 0 6px">⚠ 本体AIの予想がまだ保存されていません。下の印は<b>このページの暫定スコア</b>で、Xの予想と一致しません（本体で「全場まとめて予想」を実行後に再取得すると一致します）</div>`;
+  html+=`<div class="g1-marks">`;
+  const stars=scored.filter(x=>x.starFinal);
+  /* 印上位5頭に入らなかった⭐＝別掲する「妙味候補」。
+     参照だけあって定義が無く renderKochiBlock 全体が落ちていた（tweet.html にも同じ穴あり） */
+  const starsBelow=stars.filter(x=>!top.includes(x));
+  top.forEach((x,i)=>{
+    const recent=(x.e.past||[]).slice(0,3).map(p=>p.rank).filter(v=>v!=null).join("-")||"-";
+    const chips=[`騎手 ${Math.round(x.jk*100)}%`, `${x.e.waku}枠`, `${styLbl[x.st]||"脚質?"}`, `近走 ${recent}`];
+    if(x.odds) chips.unshift(`${x.pop?x.pop+"人気 ":""}${x.odds}倍`);
+    const idx = haveOdds? Math.round(x.blend*100) : (x.sp*10).toFixed(1);
+    const starB = x.starFinal ? `<span class="g1-star" title="人気薄×先行＝ファイナル妙味（実測複勝35%）" style="color:#ffd24a;font-weight:800;margin-left:6px">⭐妙味</span>` : "";
+    html+=`<div class="g1-row"><span class="g1-mk mk${i}">${sym[i]}</span><span class="g1-no">${x.num}</span><span class="g1-hn">${g1esc(x.name)}${starB}</span><span class="g1-idx">${idx}</span></div>`;
+    html+=`<div class="g1-tags">`+chips.map(t=>`<span class="g1-chip">${g1esc(t)}</span>`).join("")+`</div>`;
+  });
+  html+=`</div>`;
+  const hon=top[0]?top[0].num:"", honOdds=top[0]?top[0].odds:null;
+  const tanTag=(honOdds&&honOdds>=3&&honOdds<=12)?"（中穴で妙味）":"";
+  const nAll=scored.length;
+  const honWaku=(top[0]&&top[0].e)?top[0].e.waku:null;
+  const oddsOK=(honOdds!=null && honOdds>=2 && honOdds<=4);
+  const wakuBad=[2,3,5].includes(honWaku);
+  if(haveOdds){
+    if(oddsOK && !wakuBad){ html+=`<div class="g1-line"><span class="kochi-go">勝負条件◎</span> ◎${honOdds}倍・${honWaku}枠＝過去好相性。馬単◎→全流しの本線でOK。</div>`; }
+    else { const rs=[]; if(!oddsOK) rs.push(honOdds<2?`◎${honOdds}倍は堅すぎ（配当薄で回収↓）`:`◎${honOdds}倍は4倍超（勝率↓）`); if(wakuBad) rs.push(`◎が${honWaku}枠（過去勝率低・枠2は0勝/11R）`); html+=`<div class="g1-line"><span class="kochi-no">条件×</span> ${rs.join(" ／ ")}＝<b>見送り寄り</b>。買うなら複勝◎で手堅く。</div>`; }
+  }
+  html+=`<div class="g1-line"><b>買い目</b> 本線→ <b>馬単 ◎${hon}→全 1着流し</b>（${Math.max(1,nAll-1)}点）${honOdds?`／◎${honOdds}倍`:""}　堅実→ <b>複勝◎${hon}</b>　余裕→ 三連単 ◎${hon} 1着総流し</div>`;
+  { const plan=kochiFormaPlan(scored); if(plan) html+=`<div class="g1-line" style="color:#ffd24a">${plan.html}</div>`; }
+  html+=`<div class="g1-line" style="color:#7ee07e"><b>検証について</b> ★かつて掲げた⭐フォメの回収156%/169%は「後知恵の⭐」（そのレース自身の最終角位置）で算出しており、発走前に賭けられる⭐では再現できませんでした（撤回）。⭐は妙味の目印としてのみ使ってください。${haveOdds?"":"<span style='color:#ff9a8a'>※オッズ未取得＝⭐は出ません。発走15分前に再押しで人気確定→⭐判定。</span>"}</div>`;
+  if(starsBelow.length){ html+=`<div class="g1-starrow" style="margin-top:8px;padding:6px 8px;background:rgba(255,210,74,0.08);border:1px solid rgba(255,210,74,0.3);border-radius:8px;font-size:14px;color:#ffd24a">⭐ 妙味候補（人気薄×先行・実測複勝35%／印上位外から）: ${starsBelow.map(x=>`${g1esc(x.name)}${x.pop?`(${x.pop}人気)`:""}`).join(" / ")}</div>`; }
+  /* ★出走全頭のタグ★（ユーザー要望 2026-08-02「他の馬にも⭐や×や☑を付けたい」）
+     印(◎○▲△)は本体AIのまま動かさず、高知特有の癖を"タグ"として上乗せする。
+     ⭐妙味 = 人気薄(4-8番人気)×先行（既存starFinal・実測複勝35%）
+     ☑押さえ = 印から漏れたが上位評価（紐の候補）
+     ×      = 1番人気だが2/3/5枠（ファイナルの1番人気は勝率27%＝通常の半分、枠2は0勝/11R）
+     ★新しい「儲かる」主張は足さない。既に実測のある定義だけを記号にする★ */
+  {
+    const rank=new Map(scored.map((x,i)=>[x.num,i]));
+    html+=`<div style="margin-top:10px;border-top:1px solid #2a2a33;padding-top:8px">
+      <div style="font-size:13px;color:#b3b3b3;margin-bottom:6px">🐎 出走全頭（⭐妙味 ／ ☑押さえ ／ ×1番人気だが不利枠）</div>`;
+    html+=scored.map(x=>{
+      const i=rank.get(x.num), mk=i<5?sym[i]:"";
+      const tg=[];
+      if(x.starFinal) tg.push(["⭐","#ffd24a","人気薄×先行＝ファイナル妙味（実測複勝35%）"]);
+      if(!mk && i<8) tg.push(["☑","#7ee07e","印外だが上位評価＝紐の押さえ候補"]);
+      if(haveOdds && x.pop===1 && [2,3,5].includes(x.e&&x.e.waku)) tg.push(["×","#ff9a8a","1番人気×不利枠（ファイナルの1番人気は勝率27%・枠2は0勝/11R）"]);
+      const t=tg.map(([s,col,ti])=>`<span title="${escapeHtml(ti)}" style="color:${col};font-weight:800;margin-left:5px">${s}</span>`).join("");
+      const od=x.odds?`<span style="color:#b3b3b3;font-size:12px;margin-left:6px">${x.pop?x.pop+"人気 ":""}${x.odds}倍</span>`:"";
+      return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:14px;${mk?"":"opacity:.85"}">
+        <span style="width:1.6em;text-align:center;color:#ffd43d;font-weight:800">${mk}</span>
+        <span style="width:1.8em;text-align:right;color:#ccc">${x.num}</span>
+        <span style="flex:1">${g1esc(x.name)}${t}</span>${od}</div>`;
+    }).join("");
+    html+=`</div>`;
+  }
+  /* Twitter向けテキスト（展開・見どころ・買い方・正直な検証数字） */
+  try{
+    const kt=kochiTweetText(c, cond, scored, stars, haveOdds);
+    const enc=encodeURIComponent(kt);
+    html+=`<div class="g1-tw" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="kochiCopyBtn" data-tw="${escapeHtml(kt)}" style="flex:1;min-width:120px;font-size:14px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #3a9ae0;background:none;color:#7ec8f0">📋 ツイート文</button>
+      <a href="https://twitter.com/intent/tweet?text=${enc}" target="_blank" rel="noopener" style="flex:1;min-width:120px;text-align:center;font-size:14px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #1a1a22;background:#111;color:#fff;text-decoration:none">𝕏 に投稿</a>
+      <button class="kochiImgBtn" style="flex:1;min-width:120px;font-size:14px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #ffd43d;background:none;color:#ffd43d">🏇 フォメ画像</button>
+      <button class="kochiCurveBtn" style="flex:1;min-width:120px;font-size:14px;font-weight:700;padding:8px;border-radius:8px;border:1px solid #51b883;background:none;color:#51b883">📈 過去成績</button>
+    </div>`;
+  }catch(_){}
+  const cardEl=(function(){ card.innerHTML=html; return card; })();
+  { const cb=cardEl.querySelector(".kochiCopyBtn"); if(cb) cb.onclick=()=>{ try{ navigator.clipboard.writeText(cb.dataset.tw); cb.textContent="✓ コピーした"; setTimeout(()=>cb.textContent="📋 ツイート文",1500);}catch(_){} };
+    const ib=cardEl.querySelector(".kochiImgBtn"); if(ib) ib.onclick=()=>{ try{ const cv=drawKochiFormaImage(c,cond,scored); if(!cv){swAlert("⭐妙味馬がいないため画像は作れません（オッズ確定後に再取得を）");return;} cv.toBlob(b=>{ const f=new File([b],"kochi_forma.png",{type:"image/png"}); if(navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f]}); } else { const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="kochi_forma.png"; a.click(); } }); }catch(e){ swAlert("画像生成エラー: "+e.message); } }; }
+    { const cb2=cardEl.querySelector(".kochiCurveBtn"); if(cb2) cb2.onclick=()=>{ try{ const cv=drawKochiCurveImage(); cv.toBlob(b=>{ const f=new File([b],"kochi_curve.png",{type:"image/png"}); if(navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f]}); } else { const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="kochi_curve.png"; a.click(); } }); }catch(e){ swAlert("グラフ生成エラー: "+e.message); } }; }
+  return cardEl;
+}
+
+function shutubaURL(rid){
+  const base = MODE==="nar" ? "https://nar.netkeiba.com/race/shutuba_past.html" : "https://race.netkeiba.com/race/shutuba_past.html";
+  return pxy(base+"?race_id="+rid);
+}
+
+function styleType(e){
+  const ps=(e&&e.past)||[]; let fb=0,cb=0,n=0;
+  ps.forEach((pp,idx)=>{ if(pp.style){ n++; const w=(idx===0?1:0.7);
+    if(pp.style==="逃"||pp.style==="先") fb+=w; else if(pp.style==="差"||pp.style==="追") cb+=w; } });
+  if(!n) return null;
+  if(fb/n>=0.45) return "front";
+  if(cb/n>=0.45) return "closer";
+  return "mid";
+}
+
+function swAlert(message){ return _swModal(message, false); }
+
+function trackOf(rid){ const c=rid.slice(4,6); const map=MODE==="nar"?NAR_TRACK:JRA_TRACK; return map[c]||(MODE==="nar"?"NAR:"+c:"場"+c); }
+
+function turnOfRid(rid){ const c=String(rid).slice(4,6); if(TURN_BY_TRACK[c]) return TURN_BY_TRACK[c];
+  // 地方: 大半が右回り（門別・大井等は右、川崎・船橋等も右）。例外少数だが近似で右。
+  return "右"; }
+
+function unb64url(s){
+  let b=String(s).replace(/-/g,"+").replace(/_/g,"/");
+  while(b.length%4) b+="=";
+  const bin=atob(b); const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function userProxyPrefix(){ try{ const p=(localStorage.getItem("sw_proxy_prefix")||"").trim(); return /workers\.dev|\/raw\?url=/.test(p)?p:""; }catch(e){ return ""; } }
+
+function wrapProxy(prefix, inner){
+  // 自前proxy.php は ?url=https://... の形だと お名前.comのWAFがSSRF攻撃と誤判定してブロックするため、
+  // URLをBase64URLにして ?u= で渡す（proxy.php側は u= / url= の両対応）
+  if(prefix.indexOf("proxy.php")>=0) return prefix.replace(/\?url=$/,"").replace(/\?u=$/,"")+"?u="+b64url(inner);
+  return prefix.endsWith("=") ? prefix+encodeURIComponent(inner) : prefix+inner;
+}
+
+let MODE="nar";
+async function findKochiFinals(date){
+  const url="https://nar.netkeiba.com/top/race_list_sub.html?kaisai_date="+date;
+  const html=await fetchDecoded(pxy(url));
+  const ids=[...new Set((html.match(/race_id=(\d{12})/g)||[]).map(s=>s.replace("race_id=","")))]
+    .filter(rid=>rid.slice(4,6)==="54");
+  if(!ids.length) return {finals:[],reason:"no_kochi"};
+  const finals=[];
+  for(const rid of ids.sort().reverse()){
+    try{
+      const sh=await fetchDecoded(shutubaURL(rid));
+      const m=sh.match(/RaceName"?[^>]*>\s*([^<\n]{1,40}?)\s*</);
+      const nm=m?decodeHtmlEntities(m[1].trim()):"";
+      if(/ファイナル/.test(nm)){ finals.push({race_id:rid,name:nm,trackName:"高知"}); break; }
+    }catch(_){}
+  }
+  return {finals, reason: finals.length?"ok":"no_final"};
+}
+async function runKochiStandalone(){
+  const host=document.getElementById("kochiOut");
+  const date=(document.getElementById("kochiDate").value||"").replace(/-/g,"")||jstTodayStr();
+  host.innerHTML='<div class="g1-loading">🐴 '+date.slice(4,6)+'/'+date.slice(6,8)+' 高知のファイナルレースを探しています…</div>';
+  let res;
+  try{ res=await findKochiFinals(date); }
+  catch(e){ host.innerHTML='<div class="g1-loading">⚠ 通信エラー: '+escapeHtml(e.message)+'<br>時間を置いて再試行してください。</div>'; return; }
+  if(res.reason==="no_kochi"){ host.innerHTML='<div class="g1-loading">この日は高知競馬の開催がありません。（日付を確認してください）</div>'; return; }
+  if(res.reason==="no_final"){ host.innerHTML='<div class="g1-loading">本日の高知にファイナルレースが見つかりませんでした。<br>ファイナルは主に最終レース。時間をおいて再取得してください。</div>'; return; }
+  host.innerHTML='<div class="g1-loading">⭐ ファイナル発見: '+escapeHtml(res.finals[0].name)+'。解析中…</div>';
+  const blocks=[];
+  for(const c of res.finals){ try{
+    const html=await fetchDecoded(shutubaURL(c.race_id)); const ps=parseShutuba(html); const ents=ps.entries||{}; const cond=ps.cond||{};
+    const nums=Object.keys(ents); if(nums.length<5) continue;
+    let odds=null; try{ odds=await fetchWinOdds(c.race_id); }catch(_){}
+    const scored=nums.map(n=>{ const r=kochiSpecialScore(ents[n]); const o=(odds&&odds[n])?odds[n]:null; return {num:String(n), name:(ents[n]&&ents[n].name)||"", sp:r.s, jk:r.jk, wk:r.wk, sr:r.sr, st:r.st, e:ents[n], odds:o?o.odds:null, pop:o?o.pop:null}; });
+    const mx=Math.max(...scored.map(x=>x.sp)); let zz=0; scored.forEach(x=>zz+=Math.exp((x.sp-mx)/0.5)); scored.forEach(x=>x.spp=Math.exp((x.sp-mx)/0.5)/zz);
+    const haveOdds=scored.some(x=>x.odds>0);
+    if(haveOdds){ let z=0; scored.forEach(x=>{ if(x.odds>0) z+=1/x.odds; }); scored.forEach(x=>{ x.mp=(x.odds>0&&z>0)?(1/x.odds)/z:0; x.blend=x.spp+2*x.mp;
+        if(x.pop===1) x.blend*=0.72; else if(x.pop>=4&&x.pop<=5) x.blend*=1.18; else if(x.pop>=6&&x.pop<=7) x.blend*=1.10;
+        x.starFinal=(x.pop>=4&&x.pop<=8&&x.st==="front"); }); scored.sort((a,b)=>b.blend-a.blend); }
+    else { scored.forEach(x=>{x.blend=x.spp;}); scored.sort((a,b)=>b.sp-a.sp); }
+    /* ★印は本体AI(LTR)に統一する★（2026-08-02）
+       これまでこのページは独自スコア(kochiSpecialScore＋人気補正)で並べており、
+       同じレースなのに tweet.html＝Twitterに出す印と ○▲△ が総入れ替えになっていた
+       （利用者から見て「どっちが本当の予想か」が破綻。しかも人気補正＝オッズ依存で
+        「予想はオッズ前に出す」の建前とも矛盾していた）。
+       ★採点関数をコピーしない★ このページは手書きコピー方式で過去に写し忘れで
+       4回壊れた(v357/359/360/364)。だから計算し直さず、本体が保存した予想
+       （＝実際にツイートした印そのもの）を単一の正として読む。 */
+    let markSrc="local";
+    try{
+      const pr=await fetch(`predictions.php?action=list&date=${date}&mode=nar`,{headers:{Accept:"application/json"}}).then(r=>r.ok?r.json():null).catch(()=>null);
+      const rec=((pr&&pr.records)||[]).find(r=>String(r.tc)==="54");
+      const saved=rec&&(rec.races||[]).find(r=>String(r.race_id)===String(c.race_id));
+      const order=saved&&(saved.marks||[]).map(m=>String(m.num));
+      if(order&&order.length>=3){
+        const rank=new Map(order.map((n,i)=>[n,i]));
+        scored.sort((a,b)=>{
+          const ra=rank.has(a.num)?rank.get(a.num):99, rb=rank.has(b.num)?rank.get(b.num):99;
+          return ra!==rb ? ra-rb : (b.blend||b.sp)-(a.blend||a.sp);   // 印外は従来順で後ろに
+        });
+        markSrc="ltr";
+      }
+    }catch(_){}
+    blocks.push(renderKochiBlock(c,cond,scored,haveOdds,markSrc));
+  }catch(e){} }
+  host.innerHTML="";
+  if(!blocks.length){ host.innerHTML='<div class="g1-loading">解析に失敗。オッズ確定前だと⭐が出ないことがあります。締切15分前に再取得を。</div>'; return; }
+  blocks.forEach(b=>host.appendChild(b));
+}
+
+(function(){
+  const d=new Date(Date.now()+9*3600*1000);
+  document.getElementById("kochiDate").value=d.toISOString().slice(0,10);
+  document.getElementById("kochiGetBtn").addEventListener("click",runKochiStandalone);
+  runKochiStandalone();
+})();
+</script>
+</body></html>

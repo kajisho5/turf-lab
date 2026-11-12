@@ -1,0 +1,31 @@
+name = "kajikeiba-autopost"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ★Browser Rendering（クラウドでヘッドレスChromeを動かし tweet.html の画像を生成）★
+#   Workers 有料プラン + ダッシュボードで Browser Rendering 有効化が必要。
+browser = { binding = "BROWSER" }
+
+# ★cron（時刻はUTC）★ 8:00 JST=前日23:00 UTC / 21:30 JST=12:30 UTC
+[triggers]
+crons = ["0 23 * * *", "30 12 * * *"]
+
+[vars]
+# 生成元（legacyのtweet.html）。?auto=morning|evening&mode=nar|jra を付けて開く。
+TWEET_URL = "https://seventh-well.com/odds/tweet.html"
+# "1"=ドライラン（Xへ投稿しない・内容の確認のみ）。本番投稿にするときだけ "0"。
+DRYRUN = "0"
+
+# --- secrets（wrangler secret put で登録。ここには書かない・私は値を見ない）---
+#   X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET  … Xの4鍵(OAuth1.0a)
+#   TRIGGER_KEY … 手動テスト用URLの合言葉（?key=... 一致時だけ実行）
+
+# 結果（投稿の成否・Xの返答）をダッシュボードのログに残す
+[observability]
+enabled = true
+
+# 結果メール（Cloudflare Email Service）。宛先はこの1件に固定
+[[send_email]]
+name = "MAIL"
+destination_address = "kajiyama@seventh-well.com"

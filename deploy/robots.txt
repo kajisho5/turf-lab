@@ -1,0 +1,74 @@
+# ── 通常の検索エンジンは歓迎する ──────────────
+# 検索流入がこのサイトの主要な集客経路なので、Google等は止めない。
+User-agent: *
+Allow: /
+
+# 索引ファイルそのものは検索結果に出す意味がない（人が読むものではない）
+Disallow: /db/horses_search.json
+Disallow: /db/h/
+Disallow: /db/j/
+Disallow: /data/horses.json
+Disallow: /cache/
+
+Sitemap: https://kajikeiba.com/sitemap.xml
+
+# ── AI学習・AI検索のクローラーは拒否 ────────────
+# ★これは「お願い」であって強制力は無い★
+#   行儀の良いクローラーは従うが、従わないものは止められない。
+#   ブラウザで見える情報は必ず取得できる、というのが技術的な事実。
+#   本当に守るべきもの（人格の定義・検証手順・集計方法）は
+#   そもそも公開していない、というのが実質的な防御になっている。
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: omgili
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /

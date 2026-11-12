@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="lab-manifest.json">
+<meta name="theme-color" content="#0b0b11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TURF LAB">
+<link rel="apple-touch-icon" href="lab-apple-180.png">
+<title>SW TURF LAB ／ No-Odds AI予測</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b11; --card:#15151f; --card2:#1b1b27; --line:#272734; --line2:#34344a;
+  --txt:#f2f2f6; --sub:#a8acbd; --muted:#71748a;
+  --pur:#5b3fb0; --pur2:#3a2a66; --purhd:#2c2150;
+  --db1:#2a2348; --db2:#211c3c; --dbline:#3a3160;
+  --pbtn1:#6a4fc0; --pbtn2:#54409a;
+  --red:#ff7171; --ora:#e8862e; --blu:#3a7ae0; --grn:#2eb858; --purp:#8a5ad8;
+  --w1:#ffffff;--w2:#1c1c1c;--w3:#e0362e;--w4:#2a6fe0;--w5:#f0cf17;--w6:#27b24c;--w7:#ef8a1f;--w8:#ee63a4;
+  --disp:"Saira Condensed","Noto Sans JP",sans-serif; --mono:"Space Mono",monospace; --body:"Noto Sans JP",sans-serif;
+}
+/* 中央(JRA)は緑系テーマ、地方(NAR)は紫系テーマで見分けやすく */
+body.m-jra{
+  --pur:#1f7a52; --pur2:#153f30; --purhd:#123528; --purp:#2ea87a;
+  --db1:#14352a; --db2:#0f2a20; --dbline:#1f5540;
+  --pbtn1:#2a9d6a; --pbtn2:#1c7a50;
+  --btn1:#25443a; --btn2:#1a352c;
+}
+body.m-nar{
+  --pur:#5b3fb0; --pur2:#3a2a66; --purhd:#2c2150; --purp:#8a5ad8;
+  --db1:#2a2348; --db2:#211c3c; --dbline:#3a3160;
+  --pbtn1:#6a4fc0; --pbtn2:#54409a;
+  --btn1:#4a3c74; --btn2:#3a2f5c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--body);font-size:16px;line-height:1.5}
+body{padding-bottom:60px}
+.wrap{max-width:760px;margin:0 auto;padding:0 12px}
+
+/* ===== top bar ===== */
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 0 10px}
+.brand{font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:.04em;white-space:nowrap}
+.modepick{margin-left:6px;background:#1b1b26;border:1px solid var(--line2);border-radius:10px;padding:7px 12px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;color:var(--sub)}
+.icons{margin-left:auto;display:flex;gap:14px;color:var(--muted);font-size:18px}
+.subttl{font-weight:800;font-size:19px;padding:2px 0 12px}
+.subttl small{color:var(--purp);font-weight:700}
+
+/* purple header zone */
+.phead{background:linear-gradient(180deg,var(--purhd),rgba(11,11,17,0));border-radius:0 0 16px 16px;padding-bottom:10px}
+.datebar{background:linear-gradient(180deg,var(--db1),var(--db2));cursor:pointer;border:1px solid var(--dbline);border-radius:13px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:16px;margin-bottom:10px;position:relative}
+.datebar #datepick{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;margin:0}
+.datebar .chev{color:var(--sub);font-size:14px}
+.vtabs{display:flex;gap:7px;margin-bottom:10px}
+.vtab{flex:1;text-align:center;background:linear-gradient(180deg,var(--btn1,#4a3c74),var(--btn2,#3a2f5c));border-radius:11px 11px 7px 7px;padding:11px 0;font-weight:700;font-size:16px;cursor:pointer;color:#e8e2f5;transition:.12s}
+.vtab.on{background:#13131c;color:#fff;box-shadow:inset 0 0 0 1px var(--dbline)}
+.vtab:active{transform:scale(.97)}
+.views{display:flex;gap:8px}
+.views button{flex:1;background:linear-gradient(180deg,var(--btn1,#4a3c74),var(--btn2,#3a2f5c));border:0;color:#efe9fb;font-weight:700;font-size:16px;padding:13px 0;border-radius:11px;cursor:pointer;transition:.12s}
+.views button.on{background:linear-gradient(180deg,var(--pbtn1),var(--pbtn2))}
+.views button:active{transform:scale(.98)}
+
+/* subtabs */
+.subtabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.subtabs button{background:#171720;border:1px solid var(--line2);color:var(--sub);border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.subtabs button.on{background:linear-gradient(180deg,var(--pbtn1),var(--pbtn2));color:#fff;border-color:transparent}
+
+/* ===== summary bar (結果) ===== */
+.sumbar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0;font-size:14px}
+.sumbar .ttl{font-weight:700;margin-bottom:8px}
+.sumbar .ttl b{color:var(--ora)}
+.sumgrid{display:flex;flex-wrap:wrap;gap:14px 22px}
+.sumgrid .si{font-size:14px;color:var(--muted)}
+.sumgrid .si b{display:block;font-size:17px;color:var(--txt);font-family:var(--mono);margin-top:1px}
+.sumgrid .si .pos{color:var(--grn)} .sumgrid .si .neg{color:var(--blu)} .sumgrid .si .hot{color:var(--ora)}
+.statbox{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.statbox>.sh{display:flex;align-items:center;gap:8px;padding:13px 15px;font-weight:800;cursor:pointer}
+.statbox>.sh .r{margin-left:auto;color:var(--muted);font-size:14px;font-weight:600}
+.acc3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line)}
+.acc3 .ac{background:var(--card);padding:13px 8px;text-align:center}
+.acc3 .ac .l{font-size:14px;color:var(--muted)} .acc3 .ac .v{font-family:var(--disp);font-weight:800;font-size:26px;margin-top:3px}
+.acc3 .ac small{font-size:14px;color:var(--sub)}
+.pbar{height:6px;border-radius:4px;background:var(--line2);margin-top:7px;overflow:hidden}.pbar i{display:block;height:100%;border-radius:4px}
+
+/* ===== race card (一覧/まとめ) ===== */
+.rc{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:0;margin-bottom:13px;overflow:hidden;cursor:pointer}
+.rc.battle{box-shadow:inset 0 0 0 1.5px rgba(232,134,46,.5)}
+.rc-h{display:flex;align-items:flex-start;gap:11px;padding:13px 14px 11px}
+.numbox{position:relative;background:#10101a;border-radius:9px;padding:8px 0 10px;width:54px;text-align:center;flex:0 0 auto}
+.numbox .n{font-family:var(--disp);font-weight:800;font-size:26px;line-height:.85}
+.numbox .hd{font-size:14px;color:var(--muted);font-family:var(--mono);margin-top:3px}
+.numbox .acc{position:absolute;left:6px;right:6px;bottom:0;height:3px;border-radius:2px}
+.rc-info{flex:1;min-width:0;padding-top:1px}
+.rc-info .ttl{font-weight:700;font-size:16px;line-height:1.25}
+.rc-info .meta{display:flex;align-items:center;gap:9px;margin-top:5px;font-size:14px;color:var(--sub)}
+.rc-info .meta .tm{background:#171728;border:1px solid var(--line2);border-radius:7px;padding:2px 8px;font-family:var(--mono);font-weight:700;color:#cfd3e6}
+.rc-info .meta .sf{background:#5a4326;color:#f0c089;border-radius:4px;padding:1px 6px;font-size:14px;font-weight:700}
+.rings{display:flex;gap:6px;flex:0 0 auto}
+.ring{position:relative;width:42px;height:42px;text-align:center}
+.ring svg{transform:rotate(-90deg)}
+.ring .rv{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ring .rv .n{font-family:var(--disp);font-weight:800;font-size:16px}
+.ring .rv .l{font-size:14px;color:var(--muted);margin-top:1px}
+.hot{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 11px}
+.hotb{font-size:14px;font-weight:700;padding:4px 10px;border-radius:7px;background:linear-gradient(90deg,rgba(240,180,60,.2),rgba(232,90,60,.2));border:1px solid rgba(232,90,60,.45);color:#ffcfae}
+.hotb b{color:#fff;font-family:var(--mono)}
+.bpb{font-size:14px;font-weight:800;padding:4px 10px;border-radius:7px;border:1px solid}
+.bpb b{font-family:var(--mono);font-weight:800}
+.bpb-battle{background:linear-gradient(90deg,rgba(240,140,40,.18),rgba(220,70,50,.14));border-color:rgba(232,110,50,.5);color:#ffd0ac}
+.bpb-fuku{background:linear-gradient(90deg,rgba(58,122,224,.16),transparent);border-color:rgba(58,122,224,.45);color:#a9c9ff}
+.sigwrap{border-top:1px solid var(--line);padding:6px 12px 10px}
+.sigrow{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.03)} .sigrow[data-sig="様子見"]{gap:6px} .sigrow[data-sig="様子見"] .hn{display:none} .sigrow[data-sig="様子見"] .hcell+.hcell{border-left:none;padding-left:0} .sigrow[data-sig="様子見"] .hcell{gap:4px}
+.sigrow:last-child{border-bottom:0}
+.sigchip{flex:0 0 auto;width:62px;text-align:center;white-space:nowrap;font-size:14px;font-weight:700;color:#fff;border-radius:7px;padding:5px 0}
+.sigchip.軸{background:var(--red)} .sigchip.複勝圏{background:var(--ora)} .sigchip.相手候補{background:var(--blu)} .sigchip.注意{background:#c4701e} .sigchip.様子見{background:#3a3a4a;color:var(--sub)}
+.hcell{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.hcell+.hcell{border-left:1px solid var(--line);padding-left:10px}
+.wk{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:14px}
+.hn{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fin{flex:0 0 auto;font-size:14px;color:var(--sub);font-weight:600}
+.medal{flex:0 0 auto;font-size:16px}
+
+/* ===== results podium + payout ===== */
+.rc-rings-top{display:flex;align-items:flex-start;gap:11px;padding:13px 14px 8px}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px}
+.pcol{padding:12px 8px 11px;text-align:center}
+.pcol.p1{background:linear-gradient(180deg,#3a1f24,#2a171b)} .pcol.p2{background:linear-gradient(180deg,#34291c,#241d14)} .pcol.p3{background:linear-gradient(180deg,#173036,#101f24)}
+.pcol .med{font-size:20px}
+.pcol .ph{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px}
+.pcol .pname{font-weight:700;font-size:14px;margin-top:5px;line-height:1.2}
+.pcol .pjk{font-size:14px;color:var(--sub);margin-top:2px}
+.predbadge{display:inline-block;margin-top:7px;font-size:14px;font-weight:700;color:#fff;border-radius:6px;padding:2px 9px}
+.predbadge.r1{background:var(--red)} .predbadge.r2,.predbadge.r3{background:var(--ora)}
+.paytable{width:100%;border-collapse:collapse;font-size:14px}
+.paytable td{padding:9px 14px;border-bottom:1px solid var(--line)}
+.paytable td.k{color:var(--sub);font-weight:700;width:64px} .paytable td.c{font-family:var(--mono);color:var(--txt)} .paytable td.y{text-align:right;font-family:var(--mono);font-weight:700}
+.paytable tr.sub td.k{color:transparent}
+
+/* detail */
+.dnav{display:flex;align-items:center;gap:8px;margin:6px 0 12px}
+.dnav button{background:var(--card);border:1px solid var(--line2);color:var(--sub);border-radius:9px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer}
+.dnav .t{flex:1;text-align:center;font-weight:700;font-size:16px}.dnav .t small{display:block;font-family:var(--mono);font-size:14px;color:var(--muted);margin-top:2px}
+table.det{width:auto;min-width:100%;border-collapse:collapse;font-size:14px;background:var(--bg)}.det td,.det th{white-space:nowrap}.det th:nth-child(1),.det td:nth-child(1),.det th:nth-child(3),.det td:nth-child(3),.det th:nth-child(4),.det td:nth-child(4),.det th:nth-child(5),.det td:nth-child(5),.det th:nth-child(6),.det td:nth-child(6),.det th:nth-child(9),.det td:nth-child(9){text-align:center}
+table.det th{font-family:var(--mono);font-size:14px;color:var(--muted);padding:7px 4px;border-bottom:1px solid var(--line2);text-align:right;cursor:pointer;vertical-align:middle}
+table.det th.l{text-align:left}
+table.det td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);vertical-align:middle}
+table.det td.l{text-align:left;font-family:var(--body);font-weight:600}
+.conf{font-family:var(--disp);font-weight:800;font-size:14px;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center}
+.conf.S{background:linear-gradient(135deg,#ffd86b,#f0654a);color:#2a1402}.conf.A{background:var(--blu);color:#fff}.conf.B{background:var(--grn);color:#06140b}.conf.C{background:var(--line2);color:var(--sub)}.conf.D{background:transparent;border:1px solid var(--line2);color:var(--muted)}
+
+.srcbar{display:flex;gap:8px;align-items:center;margin:10px 0 2px;font-size:14px;color:var(--muted)}
+select.flt{background:#171720;border:1px solid var(--line2);color:var(--sub);border-radius:8px;padding:6px 9px;font:inherit;font-size:14px}
+.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
+.foot{color:var(--muted);font-size:14px;font-family:var(--mono);text-align:center;padding:22px 0 8px;line-height:1.7}
+
+/* ---- light theme ---- */
+body.light{--bg:#eef0f5;--card:#ffffff;--card2:#f5f6fa;--line:#e4e6ef;--line2:#d3d6e3;--txt:#171924;--sub:#555a6e;--muted:#8b8fa3;--purhd:#d9d2f2;}
+body.light .datebar{background:linear-gradient(180deg,#e7e2f8,#ded7f3);border-color:#cfc6ee;color:#2a2350}
+body.light .numbox{background:#1a1a24}
+body.light .ring svg circle:first-child{stroke:#d7dae6}
+body.light .rc-info .meta .tm{background:#eef0f6;color:#444}
+/* ---- header icon buttons ---- */
+.ico{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:9px}
+.ico:hover{color:var(--txt)} .ico:active{transform:scale(.92)}
+/* ---- help overlay ---- */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.ov.on{display:flex}
+.ovcard{background:var(--card);border:1px solid var(--line2);border-radius:18px 18px 0 0;width:100%;max-width:760px;max-height:82vh;overflow:auto;padding:18px 18px 28px}
+.ovcard h3{margin:2px 0 14px;font-size:18px}
+.ovcard .leg{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ovcard .leg:last-of-type{border-bottom:0}
+.ovcard .lchip{flex:0 0 auto;font-size:14px;font-weight:700;color:#fff;border-radius:7px;padding:4px 11px}
+.ovcard .ttl2{font-weight:800;font-size:14px;color:var(--sub);margin:16px 0 4px}
+.ovclose{margin-top:18px;width:100%;background:linear-gradient(180deg,var(--pbtn1),var(--pbtn2));border:0;color:#fff;font-weight:700;padding:13px;border-radius:12px;font-size:16px;cursor:pointer}
+
+.rsum{font-size:14px;color:var(--muted);margin-top:5px}
+.rsum b{color:var(--sub);font-weight:700}
+.mrows{border-top:1px solid var(--line);padding:5px 12px 9px}
+.mrow{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.03);font-size:14px}
+.mrow:last-child{border-bottom:0}
+.mrk{color:var(--muted);font-family:var(--mono);font-size:14px;flex:0 0 auto}
+.mrow .hn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xy{font-family:var(--mono);font-size:14px;color:var(--sub);flex:0 0 auto}
+.mres{flex:0 0 auto;display:flex;align-items:center;gap:5px}
+.paymini{font-family:var(--mono);font-size:14px}
+.vtag{font-size:14px;font-weight:700;padding:1px 5px;border-radius:4px;vertical-align:middle}
+.vtag.mi{color:#4ad98a;border:1px solid rgba(74,217,138,.55)}.vtag.ov{color:#cc9988;border:1px solid rgba(204,153,136,.55)}
+body.light .mrow{border-bottom-color:rgba(0,0,0,.05)}
+
+table.stt{width:100%;border-collapse:collapse;font-size:14px;margin-top:2px}
+table.stt th{font-family:var(--mono);font-size:14px;color:var(--muted);padding:7px 6px;border-bottom:1px solid var(--line2);text-align:right;font-weight:600}
+table.stt th.l{text-align:left}
+table.stt td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);font-weight:700}
+table.stt td.l{text-align:left;font-family:var(--body);font-weight:600}
+
+body.light .hotb{background:linear-gradient(90deg,rgba(240,140,40,.14),rgba(220,70,50,.12));border-color:rgba(200,80,50,.4);color:#9a4a1e}
+body.light .hotb b{color:#c0381e}
+body.light .sf{background:#e8d5b8;color:#7a5a2a}
+body.light .conf.C{background:#dfe2ec;color:#556}
+body.light .vtag.mi{color:#1d8a4a;border:1px solid rgba(29,138,74,.5)}
+body.light .vtag.ov{color:#a55;border:1px solid rgba(170,85,85,.5)}
+body.light .sigchip.様子見{background:#dfe2ec;color:#667}
+
+.buybox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+.buybox .bh{font-weight:800;font-size:14px;margin-bottom:8px}
+.brow{display:flex;align-items:baseline;gap:9px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.brow:last-of-type{border-bottom:0}
+.brow.hot{background:linear-gradient(90deg,rgba(240,140,40,.08),transparent);margin:0 -6px;padding:7px 6px;border-radius:8px;border-bottom:0}
+.labfocus{display:flex;align-items:baseline;gap:8px;margin:0 14px 11px;padding:8px 10px;background:linear-gradient(90deg,rgba(58,122,224,.10),transparent);border-left:3px solid var(--blu);border-radius:0 7px 7px 0}
+.labfocus .lf-ic{font-size:14px;font-weight:800;color:var(--blu);flex:0 0 auto;letter-spacing:.04em}
+.labfocus .lf-tx{font-size:14px;color:var(--txt);line-height:1.5}
+body.light .labfocus{background:linear-gradient(90deg,rgba(58,122,224,.08),transparent)}
+.bk{flex:0 0 auto;font-weight:700;color:var(--purp);min-width:76px}
+.bt{flex:1;min-width:130px;font-family:var(--mono);font-weight:700}
+.bn{flex:0 0 auto;color:var(--muted);font-size:14px}
+.bnote{color:var(--muted);font-size:14px;margin-top:8px;line-height:1.6}
+
+table.det td.umaban{font-family:var(--mono);font-weight:800;font-size:16px;color:var(--txt)}
+table.det td.inmk{font-weight:800;color:var(--sub);text-align:center}
+.dwk{width:24px!important;height:24px!important;font-size:14px!important}
+.mei{font-weight:700;font-size:14px;white-space:nowrap}
+.jk2{font-size:14px;color:var(--muted);margin-top:1px;white-space:nowrap}
+td.oc{white-space:nowrap;text-align:right;line-height:1.1}
+td.oc .lvl{display:block;font-size:14px;color:#3a9ae0;font-weight:800;letter-spacing:.04em}
+td.oc .ov2{color:#cfe3f5;font-family:var(--mono);font-size:14px}
+td.oc .pp{font-size:14px;color:var(--muted);margin-left:3px}
+td.oc .vtag{display:inline-block;margin-top:2px}
+tr.fr1{background:rgba(216,66,58,.12)}
+tr.fr2{background:rgba(120,108,72,.16)}
+tr.fr3{background:rgba(40,140,160,.14)}
+body.light td.oc .ov2{color:#1d6fa5}
+
+.pst{font-size:14px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:2px}
+.pst.soon{background:#1e3a2a;color:#5cd98a}.pst.live{background:#3a2a14;color:#f0a83c}.pst.run{background:#3a1f1f;color:#ee8a8a}.pst.done{background:#2a2a38;color:#9aa0b2}
+.star{color:#ffd34d;font-size:14px}.kyaku{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:9px;font-size:14px;font-weight:700;background:#2a3550;color:#8fb6ff;vertical-align:middle}.kyaku2{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;font-size:14px;font-weight:700;background:#2a3550;color:#8fb6ff}.scrrow{margin-top:9px;padding-top:8px;border-top:1px dashed #2a2e36;font-size:14px;color:#7a818d;display:flex;flex-wrap:wrap;gap:9px;align-items:center}.scrh{display:inline-flex;align-items:center;gap:4px;opacity:.62;text-decoration:line-through}.scrh .wk{text-decoration:none}.scrn{background:#3a3f4a;color:#cfd5df;border-radius:8px;padding:0 6px;font-weight:700}.star2{color:#ff6b6b;font-size:14px}
+.loc2{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:8px;font-size:14px;font-weight:700;background:#c9a227;color:#0a0a0a;font-family:var(--mono);vertical-align:middle;white-space:nowrap}
+
+*:focus-visible{outline:2px solid #8fb6ff;outline-offset:2px;border-radius:4px}
+</style>
+</head>
+<body class="m-nar">
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">SW TURF LAB</div>
+    <div class="modepick" id="modepick">▦ <span id="modelabel">地方</span> ▾</div>
+    <div class="icons"><button class="ico" id="helpbtn" aria-label="ヘルプ"></button><button class="ico" id="themebtn" aria-label="テーマ"></button></div>
+  </div>
+  <div class="subttl" id="subttl">地方競馬 <small>No-Odds AI予測</small></div>
+</div>
+
+<div class="phead"><div class="wrap">
+  <div class="datebar" id="datebar"><span id="datelabel">2026年6月18日 (木)</span><span class="chev">📅</span><input type="date" id="datepick" aria-label="日付を選択"></div>
+  <div class="vtabs" id="vtabs"></div>
+  <div class="views" id="views">
+    <button data-v="list" class="on">レース一覧</button>
+    <button data-v="summary">まとめ</button>
+    <button data-v="results">結果</button>
+  </div>
+</div></div>
+
+<div class="wrap"><div class="srcbar" id="srcbar"></div></div>
+<main class="wrap" id="app"></main>
+<div class="wrap"><div style="display:flex;gap:14px;justify-content:center;padding:14px 0 2px;flex-wrap:wrap"><a href="#" id="navTweet" style="color:var(--purp);font-size:14px;text-decoration:none;font-weight:700">▶ 推奨馬まとめ</a><a href="#" id="navKaiko" style="color:var(--purp);font-size:14px;text-decoration:none;font-weight:700">▶ 回顧</a><a href="#" id="navIndex" style="color:var(--purp);font-size:14px;text-decoration:none;font-weight:700">▶ ODDS ANOMALY</a></div><div class="foot">SW TURF LAB ・ No-Odds AI予測（近走実績×騎手×血統×厩舎×クラス 自動算出・オッズ非依存）<br>※デモ／実データ表示。激熱バッジ＝回収率100%超の検証済み戦略。馬券は20歳から。</div></div>
+
+<script>
+"use strict";
+/* バックエンド(predictions.php / kaiko.php / proxy.php)の場所。
+   これらPHPが /odds/ にあるなら "/odds/" のまま。別フォルダに置くならここだけ変更。
+   lab.html自体は /lab/ でも /odds/ でもどこでも置ける（同一ドメインなら）。 */
+const ODDS="/odds/";
+const $=s=>document.querySelector(s);
+const SVG_INFO='<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-5M12 8h.01"/></svg>';
+const SVG_SUN='<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>';
+const SVG_MOON='<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.6 6.6 0 0 0 21 12.8z"/></svg>';
+function applyTheme(t){document.body.classList.toggle("light",t==="light");try{localStorage.setItem("labTheme",t);}catch(_){}const b=document.getElementById("themebtn");if(b)b.innerHTML=(t==="light")?SVG_MOON:SVG_SUN;}
+function initChrome(){const hb=document.getElementById("helpbtn");if(hb)hb.innerHTML=SVG_INFO;let t="dark";try{t=localStorage.getItem("labTheme")||"dark";}catch(_){}applyTheme(t);}
+const WK=["#ffffff","#1c1c1c","#e0362e","#2a6fe0","#f0cf17","#27b24c","#ef8a1f","#ee63a4"]; // index by 枠1-8 ->0..7
+const WKT=["#000","#fff","#fff","#fff","#000","#fff","#000","#000"];
+function wkColor(w){const i=(+w||1)-1;return {bg:WK[i]||"#555",fg:WKT[i]||"#fff"};}
+/* 馬番+頭数 → 枠番（標準割当: 余りは外枠から1頭ずつ） */
+function kyCol(k){return {"逃げ":"#ff5a5a","先行":"#ff9f43","差し":"#3ab0ff","追い込み":"#a06bff","自在":"#34d399"}[k]||"#8fb6ff";}
+function starMk(h){if(!h)return "";return (h.star?' <span class="star">⭐︎</span>':"")+((h.bl&&h._blFirst===true)?' <span class="star2">★</span>':"");}
+function wakuFromNum(num,field){num=+num;field=+field||num;if(!isFinite(num))return 1;
+ if(field<=8)return Math.min(8,Math.max(1,num));
+ const base=Math.floor(field/8),rem=field%8;let n=0;
+ for(let w=1;w<=8;w++){const cnt=base+(w>(8-rem)?1:0);n+=cnt;if(num<=n)return w;}return 8;}
+
+/* ===== DEMO (実画面に準拠) ===== */
+function hz(num,name,waku,jk,sig,conf,win,p3,abil,pred,rank){return {num,name,waku,jk:jk||"",sig,conf,win,p3,abil,pred,rank:rank||0};}
+const DEMO={
+ date:"2026年6月18日 (木)",
+ modes:{ "地方":["園田","名古屋","門別","川崎"], "中央":["中央"] },
+ venues:{
+  "門別":{ summary:{label:"予測1位ベタ買い",win:"4/12",winp:33,p3:"6/12",p3p:50,tanROI:"71.2%",tanShu:"-345円",fukROI:"58.0%",fukShu:"-504円"},
+   races:[
+    {no:1,cls:"門別温泉とねっこの湯賞C4-2",time:"14:20",sf:"ダ",dist:1200,field:12,ren:44,tan:58,state:"normal",
+     h:[hz(8,"イントルーダー",6,"高松亮","軸","A",24,62,63,1,4),hz(2,"リコーニック",2,"石川倭","複勝圏","B",16,54,55,2,2),hz(6,"トゥレアレンシス",5,"阿部龍","複勝圏","B",14,51,52,3,1)]},
+    {no:2,cls:"とみくるマルシェ賞C4-2",time:"14:50",sf:"ダ",dist:1200,field:13,ren:55,tan:50,state:"aim",
+     h:[hz(3,"パレスシャンティ",3,"落合玄","複勝圏","B",17,55,56,1,12),hz(9,"サンゼントカガヤク",6,"服部茂","複勝圏","B",15,52,53,2,1),hz(10,"マルティネーテ",7,"桑村真","相手候補","C",11,45,49,4,4),hz(13,"ジューンランド",8,"米倉知","注意","C",9,41,46,3,2)]},
+    {no:3,cls:"JRA認定アタックチャレンジ2歳未勝利",time:"15:25",sf:"ダ",dist:1200,field:9,ren:30,tan:38,state:"battle",
+     h:[hz(6,"リヴァールミナス",6,"井上幹","軸","S",40,76,72,1,2),hz(2,"ラビリンスティアラ",2,"光本一","複勝圏","B",18,56,57,2,1),hz(8,"カスケードループ",8,"角川秀","複勝圏","C",12,46,49,5,3)]},
+    {no:4,cls:"JRA認定アタックチャレンジ2歳未勝利",time:"16:00",sf:"ダ",dist:1700,field:8,ren:42,tan:48,state:"normal",
+     h:[hz(2,"ウィルアイガー",2,"服部茂","軸","B",22,58,59,1,7),hz(1,"バシュネル",1,"石川倭","複勝圏","B",16,53,55,3,3),hz(6,"シャンハイハニー",6,"阿部龍","複勝圏","C",12,46,48,5,4)]}
+   ]},
+  "中央":{ summary:{label:"予測1位ベタ買い",win:"5/12",winp:42,p3:"7/12",p3p:58,tanROI:"78.3%",tanShu:"-260円",fukROI:"61.7%",fukShu:"-460円"},
+   races:[
+    {no:1,cls:"C3三4歳以上",time:"10:40",sf:"ダ",dist:1400,field:10,ren:34,tan:58,state:"aim",
+     h:[hz(7,"メフィスト",7,"廣瀬航","軸","A",33,67,67,1,3),hz(6,"アストリット",6,"井上幹","複勝圏","B",18,56,57,2,1),hz(1,"チョウカンセイ",1,"南部楓","相手候補","B",14,49,52,3,2),hz(5,"その他A",5,"—","様子見","D",8,36,43,4,0),hz(3,"その他B",3,"—","様子見","D",6,30,40,5,0)],
+     pay:{tan:[[6,250]],fuku:[[6,100],[1,130],[7,100]],wakuren:[["1-6",950]],umaren:[["1-6",850]],wide:[["1-6",250],["6-7",150],["1-7",170]],umatan:[["6-1",1390]],fuku3:[["1-6-7",290]],tan3:[["6-1-7",2850]]}},
+    {no:2,cls:"C3二4歳以上",time:"11:10",sf:"ダ",dist:1400,field:10,ren:58,tan:27,state:"aim",
+     h:[hz(5,"ピンクブルー",5,"田野豊","軸","A",30,65,66,1,1),hz(6,"ゴールドプレミアム",6,"新庄海","複勝圏","B",17,55,56,2,2),hz(9,"メイショウセツゲツ",8,"小牧太","相手候補","B",13,48,51,3,3),hz(2,"その他C",2,"—","様子見","D",8,36,43,4,0),hz(4,"その他D",4,"—","様子見","D",6,30,40,5,0)],
+     pay:{tan:[[5,130]],fuku:[[5,100],[6,120],[9,130]],wakuren:[["5-6",330]],umaren:[["5-6",270]],wide:[["5-6",130],["5-9",180],["6-9",210]],umatan:[["5-6",520]],fuku3:[["5-6-9",640]],tan3:[["5-6-9",2240]]}}
+   ]}
+ }
+};
+["園田","名古屋","川崎"].forEach(v=>{ DEMO.venues[v]={summary:DEMO.venues["門別"].summary, races:DEMO.venues["門別"].races.map(r=>({...r,cls:v+" "+r.cls.slice(0,8)})) }; });
+
+/* ===== state ===== */
+let MODE="地方", VENUE="門別", VIEW="list", SUMTAB="sig", STAT="acc", DET=0, sortKey="pred", sortAsc=true;
+let SRC="demo", DATA=DEMO, DAYS=[], CURDAY="", KAIKO=[];
+let RACES=[], SUMMARY=null;
+let RES_STAT="", RES_DONE=false, FETCHING=false, IS_TODAY=false;
+
+/* ===== helpers ===== */
+function ringSVG(v,label,col){const r=16,c=2*Math.PI*r,off=c*(1-Math.min(100,v)/100);
+ return `<div class="ring"><svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="${r}" fill="none" stroke="#2a2a38" stroke-width="4"/><circle cx="21" cy="21" r="${r}" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><div class="rv"><span class="n" style="color:${col}">${v}</span><span class="l">${label}</span></div></div>`;}
+function postStatus(r){if(!IS_TODAY||!r.time||r.time==="--:--")return "";if((r.h||[]).some(h=>h.rank))return '<span class="pst done">確定</span>';const p=(""+r.time).split(":");if(p.length<2)return "";const now=new Date();const post=new Date(now);post.setHours(+p[0],+p[1],0,0);const d=Math.round((post-now)/60000);if(d>90)return "";if(d>1)return '<span class="pst soon">あと'+d+'分</span>';if(d>=-2)return '<span class="pst live">締切間近</span>';if(d>=-30)return '<span class="pst run">発走</span>';return "";}
+function counts(r){const c={軸:0,複勝圏:0,相手候補:0};(r.h||[]).forEach(h=>{if(c[h.sig]!=null)c[h.sig]++;});return c;}
+function medalOf(rank){return rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":"";}
+function confBand(v){return v==null?null:v>=75?"S":v>=60?"A":v>=45?"B":v>=30?"C":"D";}
+
+/* ===== 激熱 engine (検証済み戦略) ===== */
+function computeHot(r){const h=r.h||[];if(h.length<3)return [];const n=r.field||h.length,t=((r._chaos!=null)?r._chaos:(100-(r.tan||50))),o=h[0];
+ const cnt=s=>h.filter(x=>x.sig===s).length;const hasAite=cnt("相手候補")>0;const SA=(o.conf==="S"||o.conf==="A");
+ const cReal=(r._chaosReal!==false); /* 推定荒れでは荒れ系激熱を出さない */
+ const ab=h.slice().sort((a,b)=>b.abil-a.abil).slice(0,3).map(x=>x.num);const out=[];
+ if(cReal&&t>=60&&SA&&h[2])out.push({t:"ワイド",l:"単荒れ1位S/A×3位",roi:190});
+ if(cReal&&t>=60&&SA&&h[2]&&(ab.indexOf(h[2].num)>=0||h[2].abil>=60))out.push({t:"ワイド",l:"単荒れ×能力",roi:197});
+ if(cReal&&t>=60&&hasAite)out.push({t:"馬連",l:"単荒れ1位×相手",roi:161});
+ if(n>=10&&o.sig==="軸"&&cnt("複勝圏")>=2)out.push({t:"三連複",l:"10頭+軸×複2",roi:218});
+ if(o.sig==="複勝圏")out.push({t:"単勝",l:"1位が複勝圏",roi:133});
+ if(n>=14&&(o.conf==="C"||o.sig==="複勝圏")&&hasAite)out.push({t:"単勝",l:"多頭数 妙味",roi:202});
+ const seen={};return out.filter(x=>seen[x.l]?0:(seen[x.l]=1)).slice(0,3);}
+
+/* 買い方推奨（lab版）。tweet側 betPlan と同じ実測ベースの判定を、保存済み予想データ(r.h)で再現。
+   ◎○の能力差(gap)で信頼度を段階化。回収率は地方946R/中央895Rの実測値。 */
+function labBetPlan(r){
+  const h=r.h||[]; if(h.length<2) return null;
+  const byAbil=h.slice().sort((a,b)=>(b.abil||0)-(a.abil||0));
+  const o=byAbil[0], p=byAbil[1];
+  const gap=(o&&p)?(o.abil-p.abil):null;
+  if(gap==null) return null;
+  const field=r.field||h.length;
+  const mode=r._mode||"nar";
+  // ◎が逃げ×前少（地方のみ、楽逃げ）
+  let frontEdge=false;
+  if(mode==="nar" && o.kyaku==="逃げ"){
+    let nige=0; h.forEach(x=>{ if(x.kyaku==="逃げ"||x.kyaku==="先行")nige++; });
+    if(nige<=3) frontEdge=true;
+  }
+  if(field>=14) return {tier:"見送り",cls:"pass",roi:null};
+  if(frontEdge && gap>=4) return {tier:"勝負",cls:"battle",roi:(mode==="nar"?98:null)};
+  if(gap>=8) return {tier:"勝負",cls:"battle",roi:(mode==="nar"?92:107)};
+  if(gap>=4) return {tier:"複勝",cls:"fuku",roi:(mode==="nar"?85:88)};
+  return {tier:"様子見",cls:"pass",roi:null};
+}
+/* ===== 展開アニメ(lab版): スタート後→3角→4角→ゴール(AI予測順)。
+   tweet.html v4.3.37 のコース楕円版と同ロジック（場ごとの回り方向・直線長を反映、
+   実況テロップ・枠色・AI予測トップ3パネル付き）。
+   位置=近走の実測通過順平均(cp)、無ければ実測先行力(ffv)から。ゴール=予測順位の可視化。 ===== */
+function labFormAnime(){
+  const r=window.__labAnimR; if(!r) return;
+  const hs0=(r.h||[]).map(function(x){
+    const fa=(x.ffv!=null)?Math.min(0.92,Math.max(0.08,0.5-x.ffv/10)):null;
+    const cp=x.cp||{};
+    const st=(cp.st!=null?cp.st:fa), c3=(cp.c3!=null?cp.c3:fa), c4=(cp.c4!=null?cp.c4:fa);
+    if(st==null&&c4==null) return null;
+    return {num:x.num, nm:String(x.name||"").slice(0,8), waku:x.waku,
+            mk:(x.sig==="軸"?"◎":x.sig==="複勝圏"?"○":""), st:st, c3:c3, c4:c4, goal:(x.pred||1)-1};
+  }).filter(Boolean);
+  if(hs0.length<4){ alert("隊列データが不足しています（軽量保存の予想はアニメ不可）"); return; }
+  const D={tk:(typeof VENUE!=="undefined"?VENUE:""), dist:+r.dist||1400, sf:r.sf||"ダ",
+           name:((typeof VENUE!=="undefined"?VENUE:"")+r.no+"R "+(r.cls||"")).trim(), horses:hs0};
+  const W=640,H=360,DUR=9000,HOLD=1200;
+  const old=document.getElementById("formAnimOv"); if(old) old.remove();
+  const ov=document.createElement("div"); ov.id="formAnimOv";
+  ov.style.cssText="position:fixed;inset:0;z-index:9999;background:rgba(5,5,10,0.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px";
+  ov.innerHTML=`<canvas id="faCv" width="${W}" height="${H}" style="max-width:100%;border-radius:10px;background:#101018"></canvas>
+    <div style="display:flex;gap:10px">
+      <button id="faRec" style="font-size:14px;font-weight:700;padding:8px 14px;border-radius:8px;border:1px solid #7fd1ae;background:none;color:#7fd1ae">⏺ 動画で保存</button>
+      <button id="faClose" style="font-size:14px;font-weight:700;padding:8px 14px;border-radius:8px;border:1px solid #8b93a7;background:none;color:#c7cbd6">閉じる</button>
+    </div>
+    <div style="color:#8b93a7;font-size:12px;max-width:${W}px;text-align:center">コースは簡略図。位置＝近走の実測通過順の平均／ゴール＝AI予測順（展開シミュではありません）</div>`;
+  document.body.appendChild(ov);
+  const cv=document.getElementById("faCv"), cx=cv.getContext("2d");
+  const COURSE_GEO={
+    "門別":{d:"R",st:330},"盛岡":{d:"L",st:300},"水沢":{d:"R",st:245},
+    "浦和":{d:"L",st:220},"船橋":{d:"L",st:308},"大井":{d:"R",st:386},"川崎":{d:"L",st:300},
+    "金沢":{d:"R",st:194},"笠松":{d:"R",st:201},"名古屋":{d:"R",st:240},
+    "園田":{d:"R",st:213},"姫路":{d:"R",st:230},"高知":{d:"R",st:200},"佐賀":{d:"R",st:200},
+    "東京":{d:"L",st:525},"中山":{d:"R",st:310},"京都":{d:"R",st:404},"阪神":{d:"R",st:474},
+    "中京":{d:"L",st:412},"新潟":{d:"L",st:659},"福島":{d:"R",st:292},"小倉":{d:"R",st:293},
+    "札幌":{d:"R",st:266},"函館":{d:"R",st:262}
+  };
+  const geo=COURSE_GEO[D.tk]||{d:"R",st:220};
+  const LSlen=Math.max(300,Math.min(430, 340+(geo.st-200)*0.5));
+  const X0=(W-LSlen)/2, X1=X0+LSlen, YT=100, YB=290, R=(YB-YT)/2, CY=(YT+YB)/2;
+  const LS=X1-X0, LC=Math.PI*R, PERIM=2*LS+2*LC;
+  function Praw(a){
+    let d=((a%1)+1)%1*PERIM;
+    if(d<LC){ const t=d/LC, th=Math.PI/2 - t*Math.PI;
+      return {x:X1+R*Math.cos(th), y:CY+R*Math.sin(th), ang:th-Math.PI/2}; }
+    d-=LC;
+    if(d<LS){ return {x:X1-d, y:YT, ang:Math.PI}; }
+    d-=LS;
+    if(d<LC){ const t=d/LC, th=-Math.PI/2 - t*Math.PI;
+      return {x:X0+R*Math.cos(th), y:CY+R*Math.sin(th), ang:th-Math.PI/2}; }
+    d-=LC;
+    return {x:X0+d, y:YB, ang:0};
+  }
+  function P(a){ const q=Praw(a); if(geo.d==="R"){ return {x:W-q.x, y:q.y, ang:Math.PI-(q.ang||0)}; } return q; }
+  const dist=D.dist||1400;
+  const total = dist<=1000?0.45 : dist<=1300?0.60 : dist<=1600?0.80 : dist<=1900?1.00 : 1.15;
+  function aOf(p){ return ((1 - (1-p)*total) % 1 + 1) % 1; }
+  const hs=D.horses.slice().sort((a,b)=>((a.st!=null?a.st:0.5)-(b.st!=null?b.st:0.5)));
+  const n=hs.length;
+  hs.forEach((h,i)=>{ h.lane=i; h.goalX=h.goal/Math.max(1,D.horses.length-1); });
+  const key=h=>{ const st=h.st!=null?h.st:0.5, c3=h.c3!=null?h.c3:st, c4=h.c4!=null?h.c4:c3; return [st,c3,c4,h.goalX]; };
+  const seg=[[0,0.33],[0.33,0.62],[0.62,0.90],[0.90,1.0]];
+  const PH=["スタート後","3コーナー","4コーナー","ゴール（AI予測順）"];
+  const mkCol=mk=>mk==="◎"?"#ff7171":mk==="○"?"#ffc700":mk==="▲"?"#57b8ff":(mk?"#7fd1ae":"#8b93a7");
+  const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  function gapAt(h,pr){ const k=key(h);
+    for(let si=0;si<seg.length;si++){ const [a,b]=seg[si];
+      if(pr<=b||si===seg.length-1){ const lt=Math.min(1,Math.max(0,(pr-a)/((b-a)||1)));
+        return k[si]+(k[Math.min(3,si+1)]-k[si])*ease(lt); } }
+    return k[3]; }
+  const SPREAD=0.13;
+  const WAKU={1:["#f5f5f5","#111"],2:["#222228","#fff"],3:["#ff7171","#fff"],4:["#3a6fd8","#fff"],5:["#e8d24a","#111"],6:["#3ea55b","#fff"],7:["#e8862e","#fff"],8:["#e884b0","#111"]};
+  let t0=performance.now(), stopA=false;
+  const _byStart=hs.slice().sort((a,b)=>(a.st!=null?a.st:0.5)-(b.st!=null?b.st:0.5));
+  const _by4=hs.slice().sort((a,b)=>(a.c4!=null?a.c4:0.5)-(b.c4!=null?b.c4:0.5));
+  const _byGoal=hs.slice().sort((a,b)=>a.goal-b.goal);
+  const _ax=hs.find(z=>z.mk==="◎");
+  const _pos=(arr,h)=>arr.indexOf(h)+1;
+  const TELOP=[
+    `${_byStart[0]?_byStart[0].nm:""}が先手を主張`+(_ax?`、◎${_ax.nm}は${_pos(_byStart,_ax)}番手`:""),
+    _ax?`3コーナー、◎${_ax.nm}は${_pos(_by4,_ax)}番手で進出`:`3コーナー、隊列は変わらず`,
+    _ax?`4コーナー、◎${_ax.nm}が${_pos(_by4,_ax)<=3?"好位で直線へ！":"外から直線へ"}`:"4コーナーを回って直線へ",
+    `AI予測 1着${_byGoal[0]?_byGoal[0].nm:""}・2着${_byGoal[1]?_byGoal[1].nm:""}・3着${_byGoal[2]?_byGoal[2].nm:""}`
+  ];
+  function draw(now){ if(stopA) return;
+    const t=((now-t0)%(DUR+HOLD)); const pr=Math.min(1,t/DUR);
+    const prE=ease(pr);
+    cx.clearRect(0,0,W,H);
+    const sky=cx.createLinearGradient(0,0,0,H); sky.addColorStop(0,"#0d1024"); sky.addColorStop(1,"#141225");
+    cx.fillStyle=sky; cx.fillRect(0,0,W,H);
+    cx.lineCap="round";
+    cx.lineWidth=46; cx.strokeStyle="#7c5f37";
+    cx.beginPath(); for(let a=0;a<=1.001;a+=0.01){ const q=P(a); if(a===0)cx.moveTo(q.x,q.y); else cx.lineTo(q.x,q.y);} cx.closePath(); cx.stroke();
+    cx.lineWidth=40; cx.strokeStyle="#93744a";
+    cx.stroke();
+    const inf=cx.createRadialGradient(W/2,CY,20,W/2,CY,240);
+    inf.addColorStop(0,"#1c4a2b"); inf.addColorStop(1,"#12301d");
+    cx.fillStyle=inf;
+    cx.beginPath(); for(let a=0;a<=1.001;a+=0.01){ const q=P(a); const sh=0.78; const x=W/2+(q.x-W/2)*sh, y=CY+(q.y-CY)*sh; if(a===0)cx.moveTo(x,y); else cx.lineTo(x,y);} cx.closePath(); cx.fill();
+    for(const sh of [0.885,1.115]){
+      cx.beginPath(); for(let a=0;a<=1.001;a+=0.01){ const q=P(a); const x=W/2+(q.x-W/2)*sh, y=CY+(q.y-CY)*sh; if(a===0)cx.moveTo(x,y); else cx.lineTo(x,y);} cx.closePath();
+      cx.strokeStyle="#ffffff55"; cx.lineWidth=1.5; cx.stroke();
+    }
+    const g=P(0.999); cx.strokeStyle="#fff"; cx.lineWidth=3; cx.beginPath(); cx.moveTo(g.x,g.y-20); cx.lineTo(g.x,g.y+20); cx.stroke();
+    cx.fillStyle="#fff"; cx.font="bold 11px sans-serif"; cx.fillText("GOAL",g.x-14,g.y+34);
+    const stq=P(aOf(0)); cx.fillStyle="#7fd1ae"; cx.font="bold 11px sans-serif"; cx.fillText("START",stq.x-17,stq.y-16);
+    cx.fillStyle="#8b93a7"; cx.font="11px sans-serif";
+    { const q3=P((LC+LS+LC*0.25)/PERIM), q4=P((LC+LS+LC*0.75)/PERIM);
+      cx.fillText("3角", W/2+(q3.x-W/2)*1.26-9, CY+(q3.y-CY)*1.26+4);
+      cx.fillText("4角", W/2+(q4.x-W/2)*1.26-9, CY+(q4.y-CY)*1.26+4); }
+    let ph=0; for(let si=0;si<seg.length;si++){ if(pr>=seg[si][0]) ph=si; }
+    cx.fillStyle="#fff"; cx.font="bold 18px sans-serif"; cx.fillText(D.name,14,26);
+    cx.fillStyle="#7fd1ae"; cx.font="bold 15px sans-serif"; cx.fillText(PH[ph]+"　"+(D.sf||"ダ")+dist+"m・"+(geo.d==="R"?"右回り":"左回り")+"（直線"+geo.st+"m）",14,46);
+    cx.fillStyle="#5a6070"; cx.font="11px sans-serif"; cx.fillText("SW TURF LAB",W-96,20);
+    const pl=0.02+0.98*prE;
+    hs.forEach(h=>{
+      const p=Math.max(0,pl-gapAt(h,pr)*SPREAD/Math.max(0.3,total));
+      const q=P(aOf(p));
+      const off=((h.lane%3)-1)*9;
+      const nx=Math.cos((q.ang||0)+Math.PI/2)*off, ny=Math.sin((q.ang||0)+Math.PI/2)*off;
+      const bob=Math.sin(now/85+h.lane*1.7)*1.6*(pr<1?1:0.2);
+      const x=q.x+nx, y=q.y+ny+bob;
+      const ang=q.ang||0;
+      if(pr>0.02&&pr<1){
+        cx.strokeStyle="rgba(255,255,255,0.22)"; cx.lineWidth=2;
+        cx.beginPath(); cx.moveTo(x-Math.cos(ang)*13,y-Math.sin(ang)*13); cx.lineTo(x-Math.cos(ang)*24,y-Math.sin(ang)*24); cx.stroke();
+      }
+      const wc=WAKU[+h.waku]||["#8b93a7","#fff"];
+      cx.beginPath(); cx.arc(x,y,11,0,7); cx.fillStyle=wc[0]; cx.fill();
+      if(h.mk){ cx.strokeStyle=mkCol(h.mk); cx.lineWidth=3; cx.stroke(); }
+      else { cx.strokeStyle="#00000066"; cx.lineWidth=1; cx.stroke(); }
+      cx.fillStyle=wc[1]; cx.font="bold 12px sans-serif"; cx.textAlign="center"; cx.fillText(h.num,x,y+4);
+      if(h.nm){ const ly=(h.lane%2)? y-17 : y+24;
+        cx.font="bold 9.5px sans-serif"; cx.fillStyle="#e8eaf0"; cx.strokeStyle="#000000aa"; cx.lineWidth=3; cx.strokeText(h.nm,x,ly); cx.fillText(h.nm,x,ly); }
+      cx.textAlign="left";
+    });
+    cx.fillStyle="rgba(0,0,0,0.55)"; cx.fillRect(0,H-26,W,26);
+    cx.fillStyle="#fff"; cx.font="bold 13px sans-serif"; cx.fillText("🎙 "+TELOP[ph],10,H-8);
+    if(t<800){ const al=1-t/800; cx.fillStyle=`rgba(127,209,174,${al})`; cx.font="bold 44px sans-serif"; cx.textAlign="center"; cx.fillText("START",W/2,H/2-40); cx.textAlign="left"; }
+    if(pr>=1){
+      const ht=(t-DUR)/HOLD;
+      if(ht<0.25){ cx.fillStyle=`rgba(255,255,255,${0.5*(1-ht/0.25)})`; cx.fillRect(0,0,W,H); }
+      const pw=252, px=(geo.d==="R"? W-pw-12 : 12), py=56;
+      cx.fillStyle="rgba(10,10,18,0.85)"; cx.strokeStyle="#7fd1ae66";
+      cx.beginPath(); cx.roundRect?cx.roundRect(px,py,pw,96,10):cx.rect(px,py,pw,96); cx.fill(); cx.stroke();
+      cx.fillStyle="#7fd1ae"; cx.font="bold 12px sans-serif"; cx.fillText("AI予測",px+12,py+20);
+      _byGoal.slice(0,3).forEach((hh,ri)=>{
+        const wy=py+40+ri*24; const wc2=WAKU[+hh.waku]||["#8b93a7","#fff"];
+        cx.fillStyle=["#e8c04a","#c0c6d4","#c98a5a"][ri]; cx.font="bold 13px sans-serif"; cx.fillText(["1着","2着","3着"][ri],px+12,wy);
+        cx.beginPath(); cx.arc(px+58,wy-4,9,0,7); cx.fillStyle=wc2[0]; cx.fill();
+        cx.fillStyle=wc2[1]; cx.font="bold 10px sans-serif"; cx.textAlign="center"; cx.fillText(hh.num,px+58,wy-1); cx.textAlign="left";
+        cx.fillStyle="#fff"; cx.font="bold 11.5px sans-serif"; cx.fillText(hh.nm+(hh.mk?` ${hh.mk}`:""),px+74,wy);
+      });
+    }
+    requestAnimationFrame(draw); }
+  requestAnimationFrame(draw);
+  document.getElementById("faClose").onclick=function(){ stopA=true; ov.remove(); };
+  document.getElementById("faRec").onclick=function(){
+    const btn=document.getElementById("faRec");
+    let mime=""; for(const c of ["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm"]){ if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(c)){ mime=c; break; } }
+    if(!mime){ alert("この端末は動画録画に未対応です"); return; }
+    const stream=cv.captureStream(30); const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2500000});
+    const chunks=[]; rec.ondataavailable=function(e){ if(e.data.size) chunks.push(e.data); };
+    rec.onstop=function(){ const ext=mime.indexOf("mp4")>=0?"mp4":"webm"; const blob=new Blob(chunks,{type:mime});
+      const fname=(D.name||"race").replace(/\s+/g,"_")+"."+ext;
+      const dl=function(){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; a.click(); };
+      /* iOSで写真アプリに入れるには共有シート経由（「ビデオを保存」）。共有はタップ起点必須なのでボタンで出す */
+      const row=btn.parentNode;
+      let sh=document.getElementById("faShare");
+      if(!sh){ sh=document.createElement("button"); sh.id="faShare"; sh.style.cssText="font-size:14px;font-weight:700;padding:8px 14px;border-radius:8px;border:1px solid #ffc700;background:none;color:#ffc700"; row.insertBefore(sh,btn); }
+      sh.textContent="📲 写真へ保存（共有）";
+      sh.onclick=async function(){ try{
+        const file=new File([blob],fname,{type:mime});
+        if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file]}); }
+        else { dl(); alert("この端末は共有保存に未対応のため、ファイルに保存しました"); }
+      }catch(_){}};
+      btn.textContent="↓ ファイルへ保存"; btn.disabled=false;
+      btn.onclick=dl; };
+    t0=performance.now(); btn.disabled=true; btn.textContent="録画中…";
+    rec.start(); setTimeout(function(){ try{rec.stop();}catch(_){}} ,DUR+HOLD);
+  };
+}
+/* レースの見どころを1行で言語化（lab版・保存済み予想データr.hから生成）。
+   tweet.html側と同じ思想: 観測できる事実だけを組み立て、盛らない。 */
+function labFocus(r){
+  const h=r.h||[]; if(h.length<3) return "";
+  const cand=[]; const add=(pri,txt)=>{ if(txt)cand.push({pri,txt}); };
+  const nm=x=>String(x&&x.name||"").slice(0,10);
+  // 能力順で並べる
+  const byAbil=h.slice().sort((a,b)=>(b.abil||0)-(a.abil||0));
+  const o=byAbil[0], p=byAbil[1], t=byAbil[2];
+  const gap=(o&&p)?(o.abil-p.abil):null;
+  const field=r.field||h.length;
+  // 脚質構成
+  let nige=0,sen=0,sashi=0,oi=0,jizai=0;
+  h.forEach(x=>{ const k=x.kyaku;
+    if(k==="逃げ")nige++; else if(k==="先行")sen++; else if(k==="差し")sashi++;
+    else if(k==="追い込み")oi++; else if(k==="自在")jizai++; });
+  const front=nige+sen, back=sashi+oi;
+  // ① 力関係
+  if(gap!=null){
+    if(gap>=10) add(93,`◎${nm(o)}が能力最上位`);
+    else if(gap>=6) add(86,`◎${nm(o)}が一枚上`);
+    else if(gap>=3) add(70,`◎${nm(o)}がやや抜けた存在`);
+    else if(gap<=1) add(80,"上位ほぼ横一線、大混戦");
+    else if(gap<=2) add(70,"上位拮抗の接戦");
+  }
+  // ② 三つ巴
+  if(gap!=null&&gap<=2&&p&&t&&(p.abil-t.abil)<=2) add(68,`◎${nm(o)}○${nm(p)}▲${nm(t)}の三つ巴`);
+  // ③ 展開
+  if(nige>=4) add(76,"逃げ多数、ハイペース必至");
+  else if(nige>=3) add(66,"逃げ複数でペース速化も");
+  else if(nige===1){ const ni=h.find(x=>x.kyaku==="逃げ");
+    if(ni&&ni===o) add(74,"◎の単騎逃げが濃厚"); else if(ni) add(60,`${nm(ni)}の単騎逃げに警戒`); }
+  else if(nige===0&&sen>=3) add(64,"逃げ不在、先行争いが焦点");
+  else if(nige===0&&sen<=1) add(62,"前に行く馬が手薄、スロー濃厚");
+  if(back>=field*0.6&&nige<=1) add(64,"差し追い込み優勢、展開ひとつ");
+  else if(front>=field*0.6) add(56,"先行馬中心、前残り傾向");
+  // ④ 脚質対比
+  if(o&&p&&o.kyaku&&p.kyaku&&o.kyaku!==p.kyaku){
+    const fA=(o.kyaku==="逃げ"||o.kyaku==="先行"), fB=(p.kyaku==="逃げ"||p.kyaku==="先行");
+    if(fA&&!fB) add(56,`先行の◎に差し脚の○${nm(p)}が迫る`);
+    else if(!fA&&fB) add(56,`末脚の◎を先行の○${nm(p)}がリード`);
+  }
+  // ⑤ 頭数・距離
+  if(field<=7) add(48,"少頭数で紛れ少なく");
+  else if(field>=15) add(64,"多頭数で紛れ含み、波乱含み");
+  if(r.dist){ if(r.dist<=1200) add(40,"スピード優先の短距離戦"); else if(r.dist>=2000) add(44,"長距離、スタミナ勝負"); }
+  // ⑥ 状態（勝負/狙い目）
+  /* 馬場（公式28年12万走: 前有利は良+28.1/稍+28.1/重不良+29.8ptでほぼ不変） */
+  if(r.going==="重"||r.going==="不良") add(69,"馬場は"+r.going+"。地方は道悪でも前有利が変わらない（12万走実測）ので「道悪だから差し」は不要");
+  else if(r.going==="稍重") add(33,"馬場は稍重（傾向は良馬場とほぼ同じ）");
+  /* ◎の当地実績（数字つき） */
+  var ax=h.find(function(x){return x.sig==="軸";});
+  if(ax&&ax.local&&ax.local.n>=3){ var lp=Math.round(100*(ax.local.p3||0)/ax.local.n);
+    if(lp>=50) add(72,"◎"+nm(ax)+"は当地"+ax.local.n+"戦・複勝率"+lp+"%の当地巧者（この帯は次走も複勝44%の実測）");
+    else if(ax.local.n>=6&&lp<=15) add(57,"◎の当地成績は"+ax.local.n+"戦・複勝率"+lp+"%と結果が出ていない点は懸念");
+  }
+  /* ◎の実測先行力 */
+  if(ax&&ax.ffv!=null){ var fa=0.5-ax.ffv/10;
+    if(fa<=0.25) add(63,"◎は隊列の前"+Math.max(5,Math.round(fa*100))+"%地点で運ぶ先行型（地方の先行型は次走複勝42% vs 後方型15%）");
+    else if(fa>=0.7) add(61,"◎は後方"+Math.round(fa*100)+"%位置からの差しタイプ。地方の後方型は複勝15%と割引が必要");
+  }
+  if(r.state==="battle") add(58,"モデルが自信を持つ勝負レース");
+  else if(r.state==="aim") add(50,"狙い目のある一戦");
+  cand.sort((a,b)=>b.pri-a.pri);
+  const out=[]; const seen={};
+  for(const c of cand){ if(seen[c.txt])continue; seen[c.txt]=1; out.push(c.txt); if(out.length>=4)break; }
+  return out.join("／");
+}
+
+/* ===== RENDER: header bits ===== */
+function renderTabs(){
+ const vs=(DATA.modes&&DATA.modes[MODE])||Object.keys(DATA.venues);
+ $("#vtabs").innerHTML=vs.map(v=>`<div class="vtab ${v===VENUE?'on':''}" data-ven="${v}">${v}</div>`).join("");
+ $("#modelabel").textContent=MODE;
+ document.body.classList.toggle("m-jra", MODE==="中央");
+ document.body.classList.toggle("m-nar", MODE!=="中央");
+ $("#subttl").innerHTML=`${MODE}競馬 <small>No-Odds AI予測</small>`;
+ $("#datelabel").textContent=DATA.date||DEMO.date;
+ const chev=document.querySelector(".datebar .chev");if(chev){ chev.style.opacity=(SRC==="live")?"1":".25"; }
+ document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",b.dataset.v===VIEW));
+}
+
+/* ===== LIST / SUMMARY cards ===== */
+function cardHTML(r,withResult){
+ const c=counts(r),acc=r.state==="battle"?"#e8862e":(r.state==="aim"?"#e0a13a":"var(--pur)");
+ const ab=(r.h||[]).map(h=>h.abil);const diff=ab.length?(Math.max.apply(0,ab)-Math.min.apply(0,ab)).toFixed(1):"–";const avg=ab.length?(ab.reduce((a,b)=>a+b,0)/ab.length).toFixed(1):"–";
+ const rings=`<div class="rings">${ringSVG(r.ren,"三連複","#27b24c")}${ringSVG(r.tan,"単勝","#ef8a1f")}</div>`;
+ const hot=(r.hot||[]).map(x=>`<span class="hotb">🔥 ${x.t} ${x.l} <b>${x.roi}%</b></span>`).join("");
+ /* 買い方推奨バッジ（狙い目＋回収率）。激熱バッジが出ない通常レースでも、
+    ◎の信頼度に応じた買い方と実測回収率を表示する。 */
+ const _bp=labBetPlan(r);
+ const bpBadge=(_bp && _bp.cls!=="pass")
+   ? `<span class="bpb bpb-${_bp.cls}">${_bp.tier}${_bp.roi?` <b>複ROI${_bp.roi}%</b>`:""}</span>` : "";
+ const scr=(r.scr||[]);
+ const scrLine=scr.length?`<div class="scrrow">取消・除外 <span class="scrn">${scr.length}</span>：${scr.map(x=>{const w=wkColor(x.waku);return `<span class="scrh"><span class="wk" style="background:${w.bg};color:${w.fg}">${x.num}</span>${x.name||""}</span>`;}).join("")}</div>`:"";
+ const order={"軸":0,"複勝圏":1,"相手候補":2,"注意":3,"様子見":4};
+ const groups={};(r.h||[]).forEach(h=>{(groups[h.sig]=groups[h.sig]||[]).push(h);});
+ const rows=Object.keys(groups).sort((a,b)=>(order[a]??9)-(order[b]??9)).map(sig=>{
+   const cells=groups[sig].map(h=>{const w=wkColor(h.waku);const med=medalOf(h.rank);
+     const fin=(withResult&&h.rank)?`<span class="fin">${h.rank}着</span>`:"";
+     return `<div class="hcell"><span class="wk" style="background:${w.bg};color:${w.fg}">${h.num}</span><span class="hn">${h.name}${starMk(h)}</span>${h.local?`<span class="loc2">当地${h.local.n}-${h.local.p3}</span>`:""}${h.kyaku?`<span class="kyaku" style="color:${kyCol(h.kyaku)};background:${kyCol(h.kyaku)}22">${h.kyaku}</span>`:""}${fin}${med?`<span class="medal">${med}</span>`:""}</div>`;}).join("");
+   return `<div class="sigrow" data-sig="${sig}"><span class="sigchip ${sig}">${sig}</span>${cells}</div>`;
+ }).join("");
+ return `<div class="rc ${r.state==='battle'?'battle':''}" data-race="${r.no}">
+   <div class="rc-h"><div class="numbox"><div class="n">${r.no}</div><div class="hd">${r.field}頭</div><div class="acc" style="background:${acc}"></div></div>
+     <div class="rc-info"><div class="ttl">${MODE==="地方"?VENUE:""}${r.no}R ${r.cls}</div>
+       <div class="meta">${(r.time&&r.time!=="--:--")?`<span class="tm">🕐 ${r.time}</span>`:""}${postStatus(r)}${r.sf?`<span class="sf">${r.sf}</span>`:""}<span>${r.dist?r.dist+"m / ":""}${r.field}頭</span></div>
+       <div class="rsum"><b>${c.軸}</b>軸 <b>${c.複勝圏}</b>複 <b>${c.相手候補}</b>相手 ｜ 能力差 ${diff} 平均 ${avg}</div></div>
+     ${rings}</div>
+   ${(hot||bpBadge)?`<div class="hot">${bpBadge}${hot}</div>`:""}
+   ${(function(){var f=labFocus(r);return f?`<div class="labfocus"><span class="lf-ic">見どころ</span><span class="lf-tx">${f}</span></div>`:"";})()}
+   <div class="sigwrap">${rows}${scrLine}</div></div>`;
+}
+function summaryCardHTML(r){
+ const c=counts(r);const ab=(r.h||[]).map(h=>h.abil);const diff=ab.length?(Math.max.apply(0,ab)-Math.min.apply(0,ab)).toFixed(1):"–";const avg=ab.length?(ab.reduce((a,b)=>a+b,0)/ab.length).toFixed(1):"–";
+ const cR={S:5,A:4,B:3,C:2,D:1};const key=h=>SUMTAB==="abil"?h.abil:SUMTAB==="conf"?(cR[h.conf]||0)*100+h.win:-(h.pred||99);
+ const top=(r.h||[]).slice().sort((a,b)=>key(b)-key(a)).slice(0,3);
+ const rows=top.map((h,i)=>{const w=wkColor(h.waku);const med=medalOf(h.rank);let res="";
+   if(h.rank){const tp=r.pay&&(r.pay.tan||[]).find(x=>(""+x[0])===(""+h.num));const fp=r.pay&&(r.pay.fuku||[]).find(x=>(""+x[0])===(""+h.num));
+     if(med){const ps=[];if(tp)ps.push(`<span style="color:#ff7171">単${tp[1]}</span>`);if(fp)ps.push(`<span style="color:#27b24c">複${fp[1]}</span>`);res=`<span class="medal">${med}</span>${ps.length?`<span class="paymini">${ps.join(" ")}</span>`:""}`;}
+     else res=`<span class="fin">${h.rank}着</span>`;}
+   return `<div class="mrow"><span class="mrk">${i+1}.</span><span class="conf ${h.conf}">${h.conf}</span><span class="wk" style="background:${w.bg};color:${w.fg}">${h.num}</span><span class="hn">${h.name}${starMk(h)}</span><span class="xy">${h.win}/${h.p3}</span><span class="mres">${res}</span></div>`;}).join("");
+ const rings=`<div class="rings">${ringSVG(r.ren,"三連複","#27b24c")}${ringSVG(r.tan,"単勝","#ef8a1f")}</div>`;
+ const hot=(r.hot||[]).slice(0,1).map(x=>`<span class="hotb">🔥 ${x.t} ${x.l} <b>${x.roi}%</b></span>`).join("");
+ return `<div class="rc" data-race="${r.no}">
+   <div class="rc-h"><div class="numbox"><div class="n">${r.no}</div><div class="hd">${r.field}頭</div><div class="acc" style="background:${r.state==='battle'?'#e8862e':'var(--pur)'}"></div></div>
+     <div class="rc-info"><div class="ttl">${MODE==="地方"?VENUE:""}${r.no}R ${r.cls}</div>
+       <div class="meta">${(r.time&&r.time!=="--:--")?`<span class="tm">🕐 ${r.time}</span>`:""}${postStatus(r)}${r.sf?`<span class="sf">${r.sf}</span>`:""}<span>${r.dist?r.dist+"m ":""}${r.field}頭</span></div>
+       <div class="rsum"><b>${c.軸}</b>軸 <b>${c.複勝圏}</b>複 <b>${c.相手候補}</b>相手 ｜ 能力差 ${diff} 平均 ${avg}</div></div>
+     ${rings}</div>
+   ${(hot||bpBadge)?`<div class="hot">${bpBadge}${hot}</div>`:""}
+   <div class="mrows">${rows}</div></div>`;
+}
+
+function viewList(){ if(!RACES.length){$("#app").innerHTML='<div class="empty">この開催の予想データがありません。</div>';return;}
+ $("#app").innerHTML=RACES.map(r=>cardHTML(r,true)).join(""); }
+
+function viewSummary(){
+ const tabs=`<div class="subtabs"><button data-t="sig" class="${SUMTAB==='sig'?'on':''}">シグナル順</button><button data-t="abil" class="${SUMTAB==='abil'?'on':''}">能力値順</button><button data-t="conf" class="${SUMTAB==='conf'?'on':''}">信頼度順</button></div>`;
+ const rs=RACES.slice().sort((a,b)=>a.no-b.no);
+ $("#app").innerHTML=tabs+(rs.length?rs.map(r=>summaryCardHTML(r)).join(""):'<div class="empty">データなし</div>');
+}
+
+/* ===== RESULTS ===== */
+function viewResults(){
+ const s=SUMMARY||{};
+ const sb=`<div class="sumbar"><div class="ttl">${MODE==="地方"?VENUE:"中央"} 全${RACES.length}R <b>${s.label||"予測1位ベタ買い"}</b></div>
+   <div class="sumgrid">
+    <div class="si">1着的中<b>${s.win||"–"} <span style="font-size:14px;color:var(--muted)">(${s.winp||0}%)</span></b></div>
+    <div class="si">複勝的中<b>${s.p3||"–"} <span style="font-size:14px;color:var(--muted)">(${s.p3p||0}%)</span></b></div>
+    <div class="si">単勝回収率<b class="hot">${s.tanROI||"–"}</b></div>
+    <div class="si">単勝収支<b class="neg">${s.tanShu||"–"}</b></div>
+    <div class="si">複勝回収率<b class="hot">${s.fukROI||"–"}</b></div>
+    <div class="si">複勝収支<b class="neg">${s.fukShu||"–"}</b></div>
+   </div></div>`;
+ const stat=renderStat();
+ const pods=RACES.map(r=>{
+   const fin=[1,2,3].map(p=>(r.h||[]).find(h=>h.rank===p)).filter(Boolean);
+   const ringtop=`<div class="rc-rings-top"><div class="numbox" style="width:46px"><div class="n">${r.no}</div></div>
+     <div class="rc-info"><div class="ttl">${r.cls}</div><div class="meta">${(r.time&&r.time!=="--:--")?`<span class="tm">🕐 ${r.time}</span>`:""}${postStatus(r)}${r.sf?`<span class="sf">${r.sf}</span>`:""}<span>${r.dist?r.dist+"m / ":""}${r.field}頭</span></div></div>
+     <div class="rings">${ringSVG(r.ren,"三連","#27b24c")}${ringSVG(r.tan,"単勝","#ef8a1f")}</div></div>`;
+   const cols=fin.map((h,i)=>{const w=wkColor(h.waku);const pr=h.pred?`<span class="predbadge r${Math.min(h.pred,3)}">予測${h.pred}位</span>`:"";
+     return `<div class="pcol p${i+1}"><div class="med">${medalOf(i+1)}</div><div class="ph"><span class="wk" style="background:${w.bg};color:${w.fg}">${h.num}</span></div><div class="pname">${h.name}</div><div class="pjk">${h.jk||""}</div>${pr}</div>`;}).join("");
+   let payHTML="";
+   if(r.pay){ const P=r.pay; const rowK=(k,arr,sub)=>arr.map((x,i)=>`<tr class="${i>0?'sub':''}"><td class="k">${i>0?'':k}</td><td class="c">${x[0]}</td><td class="y">${(+x[1]).toLocaleString()}円</td></tr>`).join("");
+     payHTML=`<table class="paytable"><tbody>${rowK("単勝",P.tan)}${rowK("複勝",P.fuku)}${rowK("枠連",P.wakuren)}${rowK("馬連",P.umaren)}${rowK("ワイド",P.wide)}${rowK("馬単",P.umatan)}${rowK("三連複",P.fuku3)}${rowK("三連単",P.tan3)}</tbody></table>`;}
+   if(!fin.length){ return `<div class="rc" data-race="${r.no}">${ringtop}<div class="empty" style="padding:20px 0">結果待ち（確定後に自動取得）</div></div>`; }
+   return `<div class="rc" data-race="${r.no}">${ringtop}<div class="podium">${cols}</div>${payHTML}</div>`;
+ }).join("");
+ const live=(SRC==="live");
+ const ctrl=live?`<div style="display:flex;align-items:center;gap:10px;margin:0 0 10px"><button id="resfetch" style="background:linear-gradient(180deg,var(--pbtn1),var(--pbtn2));border:0;color:#fff;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer">🔄 結果を自動取得</button><button id="resall" style="background:#1b1b27;border:1px solid var(--line2);color:var(--sub);font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer">🌐 全場の結果</button><span style="color:var(--muted);font-size:14px" id="resstat">${RES_STAT||"発走後のレースから順に自動取得します"}</span></div>`:"";
+ $("#app").innerHTML=sb+ctrl+stat+(RACES.length?pods:'<div class="empty">結果データがありません。</div>');
+ if(live&&!RES_DONE&&!FETCHING){RES_DONE=true;setTimeout(()=>fetchResults(false),80);}
+}
+function _predN(races,n){let cnt=0,win=0,p3=0,inv=0,ret=0;races.forEach(r=>{const h=(r.h||[]).find(x=>x.pred===n);if(!h||!h.rank)return;cnt++;if(h.rank===1)win++;if(h.rank<=3)p3++;inv+=100;if(h.rank===1){const t=r.pay&&(r.pay.tan||[]).find(x=>(""+x[0])===(""+h.num));if(t)ret+=+t[1];}});return{cnt,win,p3,inv,ret};}
+function _sigN(races,sig){let cnt=0,win=0,p3=0;races.forEach(r=>(r.h||[]).forEach(h=>{if(h.sig!==sig||!h.rank)return;cnt++;if(h.rank===1)win++;if(h.rank<=3)p3++;}));return{cnt,win,p3};}
+function _pct(a,b){return b?Math.round(a/b*100):0;}
+function _roi(ret,inv){return inv?Math.round(ret/inv*100)+"%":"–";}
+function _bar(p,col){return `<div class="pbar"><i style="width:${p}%;background:${col||'#27b24c'}"></i></div>`;}
+function _stt(head,rows){return `<table class="stt"><thead><tr>${head.map((h,k)=>`<th class="${k==0?'l':''}">${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,k)=>`<td class="${k==0?'l':''}">${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;}
+function renderStat(){
+ const done=RACES.filter(r=>(r.h||[]).some(h=>h.rank)).length;
+ const tabs=`<div class="subtabs" style="margin:0 0 10px"><button data-st="acc" class="${STAT==='acc'?'on':''}">予測精度</button><button data-st="conf" class="${STAT==='conf'?'on':''}">信頼度別</button><button data-st="sig" class="${STAT==='sig'?'on':''}">シグナル別</button><button data-st="are" class="${STAT==='are'?'on':''}">荒れスコア</button><button data-st="hot" class="${STAT==='hot'?'on':''}">激熱戦略</button><button data-st="loc" class="${STAT==='loc'?'on':''}">場所別</button></div>`;
+ let body="";
+ const noData='<div class="empty">結果待ち（結果タブで自動取得後に集計）</div>';
+ if(STAT==="acc"){
+   if(!done){body=noData;}else{const ns=[1,2,3].map(n=>_predN(RACES,n));const cols=["#27b24c","#e8a838","#3a9ae0"];
+     body=`<div class="acc3">${ns.map((r,i)=>`<div class="ac"><div class="l">予測${i+1}位</div><div class="v">1着 <small>${r.win}/${r.cnt}</small></div><div class="l">(${_pct(r.win,r.cnt)}%)</div><div class="l" style="margin-top:6px">3着内 ${r.p3}/${r.cnt} (${_pct(r.p3,r.cnt)}%)</div>${_bar(_pct(r.p3,r.cnt),cols[i])}</div>`).join("")}</div>
+       <div style="margin-top:10px;font-size:14px;color:var(--sub)">予測1位ベタ買い 単勝回収 <b style="color:var(--ora)">${_roi(ns[0].ret,ns[0].inv)}</b>（${ns[0].ret-ns[0].inv>=0?"+":""}${ns[0].ret-ns[0].inv}円）</div>`;}
+ } else if(STAT==="conf"){
+   if(!done){body=noData;}else{const bands=["S","A","B","C","D"];const rows=bands.map(b=>{const rs=RACES.filter(r=>{const h=(r.h||[]).find(x=>x.pred===1);return h&&h.conf===b;});const st=_predN(rs,1);if(!st.cnt)return null;return [`<span class="conf ${b}">${b}</span>`,st.cnt+"R",_pct(st.win,st.cnt)+"%",_pct(st.p3,st.cnt)+"%",_roi(st.ret,st.inv)];}).filter(Boolean);
+     body=rows.length?_stt(["信頼","R","1着","3着内","単回収"],rows)+'<div style="font-size:14px;color:var(--muted);margin-top:6px">※予測1位の信頼度帯ごと</div>':noData;}
+ } else if(STAT==="sig"){
+   if(!done){body=noData;}else{const sigs=["軸","複勝圏","相手候補"];const rows=sigs.map(sg=>{const st=_sigN(RACES,sg);if(!st.cnt)return null;return [`<span class="sigchip ${sg}" style="width:auto;padding:2px 8px;font-size:14px">${sg}</span>`,st.cnt+"頭",_pct(st.win,st.cnt)+"%",_pct(st.p3,st.cnt)+"%"];}).filter(Boolean);
+     body=rows.length?_stt(["シグナル","頭数","1着率","3着内率"],rows):noData;}
+ } else if(STAT==="are"){
+   if(!done){body=noData;}else{const cz=r=>(r._chaos!=null?r._chaos:(100-(r.tan||50)));const bk=[["堅 (荒れ<35)",r=>cz(r)<35],["中 (35-60)",r=>cz(r)>=35&&cz(r)<60],["荒 (60+)",r=>cz(r)>=60]];const rows=bk.map(([lb,f])=>{const rs=RACES.filter(f);const st=_predN(rs,1);if(!st.cnt)return null;return [lb,st.cnt+"R",_pct(st.win,st.cnt)+"%",_pct(st.p3,st.cnt)+"%",_roi(st.ret,st.inv)];}).filter(Boolean);
+     body=rows.length?_stt(["単勝荒れ帯","R","1着","3着内","単回収"],rows):noData;}
+ } else if(STAT==="hot"){
+   const fired=[];RACES.forEach(r=>(r.hot||[]).forEach(x=>fired.push({r:r.no,...x})));
+   body=fired.length?`<div style="padding:4px 2px">${fired.map(f=>`<div class="sigrow"><span class="hotb">🔥 ${f.t} ${f.l} <b>${f.roi}%</b></span><span style="color:var(--muted);font-size:14px;margin-left:8px">${f.r}R</span></div>`).join("")}</div>`:'<div class="empty">激熱発火なし</div>';
+ } else if(STAT==="loc"){
+   const vs=(DATA.venues||{});const allR=[];Object.values(vs).forEach(v=>(v.races||[]).forEach(r=>allR.push(r)));const rows=Object.keys(vs).map(v=>{const races=(vs[v].races||[]);const st=_predN(races,1);if(!st.cnt)return [v,'<span style="color:var(--muted)">未取得</span>',"–","–","–"];return [v,st.cnt+"R",_pct(st.win,st.cnt)+"%",_pct(st.p3,st.cnt)+"%",_roi(st.ret,st.inv)];});const tot=_predN(allR,1);if(tot.cnt)rows.push(['<b>合計</b>',"<b>"+tot.cnt+"R</b>","<b>"+_pct(tot.win,tot.cnt)+"%</b>","<b>"+_pct(tot.p3,tot.cnt)+"%</b>","<b>"+_roi(tot.ret,tot.inv)+"</b>"]);
+   body=rows.length?_stt(["場所","R","1着","3着内","単回収"],rows)+'<div style="font-size:14px;color:var(--muted);margin-top:6px">※各場の結果タブを開くと取得・集計されます</div>':noData;
+ }
+ return `<div class="statbox"><div class="sh">📊 集計・統計 <span class="r">${done?`1着的中 ${_predN(RACES,1).win}/${done}`:"結果待ち"}</span></div><div style="padding:0 12px 12px">${tabs}${body}</div></div>`;
+}
+
+function suggestBets(r){
+ const h=r.h||[];const o=h.find(x=>x.sig==="軸")||h.find(x=>x.pred===1);if(!o)return [];
+ const comp=h.filter(x=>x.sig==="複勝圏");const aite=h.filter(x=>x.sig==="相手候補");const out=[];
+ let n1="堅実に複勝も";if(o.odds){if(o.odds>=3&&o.odds<=12)n1="単勝妙味ゾーン(3-12倍)";else if(o.odds<3)n1="人気・複勝で手堅く";else n1="人気薄・複勝推奨";}
+ out.push({b:"単勝 / 複勝",t:"◎ "+o.num+" "+(o.name||""),note:n1});
+ if(comp.length)out.push({b:"ワイド",t:"◎"+o.num+" → "+comp.map(x=>x.num).join("・"),note:"軸から複勝圏へ流し"});
+ if(comp.length&&aite.length)out.push({b:"三連複",t:"◎"+o.num+" - "+comp.map(x=>x.num).join("・")+" - "+aite.slice(0,3).map(x=>x.num).join("・"),note:"軸固定・相手は絞らず流す"});
+ (r.hot||[]).forEach(x=>out.push({b:"🔥 "+x.t,t:x.l,note:x.roi+"% 検証済み",hot:true}));
+ return out;}
+function viewDetail(){
+ const r=RACES[DET];if(!r){$("#app").innerHTML='<div class="empty">—</div>';return;}
+ if(SRC==="live"&&!r._oddsTried&&r.race_id){setTimeout(()=>fetchOddsFor(r),60);}
+ const th=(k,l,left)=>`<th class="${left?'l':''}" data-sort="${k}" style="${sortKey===k?'color:var(--purp)':''}">${l}</th>`;
+ let hs=r.h.slice();hs.sort((a,b)=>{let av,bv;if(sortKey==="odds"){av=a.odds==null?9999:a.odds;bv=b.odds==null?9999:b.odds;}else{av=a[sortKey];bv=b[sortKey];if(sortKey==="rank"||sortKey==="pred"){av=av||99;bv=bv||99;}}return sortAsc?av-bv:bv-av;});
+ const inMk={"軸":"◎","複勝圏":"○","相手候補":"▲","注意":"△"};
+ const finCell=h=>{if(!h.rank)return '<td style="color:var(--muted)">–</td>';const med=h.rank<=3?medalOf(h.rank):"";return `<td style="font-weight:700;white-space:nowrap">${med?med+" ":""}${h.rank<=3?"":h.rank}</td>`;};
+ const oddsCell=h=>{if(h.odds==null)return '<td class="oc">–</td>';return `<td class="oc"><b class="ov2">${h.odds.toFixed(1)}</b>${h.pop?`<span class="pp">${h.pop}人</span>`:""}</td>`;};
+ const rows=hs.map(h=>{const w=wkColor(h.waku);const fr=(h.rank&&h.rank<=3)?` class="fr${h.rank}"`:"";
+  return `<tr${fr}>${finCell(h)}${oddsCell(h)}<td>${h.pred||"–"}</td><td><span class="wk dwk" style="background:${w.bg};color:${w.fg}">${h.waku}</span></td><td class="umaban">${h.num}</td><td class="inmk">${inMk[h.sig]||"--"}</td><td class="l"><div class="mei">${h.name}${starMk(h)}${h.local?`<span class="loc2">当地${h.local.n}戦${h.local.w}勝${h.local.p3}複</span>`:""}</div>${(h.jk||h.kin||h.kyaku)?`<div class="jk2">${h.jk||""}${h.kin?" "+h.kin:""}${h.kyaku?`<span class="kyaku2" style="color:${kyCol(h.kyaku)};background:${kyCol(h.kyaku)}22">${h.kyaku}</span>`:""}</div>`:""}</td><td class="l"><span class="sigchip ${h.sig}" style="width:auto;padding:2px 7px;font-size:14px">${h.sig}</span></td><td><span class="conf ${h.conf}">${h.conf}</span></td><td>${h.abil}</td><td><b>${h.win}</b>%</td><td>${h.p3}%</td></tr>`;}).join("");
+ const liveTag=r._oddsAt?`<span style="color:#3a9ae0;font-weight:700">LIVE</span> ${("0"+r._oddsAt.getHours()).slice(-2)}:${("0"+r._oddsAt.getMinutes()).slice(-2)}　`:"";
+ const bets=suggestBets(r);const buyHTML=bets.length?`<div class="buybox"><div class="bh">買い目ヒント</div>`+bets.map(b=>`<div class="brow ${b.hot?"hot":""}"><span class="bk">${b.b}</span><span class="bt">${b.t}</span><span class="bn">${b.note}</span></div>`).join("")+`<div class="bnote">※軸＝AI最上位。相手は絞らず流すほど検証回収率が安定（盛らない方針）。馬券は20歳から。</div></div>`:"";
+ $("#app").innerHTML=`<div class="dnav"><button data-d="prev">← 前R</button><div class="t">${r.no}R ${r.cls}<small>${liveTag}${r.sf||""}${r.dist?r.dist+"m ／ ":""}三連${r.ren} 単勝${r.tan}</small></div><button data-d="next">次R →</button></div>
+  ${(r.hot||[]).length?`<div class="hot" style="padding:0 0 10px">${r.hot.map(x=>`<span class="hotb">🔥 ${x.t} ${x.l} <b>${x.roi}%</b></span>`).join("")}</div>`:""}
+  ${(function(){var f=labFocus(r);return f?`<div class="labfocus" style="margin:0 0 10px"><span class="lf-ic">見どころ</span><span class="lf-tx">${f}</span></div>`:"";})()}
+  ${(function(){window.__labAnimR=r;var ok=(r.h||[]).filter(function(x){return x.cp||x.ffv!=null;}).length;return ok>=4?`<div style="margin:0 0 10px"><button onclick="labFormAnime()" style="font-size:14px;font-weight:700;color:#7fd1ae;background:none;border:1px solid #7fd1ae66;border-radius:8px;padding:6px 14px">▶ 展開アニメ（動画保存可）</button></div>`:"";})()}
+  ${buyHTML}
+  <div class="detwrap" style="overflow-x:auto;overflow-y:hidden;contain:paint;background:var(--bg);position:relative"><table class="det"><thead><tr>${th("rank","着")}${th("odds","単オッズ")}${th("pred","予測")}<th>枠</th>${th("num","馬番",0)}<th>印</th><th class="l">馬名 / 騎手</th><th class="l">シグナル</th><th>信頼</th>${th("abil","能力")}${th("win","勝率")}${th("p3","3着内")}</tr></thead><tbody>${rows}</tbody></table></div>
+  ${SRC==="live"?`<div style="color:var(--muted);font-size:14px;margin-top:8px">単オッズはLIVE取得（参考）。予測自体はオッズ非依存。</div>`:""}`;
+}
+
+/* ===== dispatch ===== */
+function render(){ renderTabs();
+ if(VIEW==="list")viewList(); else if(VIEW==="summary")viewSummary(); else if(VIEW==="results")viewResults(); else viewDetail();
+ window.scrollTo({top:0,behavior:"instant"});
+}
+function loadVenue(){
+ const v=(DATA.venues||{})[VENUE];
+ RACES=(v&&v.races)?v.races.map(r=>({...r,hot:computeHot(r)})):[];
+ SUMMARY=v&&v.summary||null; DET=0; RES_DONE=false; RES_STAT="";
+}
+
+/* ===== 結果自動取得（保存race_idで結果ページをプロキシ取得→着順/配当を抽出）===== */
+function b64url(s){
+  const bytes=new TextEncoder().encode(s);
+  let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function unb64url(s){
+  let b=String(s).replace(/-/g,"+").replace(/_/g,"/");
+  while(b.length%4) b+="=";
+  const bin=atob(b); const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function wrapProxy(prefix, inner){
+  if(prefix.indexOf("proxy.php")>=0) return prefix.replace(/\?url=$/,"").replace(/\?u=$/,"")+"?u="+b64url(inner);
+  return prefix.endsWith("=") ? prefix+encodeURIComponent(inner) : prefix+inner;
+}
+const PROXY_LIST=[ODDS+"proxy.php?url=","https://netkeiba-proxy.kajisho5.workers.dev/raw?url=","https://corsproxy.io/?url=","https://api.codetabs.com/v1/proxy/?quest="];
+function resultURL(mode,rid){const host=(mode==="jra")?"race.netkeiba.com":"nar.netkeiba.com";return "https://"+host+"/race/result.html?race_id="+rid;}
+async function fetchHtml(url){for(const px of PROXY_LIST){try{const r=await fetch(wrapProxy(px,url),{cache:"no-store"});if(!r.ok)continue;const t=await r.text();if(t&&t.length>500)return t;}catch(_){}}return null;}
+function parseRanks(html){const out={};
+ if(/race_table_01/.test(html)&&!/class="Rank"/.test(html)){
+  (html.match(/<tr[\s\S]*?<\/tr>/g)||[]).filter(t=>/\/horse\//.test(t)).forEach(t=>{
+   const c=[...t.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(x=>x[1].replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").trim());
+   if(c.length<4)return;const rank=parseInt(c[0],10),num=parseInt(c[2],10);if(isFinite(rank)&&isFinite(num))out[String(num)]=rank;});
+  return out;}
+ (html.match(/<tr[\s\S]*?<\/tr>/g)||[]).forEach(r=>{if(!/class="Rank"/.test(r))return;
+  const rk=r.match(/class="Rank"[^>]*>\s*(\d{1,2})\s*</);if(!rk)return;const rank=parseInt(rk[1],10);
+  const nc=[];r.replace(/class="Num [^"]*"[^>]*>\s*<div[^>]*>\s*(\d{1,2})\s*</g,(_,n)=>{nc.push(n);return"";});
+  const num=nc.length>=2?parseInt(nc[1],10):(nc.length===1?parseInt(nc[0],10):NaN);
+  if(isFinite(rank)&&isFinite(num))out[String(num)]=rank;});
+ return out;}
+function parsePayoutsRaw(html){const pay={tansho:[],fukusho:[],umaren:[],umatan:[],wide:[],fuku3:[],tan3:[]};
+ const map={Tansho:"tansho",Fukusho:"fukusho",Umaren:"umaren",Umatan:"umatan",Wide:"wide",Fuku3:"fuku3",Tan3:"tan3"};
+ for(const cls in map){const m=html.match(new RegExp('class="'+cls+'"[\\s\\S]{0,1500}?</tr>'));if(!m)continue;const block=m[0];
+  const rp=(block.match(/class="Result"[\s\S]*?<\/td>/)||[""])[0];
+  const nums=[...rp.matchAll(/<span>\s*(\d{1,2})\s*<\/span>/g)].map(x=>x[1]);
+  const pp=(block.match(/class="Payout"[\s\S]*?<\/td>/)||[""])[0];
+  const yens=[...pp.replace(/<[^>]+>/g," ").matchAll(/(\d[\d,]*)/g)].map(x=>+x[1].replace(/,/g,"")).filter(v=>v>=100);
+  if(!yens.length||!nums.length)continue;
+  const per=(cls==="Tansho"||cls==="Fukusho")?1:(cls==="Fuku3"||cls==="Tan3")?3:2;let idx=0;
+  for(let k=0;k<yens.length;k++){const ns=nums.slice(idx,idx+per);idx+=per;if(ns.length<per)break;pay[map[cls]].push({nums:ns.map(n=>String(+n)),yen:yens[k]});}}
+ return pay;}
+function toPayFmt(p){const c=a=>a.map(x=>[x.nums.join("-"),x.yen]);return {tan:c(p.tansho),fuku:c(p.fukusho),wakuren:[],umaren:c(p.umaren),wide:c(p.wide),umatan:c(p.umatan),fuku3:c(p.fuku3),tan3:c(p.tan3)};}
+function computeSummary(){let done=0,win=0,p3=0,ti=0,tr=0,fi=0,fr=0;
+ RACES.forEach(r=>{const p1=(r.h||[]).find(h=>h.pred===1);if(!p1||!p1.rank)return;done++;if(p1.rank===1)win++;if(p1.rank<=3)p3++;ti+=100;fi+=100;
+  if(r.pay){if(p1.rank===1){const t=(r.pay.tan||[]).find(x=>(""+x[0])===(""+p1.num));if(t)tr+=+t[1];}
+   if(p1.rank<=3){const f=(r.pay.fuku||[]).find(x=>(""+x[0])===(""+p1.num));if(f)fr+=+f[1];}}});
+ if(!done)return null;
+ return {label:"予測1位ベタ買い",win:win+"/"+done,winp:Math.round(win/done*100),p3:p3+"/"+done,p3p:Math.round(p3/done*100),
+  tanROI:ti?Math.round(tr/ti*100)+"%":"–",tanShu:(tr-ti)+"円",fukROI:fi?Math.round(fr/fi*100)+"%":"–",fukShu:(fr-fi)+"円"};}
+function setResStat(t){RES_STAT=t;const e=document.getElementById("resstat");if(e)e.textContent=t;}
+async function loadStoredResults(){
+ const withId=RACES.filter(r=>r.race_id&&!r._stored);if(!withId.length)return 0;
+ try{const rr=await fetch(ODDS+"results.php?action=get",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ids:withId.map(r=>r.race_id)})});
+  const jj=await rr.json();const store=(jj&&jj.results)||{};let n=0;
+  withId.forEach(r=>{const it=store[r.race_id];if(it&&it.ranks){(r.h||[]).forEach(h=>{const rk=it.ranks[String(h.num)];if(rk)h.rank=rk;});if(it.pays)r.pay=it.pays;r._stored=true;n++;}});
+  return n;}catch(_){return 0;}}
+async function fetchResults(force){
+ if(FETCHING)return;FETCHING=true;
+ /* 1) サーバ保存済みを先に反映（毎回読みに行かない） */
+ if(!force)await loadStoredResults();
+ if(VIEW==="results")viewResults();
+ /* 2) 未取得のレースだけプロキシ取得 */
+ const todo=RACES.filter(r=>r.race_id&&(force||(!r._stored&&!(r.h||[]).some(h=>h.rank))));
+ const newly=[];let done=0;
+ setResStat(todo.length?("結果取得中… 0/"+todo.length):"サーバ保存済みを表示");
+ for(const r of todo){const html=await fetchHtml(resultURL(r._mode,r.race_id));
+  if(html){const ranks=parseRanks(html);let hit=0;(r.h||[]).forEach(h=>{const rk=ranks[String(h.num)];if(rk){h.rank=rk;hit++;}});
+   const pr=parsePayoutsRaw(html);let pays=null;if((pr.tansho||[]).length){pays=toPayFmt(pr);r.pay=pays;}
+   if(hit){r._stored=true;newly.push({race_id:r.race_id,ranks:ranks,pays:pays||r.pay||null});}}
+  done++;setResStat("結果取得中… "+done+"/"+todo.length);if(VIEW==="results")viewResults();}
+ /* 3) 取得分をサーバ保存（次回から読みに行かない） */
+ if(newly.length){try{fetch(ODDS+"results.php?action=savebatch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:newly}),keepalive:true});}catch(_){}}
+ const sm=computeSummary();if(sm)SUMMARY=sm;FETCHING=false;
+ setResStat(newly.length?("結果取得 完了（新規"+newly.length+"R保存）"):"最新表示（サーバ保存済み）");
+ if(VIEW==="results")viewResults();}
+
+/* ===== 単勝オッズ LIVE 取得（JSON API・参考表示）===== */
+function oddsURL(mode,rid){return (mode==="jra")?"https://race.netkeiba.com/api/api_get_jra_odds.html?race_id="+rid+"&type=1&action=init":"https://nar.netkeiba.com/api/api_get_nar_odds.html?race_id="+rid+"&type=1";}
+async function fetchText(url){for(const px of PROXY_LIST){try{const r=await fetch(wrapProxy(px,url),{cache:"no-store"});if(!r.ok)continue;const t=await r.text();if(t&&t.length>20)return t;}catch(_){}}return null;}
+async function fetchWinOdds(mode,rid){const t=await fetchText(oddsURL(mode,rid));if(!t)return null;let j;try{j=JSON.parse(t);}catch(_){return null;}const out={};
+ if(j.ary_odds){for(const k in j.ary_odds){const e=j.ary_odds[k];const num=String(parseInt(k,10));const od=parseFloat(e.Odds);const pop=e.Ninki!=null?+e.Ninki:null;if(isFinite(od))out[num]={odds:od,pop};}}
+ else if(j.data&&j.data.odds&&j.data.odds["1"]){const d=j.data.odds["1"];for(const k in d){const num=String(parseInt(k,10));const a=d[k];const od=parseFloat(a[0]);const pop=a[2]!=null?parseInt(a[2],10):null;if(isFinite(od))out[num]={odds:od,pop};}}
+ return out;}
+let ODDS_FETCHING=false;
+async function fetchOddsFor(r){if(!r||!r.race_id||r._oddsTried||ODDS_FETCHING)return;ODDS_FETCHING=true;r._oddsTried=true;
+ const od=await fetchWinOdds(r._mode||"nar",r.race_id);
+ if(od&&Object.keys(od).length){(r.h||[]).forEach(h=>{const e=od[String(h.num)];if(e){h.odds=e.odds;h.pop=e.pop;}});r._oddsAt=new Date();}
+ ODDS_FETCHING=false;if(VIEW==="detail")viewDetail();}
+
+async function fetchAllResults(force){
+ if(FETCHING)return;FETCHING=true;
+ const all=[],seen={};Object.values(DATA.venues||{}).forEach(v=>(v.races||[]).forEach(r=>{if(r.race_id&&!seen[r.race_id]){seen[r.race_id]=1;all.push(r);}}));
+ if(!all.length){FETCHING=false;setResStat("race_id無し");return;}
+ if(!force){try{const rr=await fetch(ODDS+"results.php?action=get",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ids:all.map(r=>r.race_id)})});const jj=await rr.json();const st=(jj&&jj.results)||{};all.forEach(r=>{const it=st[r.race_id];if(it&&it.ranks){(r.h||[]).forEach(h=>{const rk=it.ranks[String(h.num)];if(rk)h.rank=rk;});if(it.pays)r.pay=it.pays;r._stored=true;}});}catch(_){}}
+ const todo=all.filter(r=>force||(!r._stored&&!(r.h||[]).some(h=>h.rank)));const newly=[];let done=0;
+ const one=async r=>{const html=await fetchHtml(resultURL(r._mode,r.race_id));if(html){const ranks=parseRanks(html);let hit=0;(r.h||[]).forEach(h=>{const rk=ranks[String(h.num)];if(rk){h.rank=rk;hit++;}});const pr=parsePayoutsRaw(html);let pays=null;if((pr.tansho||[]).length){pays=toPayFmt(pr);r.pay=pays;}if(hit){r._stored=true;newly.push({race_id:r.race_id,ranks,pays:pays||r.pay||null});}}done++;setResStat("全場取得… "+done+"/"+todo.length);};
+ for(let i=0;i<todo.length;i+=4){await Promise.all(todo.slice(i,i+4).map(one));if(VIEW==="results")viewResults();}
+ if(newly.length){try{fetch(ODDS+"results.php?action=savebatch",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:newly}),keepalive:true});}catch(_){}}
+ const sm=computeSummary();if(sm)SUMMARY=sm;FETCHING=false;setResStat("全場取得 完了（新規"+newly.length+"R保存）");if(VIEW==="results")viewResults();}
+
+/* ===== 初ブリンカー判定：前走shutubaのB有無を見る（前走B無し＋今B＝初）===== */
+let BL_CHECKING=false;
+async function checkBlinkers(){
+ if(BL_CHECKING)return;const todo=[];RACES.forEach(r=>(r.h||[]).forEach(h=>{if(h.bl&&h._blFirst==null&&h.prevRid&&h.hid)todo.push(h);}));
+ if(!todo.length)return;BL_CHECKING=true;
+ for(const h of todo){const key="blB."+h.prevRid+"."+h.hid;let prevB=null;
+  try{const c=localStorage.getItem(key);if(c!=null)prevB=(c==="1");}catch(_){}
+  if(prevB==null){const html=await fetchHtml("https://race.netkeiba.com/race/shutuba_past.html?race_id="+h.prevRid);
+   if(html){const idx=html.indexOf("/horse/"+h.hid);if(idx>=0){const win=html.slice(idx,idx+700);prevB=/class="Mark">\s*B\s*</.test(win);}else{prevB=false;}
+    try{localStorage.setItem(key,prevB?"1":"0");}catch(_){}}}
+  if(prevB!=null)h._blFirst=!prevB;}
+ BL_CHECKING=false;render();}
+
+/* ===== REAL DATA (localStorage + kaiko, 同一オリジン) ===== */
+function scanSaved(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.indexOf("tweetPred.")!==0)continue;try{const v=JSON.parse(localStorage.getItem(k));if(v&&v.races&&v.races.length)out.push(v);}catch(_){}}}catch(_){}return out;}
+function softWin(rk,T){T=T||45;let mx=-1e9;rk.forEach(r=>{if((r.s||0)>mx)mx=r.s||0;});let Z=0;rk.forEach(r=>{r._e=Math.exp(((r.s||0)-mx)/T);Z+=r._e;});rk.forEach(r=>r._w=Z>0?r._e/Z:0);}
+const sigOf=mk=>mk==="◎"?"軸":mk==="○"?"複勝圏":(mk==="▲"||mk==="△")?"相手候補":"様子見";
+function racesFromSaved(pl,krec){
+ return (pl.races||[]).map(sp=>{
+  const rk=(sp.ranked&&sp.ranked.length?sp.ranked:(sp.marks||[]).map(m=>({num:m.num,name:m.name,s:0}))).slice();
+  softWin(rk);const ss=rk.map(r=>r.s||0),smin=Math.min.apply(null,ss.concat(0)),smax=Math.max.apply(null,ss.concat(1));
+  const mkBy={};(sp.marks||[]).forEach(m=>mkBy[String(m.num)]=m.mk);
+  const locBy={};(sp.marks||[]).forEach(m=>{if(m.local)locBy[String(m.num)]=m.local;});
+  const kr=krec&&(krec.races||[]).find(x=>x.no===sp.no);const rankBy={};if(kr)(kr.marks||[]).forEach(m=>{if(m.rank!=null)rankBy[String(m.num)]=m.rank;});
+  const fld=(sp.field||rk.length);
+  const h=rk.map((r,i)=>{const num=String(r.num),mk=mkBy[num]||"";const win=Math.round((r._w||0)*100);
+    const wk=(+r.waku||+r.brk|| (r.waku2|0) )|| wakuFromNum(+num,fld);
+    return {num:(+num||num),name:r.name||"",waku:wk,cp:r.cornerProf||null,ffv:(function(){var z=(r.brk&&r.brk.find)?r.brk.find(function(b){return b&&b[0]==="実測先行力";}):null;return z?z[1]:null;})(),jk:r.jockey||r.jk||"",kin:r.kin||r.kinryo||null,kyaku:r.kyaku||null,star:!!r.star,bl:!!r.bl,prevRid:r.prevRid||null,hid:r.hid||null,_blFirst:null,local:r.local||locBy[num]||null,sig:sigOf(mk),conf:(mk==="◎"?confBand(sp.firmO):mk==="○"?(confBand(sp.firm1)||"B"):(i<3?"B":i<6?"C":"D"))||"D",win,p3:Math.min(96,Math.max(win,Math.round(win*1.7+20))),abil:Math.round(30+((smax>smin)?(((r.s||0)-smin)/(smax-smin)):.4)*45),pred:i+1,rank:rankBy[num]||0};});
+  /* リング＝的中期待度（高い=1位/上位が抜けてる=当たりやすい） */
+  const w1=(h[0]&&h[0].win)||0,w2=(h[1]&&h[1].win)||0,w3=(h[2]&&h[2].win)||0;
+  let tan=Math.max(5,Math.min(99,Math.round(w1*1.7+(w1-w2)*1.3+8)));
+  let ren=Math.max(5,Math.min(99,Math.round((w1+w2+w3)*0.85+8)));
+  /* 荒れ（内部・激熱用 高い=荒れ） */
+  const cz=+sp.chaos;const chaos=isFinite(cz)?Math.max(0,Math.min(99,Math.round(cz<=1?cz*100:cz))):Math.max(0,Math.min(99,100-tan));
+  const r={no:sp.no,cls:sp.name||(sp.no+"R"),time:sp.time||sp.post||"--:--",sf:sp.surface||"",going:sp.going||"",dist:sp.dist||0,field:fld,ren,tan,_chaos:chaos,_chaosReal:isFinite(cz),state:sp.skip?"pass":(sp.firmO>=75?"battle":sp.firmO>=60?"aim":"normal"),h,race_id:sp.race_id||sp.raceId||null,_mode:pl.mode||"nar",scr:(sp.scratched||[])};
+  r.hot=computeHot(r);return r;
+ }).sort((a,b)=>a.no-b.no);
+}
+function buildRealIndex(saved){
+ const map={};
+ saved.forEach(pl=>{const id=pl.date+"|"+pl.mode+"|"+pl.tc;map[id]={id,date:pl.date,mode:pl.mode,tc:pl.tc,track:pl.trackName||pl.tc,ts:pl.ts||0,payload:pl};});
+ KAIKO.forEach(rec=>{const id=rec.date+"|"+rec.mode+"|"+rec.trackCode;if(map[id])map[id].krec=rec;else map[id]={id,date:rec.date,mode:rec.mode,tc:rec.trackCode,track:rec.track||rec.trackCode,ts:rec.ts||0,krec:rec};});
+ DAYS=Object.values(map).sort((a,b)=>(""+b.date).localeCompare(""+a.date)||(b.ts-a.ts));
+}
+function applyReal(day){
+ SRC="live";
+ {const t=new Date();const ty=""+t.getFullYear()+("0"+(t.getMonth()+1)).slice(-2)+("0"+t.getDate()).slice(-2);IS_TODAY=(String(day.date)===ty);}
+ const m=day.mode==="jra"?"中央":"地方";
+ MODE=m; VENUE=day.track;
+ // build DATA dynamically: group DAYS of same date+mode as venues
+ const sameDay=DAYS.filter(d=>d.date===day.date&&d.mode===day.mode);
+ DATA={ date:(""+day.date).replace(/(\d{4})(\d{2})(\d{2})/,"$1年$2月$3日"), modes:{}, venues:{} };
+ DATA.modes[m]=sameDay.map(d=>d.track);
+ sameDay.forEach(d=>{ const races=d.payload?racesFromSaved(d.payload,d.krec):(d.krec?racesFromSaved({races:(d.krec.races||[]).map(r=>({no:r.no,name:r.name,marks:r.marks,ranked:null,firmO:r.firmO}))},d.krec):[]);
+   DATA.venues[d.track]={summary:summaryFromKaiko(d.krec),races}; });
+ loadVenue(); renderSrcBar(); render(); setTimeout(()=>checkBlinkers(),250);
+}
+function summaryFromKaiko(krec){ if(!krec||!krec.summary)return null; const s=krec.summary; const rc=s.raceCount||12;
+ return {label:"予測1位ベタ買い",win:`${s.o1||"?"}/${rc}`,winp:0,p3:`${s.o3||"?"}/${rc}`,p3p:0,tanROI:(s.inv?Math.round((s.tanRet||0)/s.inv*100)+"%":"–"),tanShu:"",fukROI:"",fukShu:""}; }
+function renderSrcBar(){const bar=$("#srcbar");if(!bar)return;
+ if(SRC==="demo"){bar.innerHTML=`<span style="color:var(--ora)">● デモ</span><span>推奨馬まとめ(tweet)で予想を回すと、同じ端末のこのページに自動で実データが出ます。</span>`;return;}
+ bar.innerHTML=`<span style="color:var(--grn)">● 実データ</span><select class="flt" id="daysel">${DAYS.map(d=>`<option value="${d.id}" ${d.id===CURDAY?"selected":""}>${(""+d.date).replace(/(\d{4})(\d{2})(\d{2})/,"$1/$2/$3")} ${d.track}（${d.mode==="jra"?"中央":"地方"}）${d.krec?"・結果":"・予想"}</option>`).join("")}</select>`;
+ const sel=$("#daysel");if(sel)sel.onchange=()=>{CURDAY=sel.value;const d=DAYS.find(x=>x.id===sel.value);if(d)applyReal(d);};
+}
+async function boot(){
+ initChrome();
+ let server=[];
+ try{const r=await fetch(ODDS+"predictions.php?action=list",{cache:"no-store"});const j=await r.json();server=(j&&j.records)||[];}catch(_){}
+ try{const r=await fetch(ODDS+"kaiko.php?action=list",{cache:"no-store"});const j=await r.json();KAIKO=(j&&j.records)||[];}catch(_){KAIKO=[];}
+ const local=scanSaved();
+ const seen={}, saved=[];
+ server.forEach(pl=>{const k=pl.date+"|"+(pl.mode||"")+"|"+pl.tc;if(!seen[k]){seen[k]=1;saved.push(pl);}});
+ local.forEach(pl=>{const k=pl.date+"|"+(pl.mode||"")+"|"+pl.tc;if(!seen[k]){seen[k]=1;saved.push(pl);}});
+ buildRealIndex(saved);
+ if(!DAYS.length){SRC="demo";DATA=DEMO;MODE="地方";VENUE="門別";loadVenue();renderSrcBar();render();return;}
+ CURDAY=DAYS[0].id; applyReal(DAYS[0]);
+}
+
+/* ===== events ===== */
+$("#vtabs").addEventListener("click",e=>{const t=e.target.closest("[data-ven]");if(t){VENUE=t.dataset.ven;loadVenue();render();}});
+$("#views").addEventListener("click",e=>{const b=e.target.closest("button");if(b){VIEW=b.dataset.v;render();}});
+$("#modepick").addEventListener("click",()=>{
+ if(SRC!=="live"){const ks=Object.keys(DATA.modes||{});if(ks.length<2)return;MODE=ks[(ks.indexOf(MODE)+1)%ks.length];VENUE=(DATA.modes[MODE]||[])[0];loadVenue();render();return;}
+ const cur=(MODE==="中央")?"jra":"nar";const others=DAYS.filter(d=>d.mode!==cur);
+ if(!others.length){return;}
+ const d=others[0];CURDAY=d.id;applyReal(d);
+});
+$("#app").addEventListener("click",e=>{
+ const rf=e.target.closest("#resfetch");if(rf){fetchResults(true);return;}
+ const ra=e.target.closest("#resall");if(ra){fetchAllResults(true);return;}
+ const card=e.target.closest("[data-race]");if(card&&VIEW!=="detail"){DET=RACES.findIndex(r=>r.no===+card.dataset.race);VIEW="detail";render();return;}
+ const dn=e.target.closest("[data-d]");if(dn){DET=(DET+(dn.dataset.d==="next"?1:RACES.length-1))%RACES.length;render();return;}
+ const th=e.target.closest("[data-sort]");if(th){const k=th.dataset.sort;if(sortKey===k)sortAsc=!sortAsc;else{sortKey=k;sortAsc=(k==="rank"||k==="pred");}render();return;}
+});
+document.addEventListener("click",e=>{
+ const st=e.target.closest(".subtabs [data-t]");if(st){SUMTAB=st.dataset.t;render();return;}
+ const ss=e.target.closest(".subtabs [data-st]");if(ss){STAT=ss.dataset.st;render();return;}
+});
+$("#helpbtn")&&$("#helpbtn").addEventListener("click",()=>$("#helpov").classList.add("on"));
+$("#helpclose")&&$("#helpclose").addEventListener("click",()=>$("#helpov").classList.remove("on"));
+$("#helpov")&&$("#helpov").addEventListener("click",e=>{if(e.target.id==="helpov")$("#helpov").classList.remove("on");});
+$("#themebtn")&&$("#themebtn").addEventListener("click",()=>{const dark=!document.body.classList.contains("light");applyTheme(dark?"light":"dark");});
+/* 日付バー: ネイティブのカレンダーで日付を選ぶ。
+   予想データがある日(DAYS)の中から、選んだ日にいちばん近い開催へ移動する。 */
+(function(){
+  const bar=document.getElementById("datebar");
+  const pick=document.getElementById("datepick");
+  if(!bar||!pick) return;
+  function avail(){ return [...new Set(DAYS.map(d=>d.date))].sort(); } // "YYYYMMDD"昇順
+  function toISO(d){ d=String(d); return d.length===8 ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : ""; }
+  function fromISO(s){ return String(s||"").replace(/-/g,""); }
+  // カレンダーを開く前に、選択可能範囲と現在値をセット
+  function sync(){
+    if(SRC!=="live"){ pick.disabled=true; return; }
+    pick.disabled=false;
+    const ds=avail(); if(!ds.length) return;
+    pick.min=toISO(ds[0]); pick.max=toISO(ds[ds.length-1]);
+    const cur=DAYS.find(d=>d.id===CURDAY);
+    pick.value=toISO(cur?cur.date:ds[ds.length-1]);
+  }
+  bar.addEventListener("click",(e)=>{
+    if(SRC!=="live") return;
+    sync();
+    // showPicker対応ブラウザは即カレンダー表示。非対応でもinput自体のクリックで開く
+    if(e.target!==pick && pick.showPicker){ try{ pick.showPicker(); }catch(_){ pick.focus(); } }
+  });
+  pick.addEventListener("change",()=>{
+    const want=fromISO(pick.value); if(!want) return;
+    const ds=avail(); if(!ds.length) return;
+    // 選んだ日にデータが無ければ、最も近い開催日を選ぶ
+    let target=ds.includes(want) ? want
+      : ds.reduce((best,d)=>Math.abs(+d-+want)<Math.abs(+best-+want)?d:best, ds[0]);
+    const cur=DAYS.find(d=>d.id===CURDAY); const curMode=cur?cur.mode:"nar";
+    const cand=DAYS.filter(d=>d.date===target);
+    const p=cand.find(d=>d.mode===curMode)||cand[0];
+    if(p){ CURDAY=p.id; applyReal(p); }
+  });
+})();
+(function(){const set=(id,f)=>{const a=document.getElementById(id);if(a)a.href=ODDS+f;};set("navTweet","tweet.html");set("navKaiko","kaiko.html");set("navIndex","index.html");})();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("lab-sw.js").catch(()=>{});}
+boot();
+</script>
+<div class="ov" id="helpov"><div class="ovcard">
+  <h3>SW TURF LAB ・ 見方</h3>
+  <div class="ttl2">シグナル</div>
+  <div class="leg"><span class="lchip" style="background:#ff7171">軸</span>最有力。買い目の中心</div>
+  <div class="leg"><span class="lchip" style="background:#e8862e">複勝圏</span>3着内が濃厚な堅実派</div>
+  <div class="leg"><span class="lchip" style="background:#3a7ae0">相手候補</span>ヒモ。連・3連の相手</div>
+  <div class="leg"><span class="lchip" style="background:#3a3a4a;color:#a8acbd">様子見</span>評価控えめ</div>
+  <div class="ttl2">信頼度</div>
+  <div class="leg"><b>S &gt; A &gt; B &gt; C &gt; D</b>　予測の確度（Sが最も堅い）</div>
+  <div class="ttl2">リング（的中期待度）</div>
+  <div class="leg"><span style="color:#27b24c;font-weight:800">三連</span>／<span style="color:#ef8a1f;font-weight:800">単勝</span>　数値が高いほど的中期待が高い（上位が抜けてる＝堅い）。低いほど荒れ（混戦）</div>
+  <div class="ttl2">🔥 激熱バッジ</div>
+  <div class="leg">回収率100%超の検証済み買い目が、条件に合致したレースで点灯</div>
+  <div class="ttl2">丸数字</div>
+  <div class="leg">色＝枠色 ／ 数字＝馬番</div>
+  <div class="ttl2">⭐︎ マーク</div>
+  <div class="leg"><span class="star">⭐︎</span>　JRA 障害明け（前走が障害→今走平地）</div>
+  <div class="leg"><span class="star2">★</span>　初ブリンカー（前走B無し→今走B）</div>
+  <button class="ovclose" id="helpclose">閉じる</button>
+</div></div>
+</body>
+</html>

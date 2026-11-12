@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d10" id="themeColorMeta">
+<title>競馬ニュース・まとめ</title>
+<script>try{var _t=localStorage.getItem("oddsAnomaly.theme")||"dark";_t=(_t==="light"?"light":"dark");document.documentElement.setAttribute("data-theme",_t);document.addEventListener("DOMContentLoaded",function(){var m=document.getElementById("themeColorMeta");if(m)m.setAttribute("content",_t==="light"?"#f4f5f7":"#0c0d10");});}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script>
+<style>
+  :root,html[data-theme="dark"]{--bg:#0c0d10;--panel:#141619;--panel2:#1a1d22;--line:#262a31;--txt:#e9ebef;--muted:#868d9a;--dim:#565c68;--red:#d8423a;--vel:#f0a838;--rise:#46b8e8;--div:#73c95a;}
+  html[data-theme="light"]{--bg:#f4f5f7;--panel:#fff;--panel2:#f0f1f4;--line:#d9dce1;--txt:#1a1d22;--muted:#5c6470;--dim:#9aa0ab;--red:#c5362e;--vel:#b9791a;--rise:#1d7fad;--div:#3f8f28;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt)}
+  body{font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",system-ui,sans-serif;font-size:14px;line-height:1.6;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 14px 60px}
+  header{padding:18px 0 14px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  h1{font-family:"Saira Condensed","Noto Sans JP",sans-serif;font-weight:700;letter-spacing:.04em;font-size:22px;margin:0 0 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .sub{color:var(--muted);font-size:12px}
+  .backlink{color:var(--vel);font-size:13px;text-decoration:none}
+  .theme-btn{margin-left:auto;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:11px;padding:5px 10px;cursor:pointer;font-family:"Saira Condensed",sans-serif}
+  .theme-btn:hover{color:var(--txt);border-color:var(--dim)}
+  .cat{margin-bottom:22px}
+  .cat-h{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mode,var(--vel));margin:0 0 4px;display:flex;align-items:center;gap:7px}
+  .cat-h .jp{font-family:"Noto Sans JP",sans-serif;font-size:14px;letter-spacing:0;color:var(--txt)}
+  .cat-d{font-size:11px;color:var(--muted);margin:0 0 10px}
+  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+  .lk{display:flex;flex-direction:column;gap:2px;text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;transition:.12s}
+  .lk:hover{border-color:var(--dim);background:var(--panel2)}
+  .lk-name{font-size:14px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:6px}
+  .lk-name .arr{color:var(--muted);font-size:11px;font-weight:400}
+  .lk-desc{font-size:11px;color:var(--muted);line-height:1.4}
+  .note{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6}
+  body{--mode:var(--vel)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>競馬ニュース・まとめ
+      <button class="theme-btn" id="themeBtn">◐ テーマ</button>
+    </h1>
+    <div class="sub">主要な競馬ニュース・データ・血統サイトへのリンク集。タップで各サイトを開く。<a class="backlink" href="./">← オッズ検知に戻る</a></div>
+  </header>
+
+  <div id="cats"></div>
+
+  <div class="note">
+    各サイトの記事・データはそれぞれの提供元に帰属します。このページはリンク集です。最新情報は各サイトでご確認ください。
+  </div>
+</div>
+
+<script>
+"use strict";
+/* テーマ切替 */
+(function(){
+  document.addEventListener("DOMContentLoaded",()=>{
+    const b=document.getElementById("themeBtn"); if(!b)return;
+    const sync=()=>{ b.textContent=document.documentElement.getAttribute("data-theme")==="light"?"◑ ライト":"◐ ダーク"; };
+    sync();
+    b.onclick=()=>{ const c=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";
+      document.documentElement.setAttribute("data-theme",c);
+      try{localStorage.setItem("oddsAnomaly.theme",c);}catch(_){}
+      const m=document.getElementById("themeColorMeta"); if(m)m.setAttribute("content",c==="light"?"#f4f5f7":"#0c0d10");
+      sync(); };
+  });
+})();
+
+/* リンク集データ（カテゴリ別）。リンクのみ＝規約問題なし */
+const CATS=[
+  { h:"NEWS", jp:"総合ニュース", d:"競馬全般の最新ニュース・コラム・展望",
+    links:[
+      {name:"netkeiba ニュース", url:"https://news.netkeiba.com/", desc:"国内最大。レース展望・追い切り・関係者談話"},
+      {name:"スポーツナビ 競馬", url:"https://sports.yahoo.co.jp/keiba/", desc:"各紙の見出しを集約。横断的に読める"},
+      {name:"スポーツ報知 競馬", url:"https://hochi.news/keiba/", desc:"報知の競馬面。トラックマン情報も"},
+      {name:"デイリースポーツ 競馬", url:"https://www.daily.co.jp/horse/", desc:"デイリーの競馬ニュース"},
+      {name:"サンスポ 競馬", url:"https://www.sanspo.com/keiba/", desc:"サンケイスポーツの競馬"},
+      {name:"日刊スポーツ 競馬", url:"https://www.nikkansports.com/race/", desc:"ニッカンの競馬ニュース"},
+      {name:"スポニチ 競馬", url:"https://www.sponichi.co.jp/gamble/", desc:"スポニチのギャンブル・競馬面"},
+      {name:"東スポ 競馬", url:"https://tospo-keiba.jp/", desc:"東京スポーツの競馬専門サイト"},
+    ]},
+  { h:"DATA / PEDIGREE", jp:"データ・血統・競走馬", d:"競走馬DB・血統表・成績・種牡馬データ",
+    links:[
+      {name:"netkeiba DB", url:"https://db.netkeiba.com/", desc:"30万頭超の競走馬データベース・成績検索"},
+      {name:"JBISサーチ", url:"https://www.jbis.or.jp/", desc:"JAIRS公式。血統・繁殖・産駒成績の決定版"},
+      {name:"netkeiba 種牡馬", url:"https://db.netkeiba.com/?pid=stud_search", desc:"種牡馬リーディング・産駒傾向"},
+      {name:"JRA-VAN", url:"https://jra-van.jp/", desc:"JRA公式データ。出馬表・オッズ・データ分析"},
+      {name:"競走馬のふるさと案内所", url:"https://uma-furusato.com/", desc:"引退馬・繁殖牝馬の動向、牧場情報"},
+    ]},
+  { h:"OFFICIAL", jp:"公式", d:"JRA・地方競馬の公式情報",
+    links:[
+      {name:"JRA 日本中央競馬会", url:"https://www.jra.go.jp/", desc:"出走表・結果・払戻・レース映像（中央）"},
+      {name:"地方競馬 NAR", url:"https://www.keiba.go.jp/", desc:"地方競馬全場の公式情報・出走表・結果"},
+      {name:"楽天競馬", url:"https://keiba.rakuten.co.jp/", desc:"地方競馬の投票・オッズ・ライブ映像"},
+      {name:"SPAT4", url:"https://www.spat4.jp/", desc:"南関東4場の投票・ライブ"},
+      {name:"地方競馬ライブ", url:"https://keiba-lv-st.jp/", desc:"地方競馬のレース映像配信"},
+    ]},
+  { h:"COLUMN / DEEP", jp:"コラム・深掘り", d:"読み物・分析・特集",
+    links:[
+      {name:"netkeiba コラム", url:"https://news.netkeiba.com/?pid=column_top", desc:"週40本超の連載コラム"},
+      {name:"UMAJIN", url:"https://umajin.net/", desc:"競馬コラム・予想・特集記事"},
+      {name:"スポナビ 競馬コラム", url:"https://sports.yahoo.co.jp/column/list/keiba", desc:"スポナビの競馬読み物"},
+      {name:"優駿 (JRA)", url:"https://www.jra.go.jp/yusyun/", desc:"JRA機関誌。重賞回顧・特集"},
+    ]},
+];
+
+function render(){
+  const host=document.getElementById("cats");
+  host.innerHTML=CATS.map(c=>`
+    <div class="cat">
+      <div class="cat-h">${c.h}<span class="jp">${c.jp}</span></div>
+      <div class="cat-d">${c.d}</div>
+      <div class="links">
+        ${c.links.map(l=>`<a class="lk" href="${l.url}" target="_blank" rel="noopener">
+          <span class="lk-name">${escapeHtml(l.name)} <span class="arr">↗</span></span>
+          <span class="lk-desc">${escapeHtml(l.desc)}</span>
+        </a>`).join("")}
+      </div>
+    </div>`).join("");
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+render();
+</script>
+</body>
+</html>

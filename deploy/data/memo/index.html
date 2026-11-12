@@ -1,0 +1,568 @@
+<title>検証メモ — 短く、全部出す | カジ競馬</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591053009962162" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/core/theme.css?v=25f2cf98">
+<script src="/core/theme.js?v=d75275b1"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="カジ競馬の検証メモ。効いた因子も、効かなかった因子も、見つけたバグも短く全部出します。数字は必ずサンプル数つき。">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font-family:"Noto Sans JP",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.8;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:820px;margin:0 auto;padding:24px 18px 72px}
+h1{font-size:28px;line-height:1.4;margin:8px 0 6px}
+.lead{color:var(--mute);margin:0 0 20px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.cchip{background:transparent;border:1px solid var(--line);border-radius:999px;
+  padding:6px 14px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:inherit;line-height:1.5}
+.cchip.off{opacity:.35}
+.cchip b{font-weight:800;margin-left:2px}
+.memo{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px;margin:0 0 14px}
+.memo.hide{display:none}
+.mhead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.cat{font-size:14px;font-weight:800;padding:2px 10px;border-radius:999px}
+.mhead time{color:var(--mute);font-size:14px;font-family:"Space Mono",monospace}
+.memo h2{font-size:19px;line-height:1.5;margin:2px 0 8px}
+.memo p{margin:0 0 6px}
+.src{color:var(--mute);font-size:14px}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:15px}
+</style>
+<div class="wrap">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+<a href="/">← レース一覧</a><div style="flex:1"></div>
+<button class="themebtn" type="button">☾</button></div>
+
+<h1>検証メモ</h1>
+<p class="lead">効いた因子も、<strong>効かなかった因子</strong>も、見つけたバグも短く出します。
+数字は必ず「どれだけの規模で測ったか」つき。長い版は<a href="/articles/">記事一覧</a>にあります。</p>
+
+<div class="chips"><button class="cchip" data-c="検証結果" style="border-color:var(--green);color:var(--green)">検証結果 <b>12</b></button><button class="cchip" data-c="数字の見方" style="border-color:var(--purple);color:var(--purple)">数字の見方 <b>12</b></button><button class="cchip" data-c="バグと訂正" style="border-color:var(--orange);color:var(--orange)">バグと訂正 <b>11</b></button><button class="cchip" data-c="効かない" style="border-color:var(--blue);color:var(--blue)">効かない <b>10</b></button></div>
+
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-08-04</time>
+  </div>
+  <h2>レースのラップ（ハロンタイム）は、予想には使えなかった</h2>
+  <p>手元にあって唯一使っていなかったデータ。測ってみると、平均ラップは勝ちタイムと完全に一致していた（合計が同じ値になる）。つまり既に使っている「レースレベル」と同じものを見ていただけだった。道中の配分（前半が速いか後半が速いか）は新しい情報だが、効くのは1〜3番人気だけで2ポイント程度、4番人気以下では差が消える。さらにラップが記録されているのは南関4場と園田だけで、全国の21%しかない。採用しないと決めた。</p>
+  <p class="src">検証した規模: 南関4場+園田・500,224出走（2013-2026）</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-08-04</time>
+  </div>
+  <h2>「見送り」と判断したレースでは、本命の複勝率が24%まで落ちる</h2>
+  <p>買い対象のレースでは本命の複勝率68.7%、見送りと判断したレースでは24.4%。44ポイントの差がついた。当てられないレースを事前に言い当てられている、ということ。なお当初は「見送りレースは配当の裾が桁違いに重い」と思っていたが、測ると3連単の中央値で1.9倍、99%点では1.2倍しか違わなかった。単勝万馬券が出る率はむしろ低い。見送り判定の価値は配当ではなく精度の分離にあった。</p>
+  <p class="src">検証した規模: 地方47,710レース</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-08-04</time>
+  </div>
+  <h2>「鉄板」の数字が古いままだった（86%→84.2%に訂正）</h2>
+  <p>本命が1番人気かつ単勝1.9倍以下かつ10頭以下、という条件に出していた「複勝率86%・回収率94%」は、946レース時代に測った古い値だった。現在のモデルと公式の確定オッズで測り直したところ、複勝率84.2%・複勝回収率90.4%。少し盛っていたので実測値に直した。公開している数字を台帳と突き合わせる仕組みを入れたことで見つかった。</p>
+  <p class="src">検証した規模: 地方1,430レース（2026年3〜7月）</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>地方の騎手データを増やしても、予想は良くならなかった</h2>
+  <p>騎手成績が3頭に1頭しか引けていなかったので、公式データから作り直してカバー率を67%→90.3%に上げた。結果、本命の複勝率は誤差の範囲（McNemar z=-0.62）、回収率はむしろ悪化。実装せず撤回した。</p>
+  <p class="src">検証した規模: 地方7,080レース</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>ただし「騎手の腕」そのものは効いている</h2>
+  <p>騎手の加点を外すと複勝率68.4%→66.8%、複勝回収率89.6%→87.7%。本命が変わった1,025レースに絞ると回収率93.1%対83.8%でz=+3.56。集計期間を検証期間より前に切り直しても効果は残った。</p>
+  <p class="src">検証した規模: 地方6,305レース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>「調子のいい騎手だけ買う」は、的中数が1本も動かなかった</h2>
+  <p>前半3ヶ月で不振の7人を選び、後半3ヶ月で外して試した。回収率+0.4ptと出たが、的中は98本対98本で同数。回収差の84%が上位3レースの高配当由来だった。少数の高配当で動く数字は信用できない。</p>
+  <p class="src">検証した規模: 後半3,194レース</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>ばんえいの予想199件が、成績から丸ごと抜けていた</h2>
+  <p>公式データは「帯広ば」、こちらの保存は「帯広」。この不一致で照合できず、1競走まるごと記録に入っていなかった。修正して1,442→1,623レースになり、複勝率は51.2%→50.2%に下がった。下がった方が本当の数字。</p>
+  <p class="src">検証した規模: 予想1,623レース</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>7日間、中央のデータ取得が黙って飛ばされ続けていた</h2>
+  <p>「他の処理が動いていたら中断する」判定が、無関係なプロセスまで数えていた。そのため毎日「使用中なので飛ばす」と記録して何も取っていなかった。ログの合計だけ見ていると気づけない類のバグ。</p>
+  <p class="src">検証した規模: 7日分</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>チェックは全部通っていたのに、公開していた数字が古かった</h2>
+  <p>鮮度チェックは「ページ」と「中間データ」しか比べておらず、その手前の生データとの差が監視の外だった。生データは当日更新なのに中間データは6日前。ページは中間データより新しいので緑が返る。緑は「正常」ではなく「そのチェックが見ている範囲では異常なし」でしかない。</p>
+  <p class="src">検証した規模: —</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>赤が消えないチェックは、そのうち誰も見なくなる</h2>
+  <p>出力がフォルダの場合、中のファイルを全部作り直してもフォルダの更新日時は動かない。そのため自動修復を回しても永久に「古い」と表示され続ける偽陽性になっていた。中の最新ファイルを見るよう修正。偽の赤は本物の異常を埋もれさせる。</p>
+  <p class="src">検証した規模: —</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>揮発する数字を、手書きの文章に書かない</h2>
+  <p>記事カードの紹介文に「地方176,054レースで実測」と手書きしていたが、データは178,832レースまで増え、別ページは177,134レースと表示。サイト内で食い違った。動く数字は「17万レース超」のように増えても嘘にならない丸め表現にし、正確な値は各ページが実測で出す。</p>
+  <p class="src">検証した規模: —</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>短距離ほど堅い。荒れるのは長距離のほう</h2>
+  <p>1000m以下は1番人気の勝率45.9%・複勝78.7%、3連単の中央値6,960円。距離が延びるほど単調に荒れ、2000m以上では勝率39.4%・複勝72.0%・中央値12,420円になる。勝ち馬が6番人気以下になる割合も7.3%→12.0%。短距離は紛れが少ない。 ROIでも同方向で、1番人気を毎レース買うと1000m以下は単勝81.9%・複勝90.4%、2000m以上は76.7%・86.4%。ただし全部100%未満。</p>
+  <p class="src">検証した規模: 地方177,134レース</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>枠の有利不利は競馬場でまるで違う。川崎と姫路で40pt差</h2>
+  <p>枠順は抽選なので生の比較でよい（頭数で正規化）。内枠が有利なのは川崎+19.3・水沢+9.0・大井+6.7・浦和+6.4。外枠が有利なのは姫路-21.2・船橋-18.2・門別-17.9・名古屋-11.7。全体では短距離ほど外枠有利（1000m以下で-12.3、1700m以上では-1.1）だが、川崎と盛岡は短距離でも内枠が強く、場によって符号が逆転する。</p>
+  <p class="src">検証した規模: 地方10頭以上のレース</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>実測に合わせて枠バイアスを直したら、4場すべてで失敗した</h2>
+  <p>点数表の枠バイアスが実測と符号が逆の場が4つあった（姫路・大井・浦和・佐賀）。1場ずつ実測に合わせてA/Bしたところ、姫路は複勝率74.5→66.7%・複ROI102.1→93.7%（z=-2.72）、大井は69.9→64.0%・94.0→86.0%（z=-3.81）と有意に悪化。浦和も悪化、佐賀は差なし。4場すべて改善せず全て撤回した。枠差は本物（頭数正規化・期間分割・馬番/枠番の両方で確認）だが、他の因子と噛み合って全体最適になっているので、1つだけ実測に寄せると崩れる。</p>
+  <p class="src">検証した規模: 4場・計1,670レース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>外枠の回収率はどの競馬場でもほぼ同じ。ばらつくのは内枠のほう</h2>
+  <p>その枠の馬を全部複勝で買った場合、外枠(6-8)のROIは全場で68.8〜75.3%とほぼ一定。一方で内枠(1-3)は川崎78.7%から門別61.1%まで大きくばらつく。市場は場ごとの枠差を十分に織り込めていない可能性がある。ただし全部100%未満なので、そのまま買っても勝てない。</p>
+  <p class="src">検証した規模: 地方10頭以上のレース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>競馬場の3分の1は季節開催だった。横並び比較の前提が崩れていた</h2>
+  <p>姫路の枠バイアスを他場と並べていたが、姫路は1〜4月しか開催しない（5〜12月はゼロ）。調べると14場中5場が季節開催だった。姫路は冬春のみ、門別は12〜3月が無く夏のみ、盛岡も冬は水沢へ移る。つまり門別と姫路は正反対の季節を走っている。場の違いを見ていたつもりが、季節の違いも一緒に見ていた。場を横断して比べる時は「その場が通年開催か」を先に確認する。</p>
+  <p class="src">検証した規模: 地方14場</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>符号が定まらない場は、単に効果が小さい場だった</h2>
+  <p>枠バイアスを期間で2分割すると14場中5場で符号が反転した。反転した場と一貫した場を比べると、平均の効果の大きさは一貫8.1pt対12.6pt。効果が小さいほど符号が揺れる＝ノイズ。ただし名古屋だけは効果が大きい（平均13.1pt）のに反転しており（前+2.3→後-23.9）、実際に傾向が変わった可能性がある。</p>
+  <p class="src">検証した規模: 地方14場</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>予想モデルは1年離れると6ポイント落ちる</h2>
+  <p>同じモデルを期間を変えて評価すると、重み調整に使った2026年2〜5月で複勝率68.4%、直後の6月で67.1%、1年前の2025年7〜8月では62.6%。時間的に離れるほど単調に落ちる。内訳は埋め込みテーブルのリークが2.6pt、モデル本体の過学習が3.3pt。</p>
+  <p class="src">検証した規模: 地方7,000レース規模</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>モデルを作り直しても、未知のデータでは0.3ポイントしか変わらなかった</h2>
+  <p>2026年全体(65,183頭)でGBMを再学習し、学習に一切使っていない2025年で検証した。学習期間では複勝率57.0%→69.0%と+12.0pt改善するのに、2025年では61.1%→61.4%で+0.3ptのみ。本命の一致率も学習期間49.6%に対し2025年は80.6%で、未知のデータでは新旧がほぼ同じ馬を選ぶ。+12ptは覚えただけで学んではいなかった。</p>
+  <p class="src">検証した規模: 学習6,369R / 検証1,574R</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>17ある採点項目のうち、7つは何も仕事をしていなかった</h2>
+  <p>全因子を1つずつ無効にして影響を測ったところ、近走実績・上がり・降級・斤量・前付け・前バイアス・血統の7つは、消しても成績が1ミリも動かなかった。重みがゼロに設定されているため（オッズに織り込み済みで逆効果と判定された結果で、バグではない）。ただし予測モデル側はこれらを特徴量として持ち続けているので、実質7個が常にゼロで入っている。</p>
+  <p class="src">検証した規模: 地方7,080レース</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>「上がり」の判定基準が中央の芝のままだった</h2>
+  <p>終盤の脚を評価する項目が、7,080レース中93回（0.2%）しか発動していなかった。条件が「34.5秒以下」で、これは中央の芝を基準にした数字。地方ダートの上がりは38〜43秒が普通なので、ほぼ全馬が対象外になる。中央用の閾値がそのまま残っていた。 なお正しい閾値に直し、唯一効く経路（モデル出力への後付け加算）で入れ直しても、複勝率+0.11pt・回収率は同値で有意差なし（z=+0.70）。設定ミスではあったが、直しても効果は誤差だった。</p>
+  <p class="src">検証した規模: 地方7,080レース</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>実際に効いている採点項目は8つだけだった</h2>
+  <p>消すと成績が落ちる順に、芝ダ適性-3.40pt、距離適性-2.09pt、枠バイアス-1.79pt、同コース-1.70pt、騎手成績-1.42pt、調教師-1.09pt、レースレベル-0.93pt、スピード指数-0.13pt。17項目のうち実質8項目で予想が成り立っている。</p>
+  <p class="src">検証した規模: 地方7,080レース</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-27</time>
+  </div>
+  <h2>点数計算を直しても、4割のレースでは結果に届いていなかった</h2>
+  <p>「上がり」の判定基準を地方向けに直し、発火率を0.2%から23.4%に上げたのに、本命が1頭も変わらなかった。原因は最終スコアが予測モデルの出力で丸ごと上書きされていること。線形の1位と実際の本命の一致率は57.5%で、残り4割は上書きで消えている。効くのはモデルの特徴量として生きている値か、モデル出力への後付け加算だけ。</p>
+  <p class="src">検証した規模: 地方7,080レース</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-26</time>
+  </div>
+  <h2>2年ぶんだと思っていたデータが、同じファイルだった</h2>
+  <p>2024年と2025年のファイルがMD5まで完全一致していた。取得プログラムが指定日を無視して「直近ぶん」を返す仕様だったため。これで出していた「発見」は撤回した。</p>
+  <p class="src">検証した規模: —</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-26</time>
+  </div>
+  <h2>重賞では、休養明けが長いほど成績が良い</h2>
+  <p>1〜3番人気に絞ると、連闘50.0%→中4-9週54.0%→中10-17週57.3%→中18週以上59.4%と右肩上がり。時代を2分割しても両方で同じ方向。「叩き2走目が良い」の逆。</p>
+  <p class="src">検証した規模: 重賞1,291レース</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-26</time>
+  </div>
+  <h2>同じ休養明けが、平場では逆に働く</h2>
+  <p>全レースで見ると連闘59.1%→中4-9週59.4%→中18週以上52.9%と、重賞と正反対。重賞は目標に向けて長期調整した馬が出てくるが、平場の長期休養は故障明けが多い。だから汎用の因子にはしていない。</p>
+  <p class="src">検証した規模: 地方432,255走</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-26</time>
+  </div>
+  <h2>走破タイムだと思って読んでいたのは、着差の欄だった</h2>
+  <p>位置がずれていて、タイムが0.3秒や11.4秒といった有り得ない値になっていた。仕様書に頼らず「レース内で1着の値が最小になるはず」という制約で総当たりして、正しい位置を特定した。</p>
+  <p class="src">検証した規模: 400レースで検証</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-25</time>
+  </div>
+  <h2>「前走で凡走した馬を消す」は、本命サイドにだけ効く</h2>
+  <p>前走が重賞級で5着以下、または前走同距離で4着以下という条件。重賞1,391レースで見ると1-3番人気で+8.3pt。人気薄では市場に織り込み済みで差が消える。</p>
+  <p class="src">検証した規模: 重賞1,391レース・約2万頭</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-24</time>
+  </div>
+  <h2>転厩も乗り替わりも、市場が先に織り込んでいる</h2>
+  <p>厩舎替わり・騎手交代のあとに成績が上がるかを中央と地方の両方で検証。生の差はあるが、人気で揃えると消える。点数には入れていない。</p>
+  <p class="src">検証した規模: 中央・地方</p>
+</article>
+<article class="memo" data-c="バグと訂正">
+  <div class="mhead">
+    <span class="cat" style="background:var(--orange)22;
+      color:var(--orange);
+      border:1px solid var(--orange)66">バグと訂正</span>
+    <time>2026-07-21</time>
+  </div>
+  <h2>特徴量の半分が常にゼロで動いていた。直したら悪化した</h2>
+  <p>予測モデルの14個ある入力のうち6個が、実行時に必ず0で入っていた。明確なバグなので直したところ、複勝率57.7%→54.8%と悪化。壊れた状態で調整が噛み合っていたため、あえて直さず据え置いている。</p>
+  <p class="src">検証した規模: —</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-20</time>
+  </div>
+  <h2>当てる力は無くても、「読めないレース」は判別できる</h2>
+  <p>スコア差でレースを5段階に分けると、本命の複勝率は鉄板77.3%から見送り55.2%まで22ポイント開く。当てる商品ではなく「無駄玉を減らす」商品にした根拠がこれ。</p>
+  <p class="src">検証した規模: 地方172,572レース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-20</time>
+  </div>
+  <h2>その156%は「再現できない」ではなく「後知恵だった」と判明</h2>
+  <p>当初は再現に失敗しただけだと思っていたが、追試で原因が分かった。⭐の判定に「そのレースの最終コーナー位置」を使っており、これはレースが終わるまで分からない情報だった。再現できなかったのではなく、再現してはいけない数字だった。詳細は下の項目。</p>
+  <p class="src">検証した規模: 638レース（原典）</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-20</time>
+  </div>
+  <h2>「唯一の黒字」だと思っていた買い方は、後知恵だった</h2>
+  <p>高知ファイナルの⭐フォメで回収率156%と出ていたが、⭐の判定に「そのレースの最終コーナー位置」を使っていた。これはレースが終わらないと分からない。過去走から先行を予測する形（実際に賭けられる方）に直すと回収率43%。勝つ⭐は後知恵、賭けられる⭐は負ける。対外公表は停止した。</p>
+  <p class="src">検証した規模: 高知ファイナル約700レース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-19</time>
+  </div>
+  <h2>うちのAIの本命は、「1番人気を買う」に負けている</h2>
+  <p>本命の複勝率78.5%に対し、単純に1番人気を買うと88.3%。これを認めないまま「当たる予想」を売ることはできないので、商品の定義そのものを変えた。</p>
+  <p class="src">検証した規模: 125,655レース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-19</time>
+  </div>
+  <h2>買い方を43通り総当たりして、回収率100%超はゼロだった</h2>
+  <p>券種・条件・絞り込みを組み替えて総当たり。天井は92.2%。控除率（20〜25%）を機械的な買い方で超えるのは、少なくともこのデータでは無理だった。</p>
+  <p class="src">検証した規模: 43戦略</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-19</time>
+  </div>
+  <h2>単勝を全頭均等に買うと72.8%にしかならない</h2>
+  <p>控除率から計算すると80%のはずが、実測は72.8%。人気薄が割高（過剰に売れている）ぶん、均等買いでは公称を下回る。</p>
+  <p class="src">検証した規模: 地方178,461レース</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-19</time>
+  </div>
+  <h2>差し馬が先行馬を逆転することは、一度も無かった</h2>
+  <p>「前が飽和すると差しが台頭する」を検証。前が多いと先行の成績は落ちる（-21pt）が、それでも差しが先行を上回った局面は無い。最悪でも先行が+22.8pt上だった。</p>
+  <p class="src">検証した規模: 地方68,280レース</p>
+</article>
+<article class="memo" data-c="数字の見方">
+  <div class="mhead">
+    <span class="cat" style="background:var(--purple)22;
+      color:var(--purple);
+      border:1px solid var(--purple)66">数字の見方</span>
+    <time>2026-07-19</time>
+  </div>
+  <h2>「複勝で黒字」は、集計のバグだった</h2>
+  <p>的中したレースだけ投資を計上していたため、回収率が水増しされていた。買った全レースを分母に取り直すと、本命の複勝は78〜81%。100%を超えていない。以後すべての検証で分母の取り方を最初に確認している。</p>
+  <p class="src">検証した規模: 27,315レース</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-19</time>
+  </div>
+  <h2>唯一プラスだったのは、高知のファイナルレースだけ</h2>
+  <p>4〜8番人気で先行する馬（⭐）の複勝が、1,769レースで回収率104%。人気が極端に歪む特殊な条件だから成立している。ただし3連単フォーメーションの156%は後知恵によるもので、対外公表を停止した（下記）。</p>
+  <p class="src">検証した規模: 1,769レース</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-18</time>
+  </div>
+  <h2>誕生日の馬番を買い続けても、プラスにはならない</h2>
+  <p>決まった馬番を毎レース買い続けた回収率は、どの番号でも58〜81%。全部100%未満。必勝の番号は無かった。</p>
+  <p class="src">検証した規模: 地方176,054レース</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-18</time>
+  </div>
+  <h2>節目リーチの騎手も、引退レースも、成績は動かない</h2>
+  <p>「通算◯勝リーチの騎手は人気薄でも走る」「引退レースは勝ちで飾る」を実測。いずれも人気で統制すると差が出なかった。人情は馬券に反映されない。</p>
+  <p class="src">検証した規模: 地方全体</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-17</time>
+  </div>
+  <h2>馬体重の増減は、当たらない</h2>
+  <p>大幅増31.5% / 増28.6% / 維持29.3% / 減30.3% / 大幅減28.8%。差は1〜3ptでほぼ平ら。市場も織り込んでいる。予想の点数には入れていない。</p>
+  <p class="src">検証した規模: 67万頭</p>
+</article>
+<article class="memo" data-c="効かない">
+  <div class="mhead">
+    <span class="cat" style="background:var(--blue)22;
+      color:var(--blue);
+      border:1px solid var(--blue)66">効かない</span>
+    <time>2026-07-17</time>
+  </div>
+  <h2>レース間隔（休み明け・連闘）も、馬の質を揃えると消える</h2>
+  <p>生の数字では休み明けが有利に見える（37.5%対27.4%）が、近走で好走した馬に限ると47.1/45.9/46.0/45.3%とほぼ平ら。弱い馬ほど詰めて使われるための見かけの相関だった。※重賞だけは別（上の項目参照）。</p>
+  <p class="src">検証した規模: 地方全体</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-17</time>
+  </div>
+  <h2>「道悪だから差し」は、地方では迷信</h2>
+  <p>先行と後方の複勝率差は、良+28.1pt / 稍重+28.1pt / 重・不良+29.8pt。馬場が渋っても前有利は変わらない（むしろ微増）。</p>
+  <p class="src">検証した規模: 12万走</p>
+</article>
+<article class="memo" data-c="検証結果">
+  <div class="mhead">
+    <span class="cat" style="background:var(--green)22;
+      color:var(--green);
+      border:1px solid var(--green)66">検証結果</span>
+    <time>2026-07-17</time>
+  </div>
+  <h2>先行馬が多いレースでは、先行馬が沈む</h2>
+  <p>先行タイプが1-2頭なら複勝率51.7%、5頭以上だと36.7%（-15pt）。効果は本物だが、点数に入れても本命は変わらない（全員が同じだけ下がるので順位が動かない）。買い方の側で使っている。</p>
+  <p class="src">検証した規模: 地方68,280レース</p>
+</article>
+
+<footer>
+カジ競馬<br>
+<a href="/">レース一覧</a> ／ <a href="/articles/">記事一覧</a> ／
+<a href="/record/">予想の記録</a> ／ <a href="/about/">このサイトについて</a>
+</footer>
+</div>
+<script>
+/* カテゴリの絞り込み。押した分だけ残す（全部offなら全部出す） */
+(function(){
+  var chips=[].slice.call(document.querySelectorAll('.cchip'));
+  var cards=[].slice.call(document.querySelectorAll('.memo'));
+  function apply(){
+    var on=chips.filter(function(c){return !c.classList.contains('off');})
+                .map(function(c){return c.dataset.c;});
+    var all=on.length===0||on.length===chips.length;
+    cards.forEach(function(k){
+      k.classList.toggle('hide', !all && on.indexOf(k.dataset.c)<0);
+    });
+  }
+  chips.forEach(function(c){
+    c.onclick=function(){ c.classList.toggle('off'); apply(); };
+  });
+})();
+/* アクセス計測（Cookieなし・自前）。失敗しても本体に影響させない */
+try{ new Image().src = '/stats.php?p=' + encodeURIComponent(location.pathname)
+   + '&r=' + encodeURIComponent(document.referrer) + '&t=' + Date.now(); }catch(e){}
+</script>
