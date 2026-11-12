@@ -3,6 +3,11 @@ main = "src/worker.js"
 compatibility_date = "2025-09-01"
 compatibility_flags = ["nodejs_compat"]
 
+# ★画面（Cloudflare）で足した変数を、公開のたびに消さない★
+#   2026-11-13 朝: GitHub からの公開に替えた翌朝、Xの鍵4つが消えていて投稿が認証エラーになった
+#   （secret list が空）。鍵は必ず「シークレット」の種類で登録する。これは念のための二重の守り。
+keep_vars = true
+
 # ★Browser Rendering（クラウドでヘッドレスChromeを動かし tweet.html の画像を生成）★
 #   Workers 有料プラン + ダッシュボードで Browser Rendering 有効化が必要。
 browser = { binding = "BROWSER" }
