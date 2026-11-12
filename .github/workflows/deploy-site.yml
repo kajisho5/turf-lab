@@ -1,0 +1,43 @@
+# 予想ページ一式（seventh-well.com/odds・/lab）を Cloudflare に公開する
+# main に反映したとき（関係するファイルが変わったときだけ）と、手動で動く
+name: deploy-site
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/**"
+      - "core/**"
+      - "cloudflare/**"
+      - "backtest/deploy.py"
+      - "backtest/site_config.py"
+      - ".github/workflows/deploy-site.yml"
+  workflow_dispatch:
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: "22" }
+      - name: tweet.html の書き間違い確認
+        run: |
+          python3 -c "import re;open('/tmp/script.js','w',encoding='utf-8').write(re.findall(r'<script>([\s\S]*?)</script>',open('deploy/tweet.html',encoding='utf-8').read())[0])"
+          node -e "new Function(require('fs').readFileSync('/tmp/script.js','utf8'))"
+      - name: 採点の二重管理がずれていないか
+        run: python3 backtest/check_scoring_sync.py
+      - name: 配信物を作れるか
+        run: python3 cloudflare/build.py --site both
+  deploy:
+    needs: check
+    uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
+    with:
+      working-directory: cloudflare
+      build-command: python3 build.py --site both
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
