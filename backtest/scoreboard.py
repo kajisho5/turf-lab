@@ -313,6 +313,8 @@ def main():
     if sb["races"] < 500:
         raise SystemExit("突き合わせできたレースが %d しかありません。壊れている可能性があるので中止" % sb["races"])
     txt = to_text(sb)
+    if not a.print:
+        txt = "\ufeff" + txt      # 先頭に目印を付ける（iPhone のブラウザで文字化けしないように）
     if a.print:
         print(txt)
         return
