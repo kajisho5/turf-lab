@@ -20,7 +20,7 @@
    ルート:
      GET /run?kind=morning|evening&key=<TRIGGER_KEY>[&dry=1][&mode=nar|jra]
          手動実行/テスト。dry=1 なら投稿せず要約JSONを返す。
-     cron: 23:00 UTC=朝 / 12:30 UTC=夜（wrangler.toml）
+     cron: 23:30 UTC=朝8:30 / 13:00 UTC=夜22:00（wrangler.toml）。朝/夜は動いた時刻で決める
    ===================================================================== */
 
 import puppeteer from "@cloudflare/puppeteer";
@@ -33,39 +33,17 @@ const MODES = ["nar", "jra"];               // 中央は開催が無ければ0�
 const RENDER_TIMEOUT_MS = 420000;           // __autoOut 待ちの上限（朝の全場予想がCloudflare上で数分かかる）
 const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じない時間（既定60秒では足りない）
 
+/** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
+export function kindForTime(ms) {
+  const h = new Date((Number(ms) || Date.now()) + 9 * 3600 * 1000).getUTCHours();
+  return (h >= 4 && h < 14) ? "morning" : "evening";
+}
+
 export default {
   async scheduled(event, env, ctx) {
-    // 鍵の確認だけ（投稿しない）: "10 15 * * *" を臨時で足した時だけ動く。GET /2/users/me の結果をログに出す
-    if (event.cron === "10 15 * * *") {
-      const url = "https://api.twitter.com/2/users/me";
-      ctx.waitUntil((async () => {
-        const res = await fetch(url, { headers: { Authorization: await oauthHeader(env, "GET", url, {}) } });
-        console.log("autopost keycheck", res.status, (await res.text()).slice(0, 300));
-      })().catch(e => console.error("keycheck", e)));
-      return;
-    }
-    // メール通知のお試し（投稿しない・画像も作らない）: "22 16 * * *" を臨時で足した時だけ
-    if (event.cron === "47 16 * * *") {
-      ctx.waitUntil((async () => {
-        const fake = { kind: "evening", dry: true, modes: { nar: { ok: true, posts: [], posted: [{ id: "2115827836133036097", images: 0 }] } } };
-        try { await notifyMail(env, "evening", fake, null); console.log("mailtest sent"); }
-        catch (e) { console.error("mailtest failed", String(e && e.message || e), String(e && e.code || ""), JSON.stringify(e)); }
-      })());
-      return;
-    }
-    // 10/30 朝の出し直し（狙い目・★勝負つき）。1回きり、地方だけ
-    if (event.cron === "52 0 * * *") {
-      ctx.waitUntil((async () => {
-        let r = null, err = null;
-        try { r = await runAll(env, "morning", { dry: env.DRYRUN === "1", only: "nar", caption: "10/30\n地方競馬の予想です（狙い目・★勝負つき・確定版）" }); console.log("autopost result", JSON.stringify(r)); }
-        catch (e) { err = e; console.error("repost", e); }
-        try { await notifyMail(env, "morning", r, err); } catch (e) { console.error("notify mail failed", String(e && e.message || e)); }
-      })());
-      return;
-    }
-    // cron の時刻(UTC)で朝/夜を判定
-    // 朝は "0 23 * * *" だけ。それ以外（定時の夜＋臨時で足した1回きりの時刻）は全部「夜」
-    const kind = event.cron === "0 23 * * *" ? "morning" : "evening";
+    // 動いた時刻（日本時間）で朝/夜を決める。cron の文字列には頼らない
+    // （以前は "0 23 * * *" と完全一致した時だけ朝だったので、時刻をずらすと朝の回が夜扱いになった）
+    const kind = kindForTime(event.scheduledTime);
     ctx.waitUntil((async () => {
       let r = null, err = null;
       try { r = await runAll(env, kind, { dry: env.DRYRUN === "1" }); console.log("autopost result", JSON.stringify(r)); }

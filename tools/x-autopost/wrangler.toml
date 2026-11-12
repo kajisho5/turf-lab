@@ -7,9 +7,9 @@ compatibility_flags = ["nodejs_compat"]
 #   Workers 有料プラン + ダッシュボードで Browser Rendering 有効化が必要。
 browser = { binding = "BROWSER" }
 
-# ★cron（時刻はUTC）★ 8:00 JST=前日23:00 UTC / 21:30 JST=12:30 UTC
+# ★cron（時刻はUTC）★ 8:30 JST=前日23:30 UTC / 22:00 JST=13:00 UTC（2026-11-13: 全体を30分遅らせた）
 [triggers]
-crons = ["0 23 * * *", "30 12 * * *"]
+crons = ["30 23 * * *", "0 13 * * *"]
 
 [vars]
 # 生成元（legacyのtweet.html）。?auto=morning|evening&mode=nar|jra を付けて開く。
