@@ -3491,7 +3491,15 @@ function fetchTrackWeather(tc, date){
   const url="https://api.open-meteo.com/v1/forecast?latitude="+geo[0]+"&longitude="+geo[1]
     +"&hourly=precipitation,weather_code,temperature_2m&daily=precipitation_sum"
     +"&past_days=1&forecast_days=3&timezone=Asia%2FTokyo";
-  _WX_CACHE[key]=fetch(url).then(r=>r.ok?r.json():null).catch(()=>null);
+  /* 失敗したら少し待ってもう2回まで取り直す（2026-11-13。1回の失敗でその場の天気が全部出なくなっていた） */
+  const _get=async function(){
+    for(let i=0;i<3;i++){
+      try{ const r=await fetch(url); if(r.ok){ const j=await r.json(); if(j) return j; } }catch(_){}
+      if(i<2) await new Promise(function(res){ setTimeout(res, 700*(i+1)); });
+    }
+    return null;
+  };
+  _WX_CACHE[key]=_get();
   return _WX_CACHE[key];
 }
 function _wxEmoji(code){
@@ -6369,7 +6377,11 @@ async function checkRace(pr, _tn){
         if(cancelReason) break;         // 取消確定＝一生結果が来ないのでリトライ無駄
         resRows=parseResult(html);
         pay=parsePayouts(html);
-        if(resRows.length) break;      // 取得成功
+        /* ★着順だけでなく、単勝と複勝の払戻も読めた時に「取得成功」とする（2026-11-13）★
+           同じ日の答え合わせを2回作ったら、複勝の的中が 28/46 と 29/46 に割れた。着順は読めたが払戻が欠けたページを
+           1回で受け入れていたため（と見ている）。払戻が欠けていたら取り直す。3回やっても欠けていれば、今までどおりそのまま進む
+           （発売の無い券種・確定直後で払戻がまだ出ていない場合）。 */
+        if(resRows.length && pay && pay.tansho.length && pay.fukusho.length) break;      // 取得成功
       }catch(e){ resRows=[]; }
       if(_rt<2) await new Promise(r=>setTimeout(r, 1100*(_rt+1)));   // レート制限対策のバックオフ
     }
