@@ -268,18 +268,23 @@ def main():
     # ★時計の値（2026-11-13）★ 近3走の時計指数・上がり指数（s）と、場×距離ごとの持ち時計の指数（b）。
     #   学習データ（build_time_feats.py）と同じ関数で作る＝本番と学習で値がずれない。
     from build_time_feats import index_time
+    #   ★2026-11-13 別ファイル（horses_time.json）に分けた★ 公開側のレースページは horses.json の t/d しか使わないのに、
+    #   時計の値を同じファイルに入れたせいで読み込みが倍（3.0MB→5.9MB）になっていた。値そのものは変えていない。
+    #   読むのは tweet.html だけ（loadLtrHorseIndex が horses.json に貼り合わせる）。
     tm = index_time(sorted(paths), asof, names=set(made["horses.json"]))
+    made["horses_time.json"] = {}
     for nm, v in tm.items():
-        made["horses.json"][nm]["s"] = v["s"]
+        rec = {"s": v["s"]}
         if v["b"]:
-            made["horses.json"][nm]["b"] = v["b"]
-    have = sum(1 for v in made["horses.json"].values() if v.get("s") and v["s"][0] is not None)
+            rec["b"] = v["b"]
+        made["horses_time.json"][nm] = rec
+    have = sum(1 for v in made["horses_time.json"].values() if v.get("s") and v["s"][0] is not None)
     log("時計の値つき %d / %d 頭" % (have, len(made["horses.json"])))
     if have < len(made["horses.json"]) * 0.8:
         raise SystemExit("時計の値が付いた馬が8割未満です。壊れている可能性があるので中止")
 
     # ★空・激減では上書きしない★（取得や列の読み違いで索引が静かに壊れるのを防ぐ）
-    floor = {"horses.json": 10000, "jockeys.json": 300, "trainers.json": 400, "sires.json": 500}
+    floor = {"horses.json": 10000, "horses_time.json": 8000, "jockeys.json": 300, "trainers.json": 400, "sires.json": 500}
     for f, obj in made.items():
         if len(obj) < floor[f]:
             raise SystemExit("%s が %d件しかありません（下限 %d）。壊れている可能性があるので中止" % (f, len(obj), floor[f]))

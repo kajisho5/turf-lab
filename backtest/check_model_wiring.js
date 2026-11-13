@@ -106,6 +106,12 @@ for (const f of NEEDED_INDEX) {
     fail(`索引 ${f} が deploy.py の PUBLIC_MAP（公開サイト側）に無い`);
 }
 
+/* 時計の値（horses_time.json）は tweet.html だけが読む。運営側の MAP に無いと、時計つきモデルが止まって前のモデルに戻る */
+if (!deploy.includes('/seventh-well.com/odds/data/horses_time.json'))
+  fail('索引 horses_time.json が deploy.py の MAP（tweet.html側）に無い');
+if (!read('deploy/tweet.html').includes('data/horses_time.json'))
+  fail('tweet.html が horses_time.json を読んでいない（時計つきモデルの材料が届かない）');
+
 /* 索引の生成が日次に入っているか（入れ忘れると古い率で予想し続ける） */
 const daily = read('backtest/daily.py');
 for (const s of ['build_horse_index.py', 'build_jockey_index.py', 'build_dataset.py']) {

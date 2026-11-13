@@ -2471,11 +2471,23 @@ function loadLtrHorseIndex(){
   var f=(m==="jra")?"data/jra_horses.json":"data/horses.json";
   /* ★force-cacheは駄目★ 索引は毎日更新される。昨日の版（c/q/p無し）を
      掴んだまま新列が全部nullになる事故が実際に起きた。no-cacheで再検証させる。 */
-  _LTR_HIDX_P[m]=fetch(f,{cache:"no-cache"}).then(function(r){return r.json();})
-    .then(function(j){ _LTR_HIDX[m]=j||{}; return _LTR_HIDX[m]; })
-    .catch(function(){ _LTR_HIDX[m]={}; return _LTR_HIDX[m]; });
+  /* ★時計の値（s・b）は別ファイル horses_time.json（地方だけ・2026-11-13に分けた）★
+     公開側のレースページが読む horses.json を軽いままにするため。ここで馬ごとに貼り合わせるので、
+     使う側（ltrFeatTweet の rec.s / rec.b）は今までと同じ。
+     読めなかった・中身が少ない時は _LTR_TIME_OK を立てない＝時計つきモデルを使わず前のモデルで出す（安全側）。 */
+  var pt=(m==="nar")? fetch("data/horses_time.json",{cache:"no-cache"}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+                    : Promise.resolve(null);
+  _LTR_HIDX_P[m]=Promise.all([
+      fetch(f,{cache:"no-cache"}).then(function(r){return r.json();}).catch(function(){return null;}), pt
+    ]).then(function(a){
+      var j=a[0]||{}, t=a[1], n=0, k;
+      if(t){ for(k in t){ var rec=j[k], v=t[k]; if(rec&&v){ if(v.s) rec.s=v.s; if(v.b) rec.b=v.b; } } }
+      if(m==="nar"){ for(k in j){ var s0=j[k]&&j[k].s; if(s0&&s0.length>=6) n++; } _LTR_TIME_OK=(n>=8000); window.__T_INDEX_N=n; }
+      _LTR_HIDX[m]=j; return j;
+    });
   return _LTR_HIDX_P[m];
 }
+var _LTR_TIME_OK=false;
 /* クラス序数（build_dataset.py の _clv と同一定義・地方用）。
    ★tweetのclassLevelNameは中央スケール混在なので使わない★ */
 function _clvBuild(name){
@@ -2767,7 +2779,7 @@ async function scoreRace(html, r, trackName){
            T_SCALE は点数の幅の調整（新モデルは幅が約1.08倍に広がるので、判定の閾値の意味がずれないよう戻す）。
            切替前（C12）の上位3頭は裏の記録に残す。 */
         try{
-          if(tActive(ctx.raceDate) && typeof ltrScoreT==="function" && Object.keys(_ltrValsT).length===nums.length){
+          if(tActive(ctx.raceDate) && _LTR_TIME_OK && typeof ltrScoreT==="function" && Object.keys(_ltrValsT).length===nums.length){
             const _resT={}; let _okT=true;
             scored.forEach(x=>{ const v=ltrScoreT(_ltrFeat[x.num],"narTR"); if(v==null||!isFinite(v)) _okT=false; _resT[x.num]=v; });
             if(_okT){
