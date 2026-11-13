@@ -39,7 +39,7 @@ jobs:
           python3 -c "import re;open('/tmp/script.js','w',encoding='utf-8').write(re.findall(r'<script>([\s\S]*?)</script>',open('deploy/tweet.html',encoding='utf-8').read())[0])"
           node -e "new Function(require('fs').readFileSync('/tmp/script.js','utf8'))"
       - name: 採点の二重管理がずれていないか
-        run: python3 backtest/check_scoring_sync.py
+        run: python3 backtest/check_scoring_sync.py && node backtest/check_strength_line.js
       - name: 配信物を作れるか
         run: python3 cloudflare/build.py --site both
   deploy:
