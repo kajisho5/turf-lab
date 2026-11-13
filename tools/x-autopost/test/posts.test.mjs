@@ -1,4 +1,4 @@
-import { toThread, mergePosts } from "../src/posts.js";
+import { toThread, mergePosts, tidyMerged } from "../src/posts.js";
 let ok=0, ng=0; const eq=(n,a,b)=>{ const r=JSON.stringify(a)===JSON.stringify(b); r?ok++:(ng++,console.log("NG",n,JSON.stringify(a),JSON.stringify(b))); };
 const img=n=>Array.from({length:n},(_,i)=>"data:image/png;base64,otter"+i);
 // 朝: 4場 → もともと1件（まとめ不要）
@@ -17,6 +17,13 @@ eq("★勝負0の日は足さない",toThread("morning","nar",{date:"20261114",s
 const ev={posts:[{text:"的中まとめ",images:[]},{text:"回収率です",images:img(3)},{text:"段階別",images:[]},{text:"答え合わせです",images:img(4)},{text:"答え合わせです（2）",images:img(2)}]};
 t=toThread("evening","nar",ev); eq("夜は分けると5件",t.length,5); m=mergePosts(t);
 eq("夜まとめの文",m.text,"的中まとめ\n\n段階別"); eq("夜まとめの画像",m.images.length,9);
+// 1件にまとめた時の文（タグは最後に1回・見出しを整える・数字の行は変えない）
+eq("文を整える", tidyMerged(["▼朝の予想の答え合わせ\n【11/14 結果】地方\n★潮見10R ◎1 ◎3連単 108,610円\n鳴瀬10R ◎4 ◎ワイド 680円\n当たりは出てる。\n#競馬予想 #地方競馬",
+  "【11/14 段階別成績】地方\n全レース：41R 的中90% 回収115%\n★勝負：13R 的中100% 回収84%\n区分の並びはバラバラ。そのまま報告\n#競馬予想 #地方競馬"]),
+  "【11/14 答え合わせ】地方\n★潮見10R ◎1 3連単 108,610円\n鳴瀬10R ◎4 ワイド 680円\n当たりは出てる。\n\n▼区分ごとの成績\n全レース：41R 的中90% 回収115%\n★勝負：13R 的中100% 回収84%\n区分の並びはバラバラ。そのまま報告\n\n#競馬予想 #地方競馬");
+eq("タグが違えば両方残す（重なりだけ除く）", tidyMerged(["a\n#競馬予想 #地方競馬", "b\n#競馬予想 #競馬"]), "a\n\nb\n\n#競馬予想 #地方競馬 #競馬");
+eq("タグが無ければ足さない", tidyMerged(["a", "b"]), "a\n\nb");
+eq("文の中の # は動かさない", tidyMerged(["#1 の馬が勝った\n結果 #競馬予想 つき"]), "#1 の馬が勝った\n結果 #競馬予想 つき");
 // 21枚以上はまとめない
 eq("21枚はまとめない",mergePosts([{text:"a",images:img(11)},{text:"b",images:img(10)}]),null);
 // 文だけ → まとめない（画像が無い）

@@ -30,6 +30,33 @@ export function mergePosts(posts) {
   posts.forEach(p => (p.images || []).forEach(i => images.push(i)));
   if (!images.length || images.length > MAX_MEDIA) return null;
   const texts = posts.filter(p => !(p.images || []).length && p.text).map(p => p.text);
-  const text = texts.length ? texts.join("\n\n") : (posts[0].text || "");
+  const text = texts.length ? tidyMerged(texts) : (posts[0].text || "");
   return { text, images };
+}
+
+/* いくつかの文を1件の文に整える（2026-11-13・本人の指摘「タグが二つとかになってる」）。
+   - ハッシュタグの行は集めて、重なりを除いて最後に1回だけ
+   - 「▼朝の予想の答え合わせ」は外す（返信でぶら下げていた頃の見出し。今は単独の投稿）
+   - 見出し【M/D 結果】は【M/D 答え合わせ】に。2つ目からの見出し【M/D ○○】は日付を繰り返さず「▼○○」に
+   - 券種の前の◎（◎3連単 など＝◎を軸にした買い方の印）は外す。「◎4 ◎3連単」と◎が続いて読みにくいため
+   数字や的中の行そのものは変えない */
+export function tidyMerged(texts) {
+  const tags = [], blocks = []; let seenHead = false;
+  (texts || []).forEach(t => {
+    const lines = [];
+    String(t || "").split("\n").forEach(raw => {
+      let l = raw.trim(); if (!l) return;
+      if (/^(#\S+\s*)+$/.test(l)) { l.split(/\s+/).forEach(g => { if (g && !tags.includes(g)) tags.push(g); }); return; }
+      if (l === "▼朝の予想の答え合わせ") return;
+      const h = l.match(/^【(\d{1,2}\/\d{1,2}) (.+?)】(.*)$/);
+      if (h) {
+        if (!seenHead) { seenHead = true; l = `【${h[1]} ${h[2] === "結果" ? "答え合わせ" : h[2]}】${h[3]}`; }
+        else l = "▼" + (h[2] === "段階別成績" ? "区分ごとの成績" : h[2]);
+      }
+      l = l.replace(/ ◎(?=(単勝|複勝|枠連|馬連|馬単|ワイド|3連複|3連単))/g, " ");
+      lines.push(l);
+    });
+    if (lines.length) blocks.push(lines.join("\n"));
+  });
+  return blocks.join("\n\n") + (tags.length ? "\n\n" + tags.join(" ") : "");
 }
