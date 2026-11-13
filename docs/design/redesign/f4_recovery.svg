@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1878" viewBox="0 0 1080 1878" font-family="'Noto Sans JP',sans-serif">
+<rect x="0" y="0" width="1080" height="1878" fill="#171614"/>
+<rect x="48" y="44" width="984" height="6" fill="#efe7d6"/>
+<rect x="48" y="54" width="984" height="2" fill="#efe7d6"/>
+<text x="48" y="150" font-size="80" font-weight="900" fill="#efe7d6" text-anchor="start" font-family="'Noto Serif JP',serif">回収率</text>
+<text x="1032" y="116" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end">対象 46レース</text>
+<text x="1032" y="152" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end">11月14日（土）</text>
+<rect x="48" y="176" width="984" height="2" fill="#efe7d6"/>
+<text x="48" y="216" font-size="22" font-weight="400" fill="#b8b0a0" text-anchor="start">◎から買った場合の、券種ごとの回収率（100円ずつ）。金＝100%以上</text>
+<text x="48" y="276" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="start">券種</text>
+<text x="560" y="276" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="end">回収率</text>
+<text x="1032" y="276" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="end">的中</text>
+<rect x="48" y="290" width="984" height="2" fill="#6b665c"/>
+<rect x="48" y="302" width="984" height="56" fill="#211f1c"/>
+<text x="72" y="340" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">◎ 単勝</text>
+<text x="560" y="342" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">207%</text>
+<text x="1008" y="340" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">12/46（26%）</text>
+<text x="72" y="400" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">◎ 複勝</text>
+<text x="560" y="402" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">129%</text>
+<text x="1008" y="400" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">29/46（63%）</text>
+<rect x="48" y="422" width="984" height="56" fill="#211f1c"/>
+<text x="72" y="460" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">馬連 ◎ー相手</text>
+<text x="560" y="462" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">92%</text>
+<text x="1008" y="460" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">8/46（17%）</text>
+<text x="72" y="520" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">馬単 ◎→相手</text>
+<text x="560" y="522" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">65%</text>
+<text x="1008" y="520" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">4/46（9%）</text>
+<rect x="48" y="542" width="984" height="56" fill="#211f1c"/>
+<text x="72" y="580" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">ワイド ◎ー相手</text>
+<text x="560" y="582" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">160%</text>
+<text x="1008" y="580" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">26/46（57%）</text>
+<text x="72" y="640" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">3連複 ◎ー相手2</text>
+<text x="560" y="642" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">86%</text>
+<text x="1008" y="640" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">6/46（13%）</text>
+<rect x="48" y="662" width="984" height="56" fill="#211f1c"/>
+<text x="72" y="700" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">3連単マルチ ◎</text>
+<text x="560" y="702" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">60%</text>
+<text x="1008" y="700" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end">3/46（7%）</text>
+<rect x="48" y="742" width="984" height="72" fill="#211f1c" stroke="#6b665c" stroke-width="2"/>
+<text x="72" y="789" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">◎軸 合計</text>
+<text x="400" y="792" font-size="40" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">124%</text>
+<text x="800" y="788" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">257,600円 → 319,400円</text>
+<text x="1008" y="788" font-size="26" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">+61,800</text>
+<rect x="48" y="826" width="984" height="72" fill="#211f1c" stroke="#6b665c" stroke-width="2"/>
+<text x="72" y="873" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">○軸 合計</text>
+<text x="400" y="876" font-size="40" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">35%</text>
+<text x="800" y="872" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">138,000円 → 47,860円</text>
+<text x="1008" y="872" font-size="26" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">−90,140</text>
+<rect x="48" y="910" width="984" height="72" fill="#211f1c" stroke="#efe7d6" stroke-width="4"/>
+<text x="72" y="957" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">総合計</text>
+<text x="400" y="960" font-size="40" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">93%</text>
+<text x="800" y="956" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">395,600円 → 367,260円</text>
+<text x="1008" y="956" font-size="26" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">−28,340</text>
+<rect x="48" y="1008" width="984" height="2" fill="#efe7d6"/>
+<text x="48" y="1050" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="start">100円単位・◎軸／○軸の流し。配当は確定値。分母は買った全レース　／　馬券は20歳から</text>
+<rect x="0" y="1150" width="1080" height="40" fill="#000000"/>
+<rect x="48" y="1234" width="984" height="6" fill="#efe7d6"/>
+<rect x="48" y="1244" width="984" height="2" fill="#efe7d6"/>
+<text x="48" y="1326" font-size="80" font-weight="900" fill="#efe7d6" text-anchor="start" font-family="'Noto Serif JP',serif">場別 回収率</text>
+<text x="1032" y="1306" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end">地方</text>
+<text x="1032" y="1342" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end">11月14日（土）</text>
+<rect x="48" y="1366" width="984" height="2" fill="#efe7d6"/>
+<text x="72" y="1416" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="start">場</text>
+<text x="500" y="1416" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="end">レース</text>
+<text x="670" y="1416" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="end">推奨</text>
+<text x="850" y="1416" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="end">見送り込み</text>
+<text x="1008" y="1416" font-size="24" font-weight="700" fill="#b8b0a0" text-anchor="end">狙い目</text>
+<rect x="48" y="1430" width="984" height="2" fill="#6b665c"/>
+<rect x="48" y="1442" width="984" height="60" fill="#211f1c"/>
+<text x="72" y="1483" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">潮見</text>
+<text x="500" y="1483" font-size="28" font-weight="400" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">11</text>
+<text x="670" y="1484" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">191%</text>
+<text x="850" y="1484" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">175%</text>
+<text x="1008" y="1484" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">37%</text>
+
+<text x="72" y="1549" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">鳴瀬</text>
+<text x="500" y="1549" font-size="28" font-weight="400" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">12</text>
+<text x="670" y="1550" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">96%</text>
+<text x="850" y="1550" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">88%</text>
+<text x="1008" y="1550" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">115%</text>
+<rect x="48" y="1574" width="984" height="60" fill="#211f1c"/>
+<text x="72" y="1615" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">白波</text>
+<text x="500" y="1615" font-size="28" font-weight="400" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">12</text>
+<text x="670" y="1616" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">43%</text>
+<text x="850" y="1616" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">43%</text>
+<text x="1008" y="1616" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">51%</text>
+
+<text x="72" y="1681" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">汐入</text>
+<text x="500" y="1681" font-size="28" font-weight="400" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">11</text>
+<text x="670" y="1682" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">102%</text>
+<text x="850" y="1682" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">94%</text>
+<text x="1008" y="1682" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">139%</text>
+<rect x="48" y="1706" width="984" height="60" fill="#211f1c" stroke="#efe7d6" stroke-width="4"/>
+<text x="72" y="1747" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">全場</text>
+<text x="500" y="1747" font-size="28" font-weight="400" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">46</text>
+<text x="670" y="1748" font-size="32" font-weight="700" fill="#e8c268" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">108%</text>
+<text x="850" y="1748" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">99%</text>
+<text x="1008" y="1748" font-size="32" font-weight="700" fill="#b8b0a0" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">86%</text>
+<rect x="48" y="1788" width="984" height="2" fill="#efe7d6"/>
+<text x="48" y="1830" font-size="24" font-weight="400" fill="#b8b0a0" text-anchor="start">◎軸／○軸 全券種1点100円換算。金＝100%以上</text>
+</svg>
