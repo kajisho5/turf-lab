@@ -8307,6 +8307,17 @@ function isPass(m){ if(m.ovr==="pass" && !m.skip)return true; if(m.ovr==="aim"||
    「買うレースだけ(全体の10-15%)に絞る」と JRA◎複勝73%/ROI107%、NAR68%/ROI92%。
    ※これは"必ず儲かる"ではなく「自信のあるレースを教える」機能。多頭数(14頭〜)は
      荒れやすいので見送り推奨。過信させないよう、そのまま数字を出す。 */
+/* ★勝負の境目（時計つきモデル用）と、抜け具合 c の計算。c は全頭の点数から出す（点数の単位に依らない） */
+const BATTLE_C = 0.4922;
+function battleC(m){
+  const rk=(m&&m.ranked)||[];
+  const ss=rk.map(function(x){ return x&&x.s; }).filter(function(v){ return typeof v==="number" && isFinite(v); });
+  if(ss.length<5 || ss.length!==rk.length) return null;
+  const srt=ss.slice().sort(function(a,b){ return b-a; });
+  const spread=(srt[0]-srt[srt.length-1])||1;
+  const mean=ss.reduce(function(a,b){ return a+b; },0)/ss.length;
+  return 0.6*(srt[0]-mean)/spread + 0.4*(srt[0]-srt[1])/spread;
+}
 function betGap(m){
   const rk=m.ranked||m.marks||[];
   if(rk.length<2 || rk[0].s==null || rk[1].s==null) return null;
@@ -8757,8 +8768,22 @@ function betPlan(m){
   }
   const _vs = valueSpot ? {valueSpot:true, valueNote:"◎が人気薄の先行馬（実測ROI145%/38Rだが大規模追試4,170RではROI61%＝再現せず。実験枠・過信禁物）"} : {};
 
-  if(frontEdge && gap>=4) return Object.assign({tier:"勝負", cls:"battle", reason:"◎が楽に逃げられる展開", gap, roi:98}, _vs);
-  if(gap>=8)   return Object.assign({tier:"勝負",   cls:"battle", reason:"◎が抜けている", gap, roi:(_nar?92:107)}, _vs);
+  /* ★時計つきモデル（mv 2.3）で並べたレースの★勝負（2026-11-13 作り直し）★
+     今までの「点差8以上」は全体の4割が当てはまり、多すぎた（11/14 は34レース中17レース）。
+     時計つきで並べたレースは「抜け具合 c が上位2割（c≥BATTLE_C）」だけを★勝負にする。
+     c = 0.6×(◎−平均)/幅 + 0.4×(◎−○)/幅（◎3着内見込みの表と同じ値。オッズ不使用）。
+     検証（backtest/bt_battle_rule.py・境目は2021/2022年で決めて固定）: 2023-01〜2026-11-12・52,419R のうち 10,227R（19.5%）が該当、
+     ◎1着50.4%・3着内80.8%・単87.7・複92.9。全体（単83.9・複89.3）との差は 単+3.83［+1.02〜+6.61］・複+3.63［+2.42〜+4.77］、4年とも上。
+     「楽に逃げられる展開」は公式データで確かめられないので、時計つきのレースでは★勝負の条件から外した（点差4以上なら狙い目のまま）。
+     時計つきで並べていないレース（中央・ばんえい・11/13以前）は今までの決まりのまま。 */
+  const _tRule = (_nar && m.shadow && m.shadow.t===1);
+  if(_tRule){
+    const _c=battleC(m);
+    if(_c!=null && _c>=BATTLE_C) return Object.assign({tier:"勝負", cls:"battle", reason:"◎が抜けている", gap, roi:93}, _vs);
+  } else {
+    if(frontEdge && gap>=4) return Object.assign({tier:"勝負", cls:"battle", reason:"◎が楽に逃げられる展開", gap, roi:98}, _vs);
+    if(gap>=8)   return Object.assign({tier:"勝負",   cls:"battle", reason:"◎が抜けている", gap, roi:(_nar?92:107)}, _vs);
+  }
   if(gap>=4)   return Object.assign({tier:"複勝",   cls:"fuku", reason:"◎優勢", gap, roi:(_nar?85:88)}, _vs);
   if(valueSpot) return {tier:"複勝", cls:"fuku", reason:"◎は人気薄の先行馬＝配当妙味", gap, roi:145, valueSpot:true, valueNote:"実測ROI145%(38R)⇔大規模追試ROI61%(4,170R)＝小サンプルの可能性大。実験枠として少額で"};
   return {tier:"様子見", cls:"pass", reason:"上位が僅差", gap, roi:null};
