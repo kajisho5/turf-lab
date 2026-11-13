@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" font-family="'Noto Sans JP',sans-serif">
+<rect x="0" y="0" width="1500" height="500" fill="#171614"/>
+<rect x="420" y="96" width="1010" height="6" fill="#efe7d6"/>
+<rect x="420" y="106" width="1010" height="2" fill="#efe7d6"/>
+<text x="420" y="232" font-size="124" font-weight="900" fill="#efe7d6" text-anchor="start" font-family="'Noto Serif JP',serif">カジ競馬</text>
+<text x="940" y="178" font-size="34" font-weight="700" fill="#efe7d6" text-anchor="start">地方競馬　AI予想</text>
+<text x="940" y="228" font-size="34" font-weight="700" fill="#efe7d6" text-anchor="start">毎朝 8:30　全場・全レース</text>
+<rect x="420" y="262" width="1010" height="2" fill="#efe7d6"/>
+<rect x="420" y="296" width="322" height="108" fill="#211f1c" stroke="#6b665c" stroke-width="2"/>
+<rect x="420" y="296" width="322" height="8" fill="#a3271c"/>
+<text x="440" y="346" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">朝に出したら変えない</text>
+<text x="440" y="384" font-size="22" font-weight="400" fill="#b8b0a0" text-anchor="start">オッズを見る前に出します</text>
+<rect x="764" y="296" width="322" height="108" fill="#211f1c" stroke="#6b665c" stroke-width="2"/>
+<rect x="764" y="296" width="322" height="8" fill="#a3271c"/>
+<text x="784" y="346" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">外れも全部のせる</text>
+<text x="784" y="384" font-size="22" font-weight="400" fill="#b8b0a0" text-anchor="start">毎晩 22:30 に答え合わせ</text>
+<rect x="1108" y="296" width="322" height="108" fill="#211f1c" stroke="#6b665c" stroke-width="2"/>
+<rect x="1108" y="296" width="322" height="8" fill="#a3271c"/>
+<text x="1128" y="346" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">成績は全部公開</text>
+<text x="1128" y="384" font-size="22" font-weight="400" fill="#b8b0a0" text-anchor="start">週ごと・月ごとにまとめます</text>
+<rect x="0" y="0" width="1500" height="60" fill="#ff00ff" opacity=".10"/>
+<rect x="0" y="440" width="1500" height="60" fill="#ff00ff" opacity=".10"/>
+<circle cx="190" cy="490" r="150" fill="#ff00ff" opacity=".12"/>
+</svg>

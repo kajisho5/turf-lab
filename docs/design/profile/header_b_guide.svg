@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" font-family="'Noto Sans JP',sans-serif">
+<rect x="0" y="0" width="1500" height="500" fill="#171614"/>
+<rect x="420" y="96" width="560" height="6" fill="#efe7d6"/>
+<rect x="420" y="106" width="560" height="2" fill="#efe7d6"/>
+<text x="420" y="232" font-size="124" font-weight="900" fill="#efe7d6" text-anchor="start" font-family="'Noto Serif JP',serif">カジ競馬</text>
+<rect x="420" y="262" width="560" height="2" fill="#efe7d6"/>
+<text x="420" y="312" font-size="32" font-weight="700" fill="#efe7d6" text-anchor="start">地方競馬　AI予想</text>
+<text x="420" y="356" font-size="26" font-weight="400" fill="#b8b0a0" text-anchor="start">毎朝 8:30　全場・全レース</text>
+<text x="420" y="394" font-size="26" font-weight="400" fill="#b8b0a0" text-anchor="start">外れも全部のせます　／　毎晩 22:30 答え合わせ</text>
+<rect x="1030" y="96" width="400" height="312" fill="#211f1c" stroke="#efe7d6" stroke-width="4"/>
+<rect x="1032" y="98" width="396" height="10" fill="#a3271c"/>
+<rect x="1050" y="124" width="70" height="46" fill="#a3271c"/>
+<text x="1085" y="158" font-size="28" font-weight="700" fill="#ffffff" text-anchor="middle" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">5R</text>
+<text x="1136" y="158" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">C3ー5</text>
+<rect x="1298" y="127" width="112" height="40" fill="#a3271c"/>
+<text x="1354" y="156" font-size="24" font-weight="700" fill="#ffffff" text-anchor="middle">★勝負</text>
+<rect x="1050" y="186" width="360" height="2" fill="#6b665c"/>
+<rect x="1042" y="200" width="376" height="46" fill="#322b27"/>
+<rect x="1042" y="200" width="6" height="46" fill="#ff7a6b"/>
+<text x="1058" y="234" font-size="30" font-weight="700" fill="#ff7a6b" text-anchor="start">◎</text>
+<text x="1126" y="234" font-size="30" font-weight="700" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">5</text>
+<text x="1144" y="234" font-size="28" font-weight="700" fill="#efe7d6" text-anchor="start">オッターダッシュ</text>
+<text x="1058" y="280" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">○</text>
+<text x="1126" y="280" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">7</text>
+<text x="1144" y="280" font-size="25" font-weight="500" fill="#efe7d6" text-anchor="start">ラッコノユメ</text>
+<text x="1058" y="326" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="start">▲</text>
+<text x="1126" y="326" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">2</text>
+<text x="1144" y="326" font-size="25" font-weight="500" fill="#efe7d6" text-anchor="start">カワウソブレイブ</text>
+<text x="1058" y="372" font-size="26" font-weight="700" fill="#b8b0a0" text-anchor="start">△</text>
+<text x="1126" y="372" font-size="26" font-weight="700" fill="#efe7d6" text-anchor="end" font-family="'Roboto Condensed','Noto Sans JP',sans-serif">4</text>
+<text x="1144" y="372" font-size="25" font-weight="500" fill="#efe7d6" text-anchor="start">セセラギキング</text>
+<rect x="0" y="0" width="1500" height="60" fill="#ff00ff" opacity=".10"/>
+<rect x="0" y="440" width="1500" height="60" fill="#ff00ff" opacity=".10"/>
+<circle cx="190" cy="490" r="150" fill="#ff00ff" opacity=".12"/>
+</svg>
