@@ -3,18 +3,18 @@
  "claims": [
   {
    "id": "fuku-nar-p3",
-   "value": "72.8",
-   "desc": "複勝推奨(地方・C12) ◎複勝率%",
-   "measured": "2026-09-27",
-   "source": "C12再測定 holdout 2023- (12,934R)",
+   "value": "74.3",
+   "desc": "複勝推奨(地方・時計つきmv2.3) ◎複勝率%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py 2023- (14,641R)",
    "files": [
     [
      "deploy/tweet.html",
-     "nar:\\{p3:72\\.8"
+     "nar:\\{p3:74\\.3"
     ],
     [
      "deploy/tweet.html",
-     "実測72\\.8%"
+     "実測74\\.3%"
     ]
    ]
   },
@@ -33,14 +33,14 @@
   },
   {
    "id": "fuku-nar-roi",
-   "value": "89.4",
-   "desc": "複勝推奨(地方・C12) 複勝ROI%",
-   "measured": "2026-09-27",
-   "source": "C12再測定 holdout",
+   "value": "90.9",
+   "desc": "複勝推奨(地方・時計つきmv2.3) 複勝ROI%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py",
    "files": [
     [
      "deploy/tweet.html",
-     "roi:89\\.4"
+     "roi:90\\.9"
     ]
    ]
   },
@@ -85,35 +85,35 @@
   },
   {
    "id": "all-nar-p3",
-   "value": "58.4",
-   "desc": "全レース(地方・C12) ◎複勝率%",
-   "measured": "2026-09-27",
-   "source": "C12再測定 払戻基準 (49,323R)",
+   "value": "62.9",
+   "desc": "全レース(地方・時計つきmv2.3) ◎複勝率%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py 払戻基準 (52,419R)",
    "files": [
     [
      "deploy/tweet.html",
-     "allP3:58\\.4"
+     "allP3:62\\.9"
     ],
     [
      "deploy/scoring_explainer.html",
-     "58\\.4%"
+     "62\\.9%"
     ]
    ]
   },
   {
    "id": "all-nar-roi",
-   "value": "86.4",
-   "desc": "全レース(地方・C12) 複勝ROI%",
-   "measured": "2026-09-27",
-   "source": "eval_bets holdout (C12)",
+   "value": "89.3",
+   "desc": "全レース(地方・時計つきmv2.3) 複勝ROI%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py",
    "files": [
     [
      "deploy/tweet.html",
-     "allRoi:86\\.4"
+     "allRoi:89\\.3"
     ],
     [
      "deploy/scoring_explainer.html",
-     "86\\.4%"
+     "89\\.3%"
     ]
    ]
   },
@@ -149,27 +149,27 @@
   },
   {
    "id": "tan-nar-hit",
-   "value": "27.8",
-   "desc": "単勝◎的中率(地方・C12)%",
-   "measured": "2026-09-27",
-   "source": "eval_bets 33列+C12",
+   "value": "31.2",
+   "desc": "単勝◎的中率(地方・時計つきmv2.3)%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py",
    "files": [
     [
      "deploy/scoring_explainer.html",
-     "27\\.8%"
+     "31\\.2%"
     ]
    ]
   },
   {
    "id": "tan-nar-roi",
-   "value": "82.0",
-   "desc": "単勝◎ROI(地方・C12)%",
-   "measured": "2026-09-27",
-   "source": "eval_bets 33列+C12",
+   "value": "83.9",
+   "desc": "単勝◎ROI(地方・時計つきmv2.3)%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py",
    "files": [
     [
      "deploy/scoring_explainer.html",
-     "82\\.0%"
+     "83\\.9%"
     ]
    ]
   },
@@ -214,14 +214,14 @@
   },
   {
    "id": "iron-p3",
-   "value": "86.8",
-   "desc": "鉄板(◎1人気×単勝1.9倍以下×10頭以下・C12) ◎複勝率%",
-   "measured": "2026-09-27",
-   "source": "C12再測定 (地方878R・公式確定オッズ・Wilson95% 84.4〜88.9)",
+   "value": "87.2",
+   "desc": "鉄板(◎1人気×単勝1.9倍以下×10頭以下・時計つきmv2.3) ◎複勝率%",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py (地方1,741R・公式確定オッズ2026-03〜11・Wilson95% 85.6〜88.7)",
    "files": [
     [
      "deploy/tweet.html",
-     "実測◎複勝率86\\.8%"
+     "実測◎複勝率87\\.2%"
     ]
    ]
   },
@@ -240,14 +240,14 @@
   },
   {
    "id": "iron-roi",
-   "value": "92.9",
-   "desc": "鉄板 複勝ROI%(C12)",
-   "measured": "2026-09-27",
-   "source": "C12再測定",
+   "value": "93.3",
+   "desc": "鉄板 複勝ROI%(時計つきmv2.3)",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py",
    "files": [
     [
      "deploy/tweet.html",
-     "複勝ROI92\\.9%"
+     "複勝ROI93\\.3%"
     ]
    ]
   },
@@ -266,35 +266,35 @@
   },
   {
    "id": "iron-tan-roi",
-   "value": "83.7",
-   "desc": "鉄板 単勝ROI%(C12・コメント内の参考値)",
-   "measured": "2026-09-27",
-   "source": "C12再測定",
+   "value": "83.9",
+   "desc": "鉄板 単勝ROI%(時計つきmv2.3・コメント内の参考値)",
+   "measured": "2026-11-13",
+   "source": "backtest/verify_public_t.py",
    "files": [
     [
      "deploy/tweet.html",
-     "単勝ROI83\\.7%"
+     "単勝ROI83\\.9%"
     ]
    ]
   },
   {
    "id": "roi-range",
-   "value": "86",
-   "desc": "解説ページ注意書きの複勝ROIの幅の上端(地方C12 86.4を丸め)",
-   "measured": "2026-09-27",
+   "value": "89",
+   "desc": "解説ページ注意書きの複勝ROIの幅の上端(地方 89.3 を丸め)",
+   "measured": "2026-11-13",
    "source": "all-nar-roi と同じ",
    "files": [
     [
      "deploy/scoring_explainer.html",
-     "81〜86%"
+     "81〜89%"
     ]
    ]
   },
   {
    "id": "iron-p3-round",
    "value": "87",
-   "desc": "鉄板バッジの丸め表示(86.8)",
-   "measured": "2026-09-27",
+   "desc": "鉄板バッジの丸め表示(87.2)",
+   "measured": "2026-11-13",
    "source": "iron-p3 と同じ",
    "files": [
     [
@@ -342,4 +342,4 @@
    "allow_context": "撤回|撤去|再現できず|やめた"
   }
  ]
-}
+}

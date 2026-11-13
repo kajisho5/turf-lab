@@ -518,7 +518,7 @@
     <div class="sec-label">🔍 全場から絞り込む（先に「全場まとめて予想」）</div>
     <div class="btn-row">
       <button class="btn pickbtn" id="pickBtn">★ 勝負・狙い目だけ抽出</button>
-      <button class="btn pickbtn" id="fukuBtn" style="border-color:#51b883;color:#51b883">📗 複勝推奨だけ抽出（実測72.8%）</button>
+      <button class="btn pickbtn" id="fukuBtn" style="border-color:#51b883;color:#51b883">📗 複勝推奨だけ抽出（実測74.3%）</button>
       <button class="btn pickbtn" id="valueBtn" style="border-color:#b48ef0;color:#b48ef0">💰 妙味だけ抽出（◎人気薄×先行）</button>
     </div>
   </div>
@@ -4300,9 +4300,10 @@ function drawDigestCanvas(picks, date, tweetText){
    条件は isFukuRec と同一（9頭以下 × 信頼度40+ × ◎3番人気以内）。
    測り方: backtest/verify_fuku_rec.py（firmness()をそのまま移植・分母は買った全レース） */
 const FUKU_STATS={
-  /* 地方は2026-09-28〜C12の◎で測り直した値（holdout 2023-01〜2026-09・49,323R）。
+  /* 地方は2026-11-13に時計つきモデル（mv 2.3・43列）の◎で測り直した値（2023-01〜2026-11-12・52,419R・backtest/verify_public_t.py）。
+     C12（〜11/13の本番）の◎は p3:72.8 / roi:89.4 / n:12934 / allP3:58.4 / allRoi:86.4、
      旧LTRの◎は p3:73.5 / roi:86.4 / n:15165 / allP3:67.2 / allRoi:83.7 だった。 */
-  nar:{p3:72.8, roi:89.4, n:12934, allP3:58.4, allRoi:86.4},
+  nar:{p3:74.3, roi:90.9, n:14641, allP3:62.9, allRoi:89.3},
   jra:{p3:71.1, roi:85.8, n:1182,  allP3:58.2, allRoi:81.5}
 };
 function fukuStats(){ return FUKU_STATS[MODE==="jra"?"jra":"nar"]; }
@@ -5579,7 +5580,7 @@ function renderOneInto(m, host){
               : aim?(function(){const _bp=(typeof betPlan==="function")?betPlan(m):null; if(_bp&&_bp.valueSpot) return '<span class="value-badge" title="◎5-7番人気×先行。実測ROI145%(38R)だが大規模追試はROI61%(4,170R)＝実験枠。過信禁物">💰妙味</span>'; return '<span class="aim-badge" title="狙い目＝◎と○のスコア差ベース（実測ROI）。信頼度＝市場人気の裏付けで別軸">狙い目'+((m.firmO!=null&&m.firmO<40)?'·穴':'')+'</span>';})()
               : preAim?'<span class="preaim-badge">先行推奨</span>'
               : pass?'<span class="pass-badge">見送り</span>':'')
-              + (isIronRec(m)?'<span class="iron-badge" title="◎が1番人気×単勝1.9倍以下×10頭以下 → 実測◎複勝率86.8%（複勝ROI92.9%・地方878R実オッズ）">鉄板 複勝87%</span>'
+              + (isIronRec(m)?'<span class="iron-badge" title="◎が1番人気×単勝1.9倍以下×10頭以下 → 実測◎複勝率87.2%（複勝ROI93.3%・地方1,741R実オッズ）">鉄板 複勝87%</span>'
                  : isFukuRec(m)?'<span class="fuku-badge" title="9頭以下×信頼度40+×◎3番人気以内 → 実測◎複勝率'+fukuStats().p3+'%">◎複勝'+fukuStats().p3+'%</span>':'');
   card.innerHTML=`
     <div class="tc-head">
@@ -5857,7 +5858,7 @@ function drawTrackCanvas(trackName, races, date, noSave, tweetText){
       let shift=0;
       if(hi||pass){ x.save(); x.font="700 22px 'Noto Sans JP',sans-serif";
         shift=Math.max(96, x.measureText(battle?"★勝負":aim?"狙い目":preAim?"先行推奨":"見送り").width+30)+10; x.restore(); }
-      const fl="鉄板 複勝87%";   // C12実測86.8%（878R）。HTMLバッジ・claims_registry(iron-p3-round)と揃える
+      const fl="鉄板 複勝87%";   // 時計つきモデルの実測87.2%（1,741R）。HTMLバッジ・claims_registry(iron-p3-round)と揃える
       x.save(); x.font="800 18px 'Noto Sans JP',sans-serif";
       const fw2=x.measureText(fl).width+26, fh=30, fbx=badgeLeft-shift-fw2, fby=hy+4;
       roundRect(x,fbx,fby,fw2,fh,15);
@@ -8386,7 +8387,9 @@ function isPreAim(m){ if(noOddsFinal()) return false; if(m.ovr==="pass"||m.ovr==
    実測値は FUKU_STATS（1か所に集約）を見ること。2026-07-31に現行モデルで測り直し:
      地方 15,165R ◎複勝率73.5% / 複ROI86.4%（全レース平均 67.2% / 83.7%）
      中央  1,182R ◎複勝率71.1% / 複ROI85.8%（全レース平均 58.2% / 81.5%）
-   ★2026-09-27 地方はC12の◎で測り直し★ 12,934R ◎複勝率72.8% / 複ROI89.4%（全レース平均 58.4% / 86.4%）。
+   ★2026-09-27 地方はC12の◎で測り直し★ 12,934R ◎複勝率72.8 / 複ROI89.4（全レース平均 58.4 / 86.4）。
+   ★2026-11-13 地方は時計つきモデル（mv 2.3）の◎で測り直し★ 14,641R ◎複勝率74.3% / 複ROI90.9%（全レース平均 62.9% / 89.3%・52,419R）。
+     年別: 2023 73.7%・91.2 / 2024 75.6%・92.8 / 2025 73.7%・89.2 / 2026 74.2%・89.9（backtest/verify_public_t.py）。
      C12は人気薄の◎が増えるので全体の複勝率は下がり、回収率は上がる。
    ★旧記述は946R由来で「複勝率70% / ROI89% / 全体平均47.8%」だった。
      全体平均47.8%は中央の別テスト(448R)の値の混入で、+22ptの上積みは幻。
@@ -8397,8 +8400,9 @@ const FUKU_FIELD_MAX=9, FUKU_FIRM_MIN=40, FUKU_POP_MAX=3;
 /* ★鉄板: ◎が1番人気 × 単勝1.9倍以下 × 10頭以下。
    2026-08-03に現行モデル×公式確定オッズ(2026-03〜07)で測り直し(verify_iron_rec.py):
    → ◎複勝率84.2%（Wilson95% 82.2〜86.0）/ 複勝ROI90.4% / 単勝ROI79.9%（地方1,430R）。
-   ★2026-09-27 C12の◎で測り直し★ ◎複勝率86.8%（Wilson95% 84.4〜88.9）/ 複勝ROI92.9% /
-     単勝ROI83.7%（地方878R・同じ公式確定オッズ期間）。C12は◎が1番人気になる回数が減るので該当数は減る。
+   ★2026-09-27 C12の◎で測り直し★ ◎複勝率86.8（Wilson95% 84.4〜88.9）/ 複勝ROI92.9 / 単勝ROI83.7（地方878R・同じ公式確定オッズ期間）。
+   ★2026-11-13 時計つきモデル（mv 2.3）の◎で測り直し★ ◎複勝率87.2%（Wilson95% 85.6〜88.7）/ 複勝ROI93.3% /
+     単勝ROI83.9%（地方1,741R・公式確定オッズ 2026-03〜11）。該当数が増えたのは、期間が延びたのと、◎が1番人気になる回数が増えたため。C12は◎が1番人気になる回数が減るので該当数は減る。
    旧946R時代の「86%/ROI94%(n81)」はやや盛りだったため実測値に置換済み。
      併記されていた「全レース平均は複47.8%」は誤り（実測は地方67.2%・中央58.2%）。
    ※さらに信頼度75+まで絞ると複勝率94%・複ROI100%になるが、n32と少なくマグレの可能性が高いため採用しない。
@@ -8406,7 +8410,7 @@ const FUKU_FIELD_MAX=9, FUKU_FIRM_MIN=40, FUKU_POP_MAX=3;
      逆にアプリだけが高評価した馬(人気薄の◎)は複勝率9%・ROI36%で全滅する。 */
 const IRON_ODDS_MAX=1.9, IRON_FIELD_MAX=10;
 function isIronRec(m){
-  if(MODE!=="nar") return false;   // ★実測(86.8%・878R)は地方だけ。中央は未検証なので出さない（2026-09-28）
+  if(MODE!=="nar") return false;   // ★実測(87.2%・1,741R)は地方だけ。中央は未検証なので出さない（2026-09-28）
   if(!m || m.skip) return false;
   if(!m.field || m.field>IRON_FIELD_MAX) return false;
   const o=(m.marks||[])[0]; if(!o) return false;
