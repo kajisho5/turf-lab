@@ -3,47 +3,47 @@
 <text x="48" y="124" font-size="88" font-weight="900" fill="#f5f6f8" text-anchor="start" >回収率</text>
 <text x="1032" y="92" font-size="30" font-weight="700" fill="#f5f6f8" text-anchor="end" >11月14日（土）</text>
 <text x="1032" y="130" font-size="24" font-weight="500" fill="#9aa3b2" text-anchor="end" >対象 46レース</text>
-<text x="48" y="172" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >◎から買った場合（100円ずつ）。白い太字＝100%以上</text>
+<text x="48" y="172" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >◎から買った場合（100円ずつ）。緑＝100%以上　赤＝100%未満</text>
 <rect x="48" y="204" width="984" height="58" rx="12" fill="#181b22" />
 <text x="72" y="243" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >◎ 単勝</text>
-<text x="560" y="246" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >207%</text>
+<text x="560" y="246" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >207%</text>
 <text x="1008" y="243" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 12/46（26%）</text>
 <text x="72" y="305" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >◎ 複勝</text>
-<text x="560" y="308" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >129%</text>
+<text x="560" y="308" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >129%</text>
 <text x="1008" y="305" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 29/46（63%）</text>
 <rect x="48" y="328" width="984" height="58" rx="12" fill="#181b22" />
 <text x="72" y="367" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >馬連 ◎ー相手</text>
-<text x="560" y="370" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >92%</text>
+<text x="560" y="370" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >92%</text>
 <text x="1008" y="367" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 8/46（17%）</text>
 <text x="72" y="429" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >馬単 ◎→相手</text>
-<text x="560" y="432" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >65%</text>
+<text x="560" y="432" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >65%</text>
 <text x="1008" y="429" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 4/46（9%）</text>
 <rect x="48" y="452" width="984" height="58" rx="12" fill="#181b22" />
 <text x="72" y="491" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >ワイド ◎ー相手</text>
-<text x="560" y="494" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >160%</text>
+<text x="560" y="494" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >160%</text>
 <text x="1008" y="491" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 26/46（57%）</text>
 <text x="72" y="553" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連複 ◎ー相手2</text>
-<text x="560" y="556" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >86%</text>
+<text x="560" y="556" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >86%</text>
 <text x="1008" y="553" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 6/46（13%）</text>
 <rect x="48" y="576" width="984" height="58" rx="12" fill="#181b22" />
 <text x="72" y="615" font-size="26" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単マルチ ◎</text>
-<text x="560" y="618" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >60%</text>
+<text x="560" y="618" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >60%</text>
 <text x="1008" y="615" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" >的中 3/46（7%）</text>
 <rect x="48" y="654" width="984" height="76" rx="14" fill="#181b22" />
 <text x="72" y="703" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >◎軸 合計</text>
-<text x="400" y="708" font-size="46" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >124%</text>
+<text x="400" y="708" font-size="46" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >124%</text>
 <text x="800" y="702" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >257,600円 → 319,400円</text>
-<text x="1008" y="702" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+61,800</text>
+<text x="1008" y="702" font-size="28" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+61,800</text>
 <rect x="48" y="742" width="984" height="76" rx="14" fill="#181b22" />
 <text x="72" y="791" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >○軸 合計</text>
-<text x="400" y="796" font-size="46" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >35%</text>
+<text x="400" y="796" font-size="46" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >35%</text>
 <text x="800" y="790" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >138,000円 → 47,860円</text>
-<text x="1008" y="790" font-size="28" font-weight="700" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−90,140</text>
+<text x="1008" y="790" font-size="28" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−90,140</text>
 <rect x="48" y="830" width="984" height="76" rx="14" fill="#181b22" stroke="#f5f6f8" stroke-width="3" />
 <text x="72" y="879" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >総合計</text>
-<text x="400" y="884" font-size="46" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >93%</text>
+<text x="400" y="884" font-size="46" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >93%</text>
 <text x="800" y="878" font-size="24" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >395,600円 → 367,260円</text>
-<text x="1008" y="878" font-size="28" font-weight="700" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−28,340</text>
+<text x="1008" y="878" font-size="28" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−28,340</text>
 <text x="48" y="948" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >100円単位・◎軸／○軸の流し。配当は確定値。分母は買った全レース　／　馬券は20歳から</text>
 <rect x="0" y="978" width="1080" height="40" rx="0" fill="#000000" />
 <text x="48" y="1142" font-size="88" font-weight="900" fill="#f5f6f8" text-anchor="start" >場別 回収率</text>
@@ -57,30 +57,30 @@
 <rect x="48" y="1234" width="984" height="62" rx="12" fill="#181b22" />
 <text x="72" y="1276" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >潮見</text>
 <text x="500" y="1276" font-size="30" font-weight="500" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >11</text>
-<text x="670" y="1278" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >191%</text>
-<text x="850" y="1278" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >175%</text>
-<text x="1008" y="1278" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >37%</text>
+<text x="670" y="1278" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >191%</text>
+<text x="850" y="1278" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >175%</text>
+<text x="1008" y="1278" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >37%</text>
 <text x="72" y="1344" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >鳴瀬</text>
 <text x="500" y="1344" font-size="30" font-weight="500" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >12</text>
-<text x="670" y="1346" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >96%</text>
-<text x="850" y="1346" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >88%</text>
-<text x="1008" y="1346" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >115%</text>
+<text x="670" y="1346" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >96%</text>
+<text x="850" y="1346" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >88%</text>
+<text x="1008" y="1346" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >115%</text>
 <rect x="48" y="1370" width="984" height="62" rx="12" fill="#181b22" />
 <text x="72" y="1412" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >白波</text>
 <text x="500" y="1412" font-size="30" font-weight="500" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >12</text>
-<text x="670" y="1414" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >43%</text>
-<text x="850" y="1414" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >43%</text>
-<text x="1008" y="1414" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >51%</text>
+<text x="670" y="1414" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >43%</text>
+<text x="850" y="1414" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >43%</text>
+<text x="1008" y="1414" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >51%</text>
 <text x="72" y="1480" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >汐入</text>
 <text x="500" y="1480" font-size="30" font-weight="500" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >11</text>
-<text x="670" y="1482" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >102%</text>
-<text x="850" y="1482" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >94%</text>
-<text x="1008" y="1482" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >139%</text>
+<text x="670" y="1482" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >102%</text>
+<text x="850" y="1482" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >94%</text>
+<text x="1008" y="1482" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >139%</text>
 <rect x="48" y="1506" width="984" height="62" rx="12" fill="#181b22" stroke="#f5f6f8" stroke-width="3" />
 <text x="72" y="1548" font-size="28" font-weight="700" fill="#f5f6f8" text-anchor="start" >全場</text>
 <text x="500" y="1548" font-size="30" font-weight="500" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >46</text>
-<text x="670" y="1550" font-size="36" font-weight="700" fill="#f5f6f8" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >108%</text>
-<text x="850" y="1550" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >99%</text>
-<text x="1008" y="1550" font-size="36" font-weight="500" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >86%</text>
-<text x="48" y="1604" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >◎軸／○軸 全券種1点100円換算。白い太字＝100%以上</text>
+<text x="670" y="1550" font-size="36" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >108%</text>
+<text x="850" y="1550" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >99%</text>
+<text x="1008" y="1550" font-size="36" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >86%</text>
+<text x="48" y="1604" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >◎軸／○軸 全券種1点100円換算。緑＝100%以上　赤＝100%未満</text>
 </svg>
