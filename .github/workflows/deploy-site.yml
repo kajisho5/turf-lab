@@ -18,15 +18,49 @@ on:
       - "backtest/build_time_feats.py"
       - "backtest/scoreboard.py"
       - ".github/workflows/deploy-site.yml"
+  # ★GitHub の時刻指定は遅れる★ 2026-11-13 は 4:40 の回が 9:40、7:40 の回が 11:53 に動いた（朝8:30の投稿に間に合わず）。
+  #   対策: 2:40〜7:40（日本時間）に1時間おきで6回並べる。5時間遅れても最初の回は 7:40 に動く。
+  #   すでに前日ぶんの結果が入っていれば、その回は何もせず終わる（下の fresh）。
+  #   公式データは 2:00 ごろ更新される。まだ入っていなければ次の回がやり直す。
   schedule:
-    - cron: "40 19 * * *"   # 毎朝 4:40（日本時間）。公式データは 2:00 ごろ更新される
-    - cron: "40 22 * * *"   # 毎朝 7:40（日本時間）。4:40 の回が失敗したときの予備
+    - cron: "40 17 * * *"   # 2:40
+    - cron: "40 18 * * *"   # 3:40
+    - cron: "40 19 * * *"   # 4:40
+    - cron: "40 20 * * *"   # 5:40
+    - cron: "40 21 * * *"   # 6:40
+    - cron: "40 22 * * *"   # 7:40
   workflow_dispatch:
 concurrency:
   group: deploy-site
   cancel-in-progress: false
 jobs:
+  # 毎朝の回だけ: 公開中の索引がもう前日ぶんまで入っていれば、作り直さずに終わる（1日6回並べたぶんの無駄を省く）
+  fresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions: {}
+    outputs:
+      skip: ${{ steps.f.outputs.skip }}
+    steps:
+      - id: f
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          skip=false
+          if [ "$EVENT" = "schedule" ]; then
+            want=$(TZ=Asia/Tokyo date -d yesterday +%Y%m%d)
+            today=$(TZ=Asia/Tokyo date +%Y%m%d)
+            # 「前日ぶんまで入っている」かつ「今日つくった」ときだけ飛ばす（前の晩に作った途中の索引で満足しないため）
+            got=$(curl -fsS --max-time 20 "https://seventh-well.com/odds/data/nar_index_asof.json?_=$(date +%s)" | python3 -c "import sys,json;j=json.load(sys.stdin);print(j.get('asof',''),j.get('built',''))" || true)
+            asof=${got%% *}; built=${got##* }
+            echo "公開中の索引: ${asof:-読めず} まで（作った日 ${built:-不明}） / ほしいのは ${want} まで・今日 ${today}"
+            if [ -n "$asof" ] && [ "$asof" -ge "$want" ] 2>/dev/null && [ "$built" = "$today" ]; then skip=true; fi
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+          echo "作り直さない: $skip"
   check:
+    needs: fresh
+    if: needs.fresh.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: { contents: read }
