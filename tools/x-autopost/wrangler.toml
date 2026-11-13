@@ -14,7 +14,7 @@ browser = { binding = "BROWSER" }
 
 # ★cron（時刻はUTC）★ 8:30 JST=前日23:30 UTC / 22:30 JST=13:30 UTC（2026-11-13: 朝を8:30に、夜を22:30に）
 [triggers]
-crons = ["30 21,23 * * *", "30 13 * * *", "*/10 0-14 * * *", "0 0 1 * *"]   # 1つ目＝朝の前の点検 6:30 と 朝の予想 8:30（JST）／2つ目＝夜 22:30／3つ目＝★勝負の的中速報＋失敗した回のやり直し（10分おき・9:00〜23:50 JST）／4つ目＝月間まとめ（毎月1日 9:00 JST）
+crons = ["30 21,23 * * *", "30 13 * * *", "*/10 0-14 * * *", "0 0 1 * *", "40 19,20 * * *"]   # 1つ目＝朝の前の点検 6:30 と 朝の予想 8:30（JST）／2つ目＝夜 22:30／3つ目＝★勝負の的中速報＋失敗した回のやり直し（10分おき・9:00〜23:50 JST）／4つ目＝月間まとめ（毎月1日 9:00 JST）／5つ目＝毎朝のデータ更新を起こす（4:40・5:40 JST。src/wake.js）
 
 [vars]
 # 生成元（legacyのtweet.html）。?auto=morning|evening&mode=nar|jra を付けて開く。
@@ -30,6 +30,7 @@ GRADE = "1"
 
 # --- secrets（wrangler secret put で登録。ここには書かない・私は値を見ない）---
 #   X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET  … Xの4鍵(OAuth1.0a)
+#   GH_DISPATCH_TOKEN … 毎朝のデータ更新（deploy-site）を起こすための GitHub の鍵（turf-lab だけ・Actions の読み書きだけ）。無ければ起こさない
 #   TRIGGER_KEY … 手動テスト用URLの合言葉（?key=... 一致時だけ実行）
 
 # 結果（投稿の成否・Xの返答）をダッシュボードのログに残す

@@ -2404,6 +2404,8 @@ function init(){
               if(vRows.length){ const c3=drawVenueRecoveryCanvas(vRows, vTotal, dstr, null, true); if(c3) recImgs.push(c3.toDataURL("image/png")); }
             }
           }catch(_){}
+          // ★買い方別の回収率（4枚目。総合計には入れない見くらべ用）2026-11-14
+          try{ if(recImgs.length){ const c4=drawBuywaysCanvas(calcBuyways(), dstr); if(c4) recImgs.push(c4.toDataURL("image/png")); } }catch(_){}
           if(recImgs.length) posts.push({text:"回収率です", images:recImgs.slice(0,4)});
           // 3) 段階別成績（文）
           try{ const tiers=buildTierCompare(); if(tiers&&tiers.length) posts.push({text:tierTweetText(tiers), images:[]}); }catch(_){}
@@ -7166,6 +7168,90 @@ function drawVenueRecoveryCanvas(rows, total, dateStr, tweetText, noSave){
   const dl=dateStr? `場別回収率_${dateStr.replace(/\D/g,"")}.png` : "場別回収率.png";
   if(noSave){ return cv; }   // 自動投稿フック用：保存/DLせず返す
   if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); }
+}
+/* ===== 買い方別の回収率（2026-11-14・docs/design/X_BUYWAYS_DESIGN.md）=====
+   本人の依頼: 3連複の◎○2軸／3連単の◎1着固定／3連単の1着が◎か○／○から流す／○◎の2軸 も見たい。
+   calcRecovery() とは別に数える（あちらの項目・総合計・投稿の文の数字は1円も変えない）。
+   対象のレースは calcRecovery() と同じ（確定・印あり・見送りを除く）。1点100円。相手＝印のついた残りの馬。
+   返り値: [{title, rows:[{label, pts（印5頭の時の点数）, inv, ret, hit, races}]}] */
+function calcBuyways(){
+  const U=100, R=(label,pts)=>({label, pts, inv:0, ret:0, hit:0, races:0});
+  const B={ o1:R("3連単 ◎1着固定",12), oM:R("3連単 ◎マルチ",36), oF:R("3連複 ◎ー相手2頭",6),
+            dF:R("3連複 ◎ー○ー相手",3), dOP:R("3連単 ◎→○→相手",3), dPO:R("3連単 ○→◎→相手",3), dH:R("3連単 1着が◎か○",24),
+            pU:R("馬連 ○ー相手",4), pT:R("馬単 ○→相手",4), pW:R("ワイド ○ー相手",4), pF:R("3連複 ○ー相手2頭",6), p1:R("3連単 ○1着固定",12), pM:R("3連単 ○マルチ",36) };
+  // 買う（点数ぶん投資）→ 当たっていれば払戻を足す。同着で複数の払戻が当てはまれば合算
+  const bet=(row, points, list, pred)=>{
+    if(!(points>0)) return;
+    row.races++; row.inv+=U*points;
+    let sum=0, hit=false; (list||[]).forEach(p=>{ const ns=(p.nums||[]).map(String); if(pred(ns)){ sum+=p.yen; hit=true; } });
+    if(hit){ row.ret+=sum; row.hit++; }
+  };
+  for(const tc in allCheck){
+    (allCheck[tc].races||[]).forEach(c=>{
+      if(!c || !c.decided || !c.marks || !c.marks.length || c.pass) return;
+      const all=c.marks.map(m=>String(m.num));
+      const o=(c.marks.find(m=>m.mk==="◎")||{}).num, p=(c.marks.find(m=>m.mk==="○")||{}).num;
+      const O=o!=null?String(o):null, P=p!=null?String(p):null, pay=c.pay||{};
+      const c2=(n)=> n*(n-1)/2;
+      if(O){
+        const a=all.filter(n=>n!==O), n=a.length;
+        bet(B.o1, n*(n-1), pay.tan3, ns=>ns[0]===O && a.includes(ns[1]) && a.includes(ns[2]));
+        bet(B.oM, c2(n)*6, pay.tan3, ns=>ns.includes(O) && ns.filter(x=>x!==O).length===2 && ns.filter(x=>x!==O).every(x=>a.includes(x)));
+        bet(B.oF, c2(n), pay.fuku3, ns=>ns.includes(O) && ns.filter(x=>a.includes(x)).length>=2);
+      }
+      if(O && P){
+        const a=all.filter(n=>n!==O&&n!==P), n=a.length;
+        bet(B.dF, n, pay.fuku3, ns=>ns.includes(O) && ns.includes(P) && ns.some(x=>a.includes(x)));
+        bet(B.dOP, n, pay.tan3, ns=>ns[0]===O && ns[1]===P && a.includes(ns[2]));
+        bet(B.dPO, n, pay.tan3, ns=>ns[0]===P && ns[1]===O && a.includes(ns[2]));
+        const m=all.length-1;   // 1着を決めた時の、残りの印の頭数
+        bet(B.dH, 2*m*(m-1), pay.tan3, ns=>(ns[0]===O||ns[0]===P) && ns[1]!==ns[0] && all.includes(ns[1]) && all.includes(ns[2]));
+      }
+      if(P){
+        const a=all.filter(n=>n!==P), n=a.length;
+        bet(B.pU, n, pay.umaren, ns=>ns.includes(P) && ns.some(x=>x!==P&&a.includes(x)));
+        bet(B.pT, n, pay.umatan, ns=>ns[0]===P && a.includes(ns[1]));
+        bet(B.pW, n, pay.wide, ns=>ns.includes(P) && ns.some(x=>x!==P&&a.includes(x)));
+        bet(B.pF, c2(n), pay.fuku3, ns=>ns.includes(P) && ns.filter(x=>a.includes(x)).length>=2);
+        bet(B.p1, n*(n-1), pay.tan3, ns=>ns[0]===P && a.includes(ns[1]) && a.includes(ns[2]));
+        bet(B.pM, c2(n)*6, pay.tan3, ns=>ns.includes(P) && ns.filter(x=>x!==P).length===2 && ns.filter(x=>x!==P).every(x=>a.includes(x)));
+      }
+    });
+  }
+  return [ {title:"◎を軸にした買い方", rows:[B.o1,B.oM,B.oF]},
+           {title:"◎と○の2頭を軸にした買い方", rows:[B.dF,B.dOP,B.dPO,B.dH]},
+           {title:"○を軸にした買い方（相手は◎▲△△）", rows:[B.pU,B.pT,B.pW,B.pF,B.p1,B.pM]} ];
+}
+function drawBuywaysCanvas(blocks, dateStr){
+  const T=themeF(), W=1080, pad=48;
+  blocks=(blocks||[]).map(b=>({title:b.title, rows:b.rows.filter(r=>r.races>0)})).filter(b=>b.rows.length);
+  if(!blocks.length) return null;
+  const nR=blocks.reduce((a,b)=>a+b.rows.length,0), races=Math.max.apply(null, blocks.map(b=>Math.max.apply(null,b.rows.map(r=>r.races))));
+  const H=204 + blocks.length*(52+22) + nR*58 + 46 + 34;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
+  fHead(x,T,W,pad,"買い方別 回収率",80);
+  fHeadRight(x,T,W,pad,"対象 "+races+"レース",dateStr||"");
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub; x.fillText("1レースあたりの点数・1点100円。相手＝印のついた残りの馬　／　緑＝100%以上　赤＝未満", pad, 190);
+  let y=204;
+  blocks.forEach(b=>{
+    x.font="900 28px "+T.JP; x.fillStyle=T.ink; x.fillText(b.title, pad, y+32); y+=52;
+    b.rows.forEach((r,i)=>{
+      const rr=r.inv>0?Math.round(r.ret/r.inv*100):0, prof=r.ret-r.inv;
+      if(i%2===0) fRR(x,pad,y,W-pad*2,56,12,T.card,null);
+      x.font="700 25px "+T.JP; x.fillStyle=T.ink; x.fillText(r.label, pad+24, y+37);
+      x.textAlign="right";
+      x.font="500 22px "+T.JP; x.fillStyle=T.sub; x.fillText(r.pts+"点", 560, y+36);
+      x.font="700 34px "+T.NUM; x.fillStyle=rr>=100?T.pos:T.neg; x.fillText(rr+"%", 690, y+39);
+      x.font="400 22px "+T.NUM; x.fillStyle=T.sub; x.fillText("的中 "+r.hit+"/"+r.races, 880, y+36);
+      x.font="700 26px "+T.NUM; x.fillStyle=prof>=0?T.pos:T.neg; x.fillText((prof>=0?"+":"")+prof.toLocaleString(), W-pad-24, y+37);
+      x.textAlign="left"; y+=58;
+    });
+    y+=22;
+  });
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub;
+  x.fillText("この表は「回収率」の総合計には入れていません（買い方の見くらべ用）", pad, y+10);
+  x.fillText("点数は印が5頭の時。印が少ないレースは少なくなります　／　馬券は20歳から", pad, y+44);
+  return cv;
 }
 function valueStats(){
   let n=0,tanBet=0,tanHit=0,tanRet=0,fukBet=0,fukHit=0,fukRet=0,races=0,hitRaces=0;

@@ -28,6 +28,7 @@ import puppeteer from "@cloudflare/puppeteer";
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
+import { wakeDeploy } from "./wake.js";
 import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
@@ -41,6 +42,7 @@ const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じ
 const MONTHLY_CRON = "0 0 1 * *";       // 月間まとめ（毎月1日 9:00 日本時間）。wrangler.toml の crons と同じ文字列
 const HITS_CRON = "*/10 0-14 * * *";    // ★勝負の的中速報＋失敗した回のやり直し（日本時間 9:00〜23:50 の10分おき）。wrangler.toml の crons と同じ文字列
 const MAIN_CRONS = ["30 21,23 * * *", "30 13 * * *"];   // 朝の前の点検＋朝の予想／夜の結果。wrangler.toml の crons と同じ文字列
+const WAKE_CRON = "40 19,20 * * *";     // 毎朝のデータ更新を起こす（日本時間 4:40・5:40）。wrangler.toml の crons と同じ文字列。src/wake.js
 const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
 
 /** 動いた時刻（ミリ秒）の、日本時間で見た「前の月」を YYYYMM で返す */
@@ -124,6 +126,24 @@ export default {
           if (r.checked || r.posted.length || r.big.length) console.log("autopost hits", JSON.stringify(r));
         } catch (e) { console.error("hits", String(e && e.message || e)); }
       })());
+      return;
+    }
+    // 毎朝のデータ更新を起こす（4:40・5:40）。投稿はしない。起こせなかった時だけメールする
+    if (event.cron === WAKE_CRON) {
+      ctx.waitUntil((async () => {
+        let r = null;
+        try { r = await wakeDeploy(env, event.scheduledTime); } catch (e) { r = { woke: false, why: "通信の失敗: " + String(e && e.message || e) }; }
+        console.log("autopost wake", JSON.stringify(r));
+        const bad = !r.woke && r.why !== "もう今日ぶんに更新済み";
+        if (bad && env.MAIL) await env.MAIL.send({
+          to: "kajiyama@seventh-well.com",
+          from: { email: "autopost@notify.seventh-well.com", name: "カジ競馬 自動投稿" },
+          subject: "【⚠毎朝のデータ更新】起こせませんでした",
+          text: "毎朝のデータ更新（deploy-site）を起こせませんでした。\n理由: " + (r.why || ("GitHub の返答 " + r.status + " " + (r.body || "")))
+            + "\n\n手で起こす: https://github.com/kajisho5/turf-lab/actions/workflows/deploy-site.yml （右の「Run workflow」→ 緑の「Run workflow」）\n"
+            + "鍵の登録: https://dash.cloudflare.com/78ef1242bb9514e7f6ccf32f9f94e744/workers/services/view/kajikeiba-autopost/production/settings\n",
+        });
+      })().catch(e => console.error("wake", e)));
       return;
     }
     // 月間まとめ（毎月1日 9:00）。前の月の成績を1枚で出す

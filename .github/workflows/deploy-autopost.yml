@@ -44,7 +44,7 @@ jobs:
       - name: 書き間違い確認
         run: node --check tools/x-autopost/src/worker.js && node --check tools/x-autopost/src/hits.js && node --check tools/x-autopost/src/guard.js
       - name: 投稿の組み立ての試験
-        run: node tools/x-autopost/test/posts.test.mjs && node tools/x-autopost/test/hits.test.mjs && node tools/x-autopost/test/grade.test.mjs && node tools/x-autopost/test/guard.test.mjs && node tools/x-autopost/test/worker.test.mjs
+        run: node tools/x-autopost/test/posts.test.mjs && node tools/x-autopost/test/hits.test.mjs && node tools/x-autopost/test/grade.test.mjs && node tools/x-autopost/test/wake.test.mjs && node tools/x-autopost/test/guard.test.mjs && node tools/x-autopost/test/worker.test.mjs
   deploy:
     needs: [check, window]
     uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
