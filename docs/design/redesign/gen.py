@@ -159,6 +159,47 @@ D["score"]=d_score
 D["strong"]=lambda t,x,y,s: R(x,y-28,76,36,"#12303f",8)+T(x+38,y-2,"強み",22,"#57b8ff",700,"middle")+T(x+90,y-2,s,24,"#ffffff",500)
 D["foot"]=lambda t,W,H: R(0,H-8,W,8,"url(#gold)")
 
-for t in (A,B,C,D):
+
+# ---------- E: 芝・夜（まぶしくない版。緑の地に、暗い緑のカード） ----------
+E=dict(name="e", foot_ink="#b5c7bd", foot_rule="#2c5a48", jp="'Noto Sans JP',sans-serif", num="'Roboto Condensed','Noto Sans JP',sans-serif", bg="url(#turf2)", ink="#eef5f0", sub="#b5c7bd", rule="#2c5a48", top=250, numcolor=True,
+  defs='<defs><linearGradient id="turf2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a2f22"/><stop offset="1" stop-color="#051a13"/></linearGradient></defs>',
+  win="#ffd43d", place="#8fe0b4", marks={"◎":"#ff9a8a","○":"#ffd43d","▲":"#8cc8ff","△":"#b5c7bd"}, tiers={"":{}, "battle":{}, "aim":{}})
+def e_header(t):
+    s=[T(48,150,"潮見",104,"#eef5f0",900)]; s.append(T(276,104,"カジ競馬　AI予想",26,"#ffd43d",700)); s.append(T(276,150,"11月14日（土）",40,"#eef5f0",700))
+    s.append(R(808,84,184,72,"#ffd43d",36)); s.append(T(900,132,"★勝負 3",30,"#12261d",700,"middle"))
+    s.append(R(1008,84,184,72,"#123b2d",36,"#ff9a8a",3)); s.append(T(1100,132,"狙い目 6",30,"#ff9a8a",700,"middle"))
+    s.append(T(48,220,"◎本命　○対抗　▲単穴　△押さえ　／　数字は◎○の点数（オッズを見る前の評価）",22,"#b5c7bd"))
+    return "\n".join(s)
+E["header"]=e_header
+E["section"]=lambda t,y,s: T(48,y+48,s,36,"#eef5f0",900)
+E["cardbox"]=lambda t,x,y,w,h,tier: R(x,y,w,h,"#123b2d",24,{"battle":"#ffd43d","aim":"#ff9a8a"}.get(tier,"#2c5a48"),5 if tier=="battle" else 2)
+E["rno"]=lambda t,x,y,no,tier: R(x,y+2,74,52,"#ffd43d" if tier=="battle" else "#0a2f22",26)+T(x+37,y+40,f"{no}R",28,"#12261d" if tier=="battle" else "#eef5f0",700,"middle",fam=t["num"])
+E["tag"]=lambda t,xr,y,lab,tier: (R(xr-132,y,132,44,"#ffd43d",22)+T(xr-66,y+32,lab,26,"#12261d",700,"middle")) if tier=="battle" else (R(xr-116,y,116,44,"#123b2d",22,"#ff9a8a",2)+T(xr-58,y+32,lab,26,"#ff9a8a",700,"middle"))
+E["toprow"]=lambda t,x,y,w,h,tier: R(x,y,w,h,"#1b4a39",14)
+def e_score(t,xr,base,v,big):
+    col="#ffd43d" if big else "#b5c7bd"; bw=70; x=xr-bw
+    return T(x-14,base,v,30 if big else 26,col,700,"end",fam=t["num"])+R(x,base-16,bw,12,"#2c5a48",6)+R(x,base-16,bw*v/100,12,col,6)
+E["score"]=e_score
+E["strong"]=lambda t,x,y,s: R(x,y-28,76,36,"#0a2f22",18,"#8cc8ff",2)+T(x+38,y-2,"強み",22,"#8cc8ff",700,"middle")+T(x+90,y-2,s,24,"#eef5f0",500)
+
+# ---------- F: 新聞・夜（まぶしくない版。墨色の地に生成りの字） ----------
+F=dict(name="f", jp="'Noto Sans JP',sans-serif", num="'Roboto Condensed','Noto Sans JP',sans-serif", bg="#171614", ink="#efe7d6", sub="#b8b0a0", rule="#efe7d6", top=250,
+  win="#ff7a6b", place="#efe7d6", marks={"◎":"#ff7a6b","○":"#efe7d6","▲":"#efe7d6","△":"#b8b0a0"}, tiers={"":{}, "battle":{}, "aim":{}})
+def f_header(t):
+    s=[R(48,44,1144,6,"#efe7d6"),R(48,54,1144,2,"#efe7d6")]
+    s.append(T(48,150,"潮見",96,"#efe7d6",900,fam="'Noto Serif JP',serif")); s.append(T(260,112,"カジ競馬",26,"#efe7d6",700)); s.append(T(260,150,"AI予想　11月14日（土）",30,"#efe7d6",700))
+    s.append(R(880,84,312,72,"#a3271c")); s.append(T(1036,132,"★勝負 3　狙い目 6",30,"#ffffff",700,"middle"))
+    s.append(R(48,176,1144,2,"#efe7d6")); s.append(T(48,216,"◎本命　○対抗　▲単穴　△押さえ　／　数字は◎○の点数（オッズを見る前の評価）",22,"#b8b0a0"))
+    return "\n".join(s)
+F["header"]=f_header
+F["section"]=lambda t,y,s: R(48,y,1144,6,"#efe7d6")+T(48,y+52,s,36,"#efe7d6",900,fam="'Noto Serif JP',serif")
+F["cardbox"]=lambda t,x,y,w,h,tier: R(x,y,w,h,"#211f1c",0,"#efe7d6" if tier=="battle" else "#6b665c",4 if tier=="battle" else 2)+(R(x,y,w,10,"#a3271c") if tier=="battle" else "")
+F["rno"]=lambda t,x,y,no,tier: R(x,y+2,74,52,"#a3271c" if tier=="battle" else "#efe7d6")+T(x+37,y+40,f"{no}R",30,"#ffffff" if tier=="battle" else "#171614",700,"middle",fam=t["num"])
+F["tag"]=lambda t,xr,y,lab,tier: (R(xr-132,y,132,44,"#a3271c")+T(xr-66,y+32,lab,26,"#ffffff",700,"middle")) if tier=="battle" else (R(xr-116,y,116,44,"#211f1c",0,"#ff7a6b",3)+T(xr-58,y+32,lab,26,"#ff7a6b",700,"middle"))
+F["toprow"]=lambda t,x,y,w,h,tier: R(x,y,w,h,"#322b27")+R(x,y,6,h,"#ff7a6b")
+F["score"]=lambda t,xr,base,v,big: T(xr,base,v,30 if big else 26,"#efe7d6" if big else "#b8b0a0",700,"end",fam=t["num"])
+F["strong"]=lambda t,x,y,s: R(x,y-28,76,36,"#efe7d6")+T(x+38,y-2,"強み",22,"#171614",700,"middle")+T(x+90,y-2,s,24,"#efe7d6",500)
+
+for t in (A,B,C,D,E,F):
     open(t["name"]+".svg","w",encoding="utf-8").write(build(t))
 print("ok")
