@@ -112,8 +112,13 @@ def load_official(cache):
 
 
 # ---------- 保存された予想 ----------
-def slim_day(date, recs):
-    """1日ぶんの保存記録 → 成績表に要る項目だけ"""
+def slim_day(date, recs, locks=None):
+    """1日ぶんの保存記録 → 成績表に要る項目だけ。locks は朝に公開した★勝負・狙い目の記録（pub_<場>）"""
+    pub = {}
+    for l in locks or []:
+        t = str(l.get("tc") or "")
+        if t.startswith("pub_") and isinstance(l.get("pub"), dict):
+            pub[t[4:]] = l["pub"]
     out = []
     for rec in recs:
         tc = str(rec.get("tc"))
@@ -133,6 +138,10 @@ def slim_day(date, recs):
                 "adj": (sh.get("adj") or [None])[0] if sh else None,
                 "nok": (sh.get("nokoryu") or [None])[0] if sh else None,
                 "koryu": sh.get("koryu") if sh else None,
+                "name": str(m["marks"][0].get("name") or ""),
+                # 朝に公開した区分（月間まとめ用）。朝の記録が無い日は None
+                "tier": (lambda f: None if f is None else ("battle" if f.get("battle") else "aim" if f.get("aim") else "other"))(
+                    (pub.get(tc) or {}).get(str(m.get("no"))) if tc in pub else None),
                 # 時計つきモデル（mv 2.3・11/14〜）で並べたレースだけ: 切替前（C12）の◎
                 "old": (sh.get("old") or [None])[0] if (sh and sh.get("t") == 1) else None,
             })
@@ -141,7 +150,7 @@ def slim_day(date, recs):
 
 def load_predictions(cache, base, today):
     """日付ごとに取得。3日より前の日は cache に残したものを使う（予想は発走後に動かない）"""
-    pdir = os.path.join(cache, "pred_rows")
+    pdir = os.path.join(cache, "pred_rows2")      # 2 = 馬名と朝の区分を足した形（前の形の控えは使わない）
     os.makedirs(pdir, exist_ok=True)
     dates = json.loads(get(base + "/predictions.php?action=dates&_=%d" % int(time.time())))
     days = sorted({str(it["date"]) for it in dates.get("items", []) if it.get("mode") == "nar" and START <= str(it["date"]) <= today})
@@ -154,7 +163,11 @@ def load_predictions(cache, base, today):
                 rows.extend(json.load(fh))
             continue
         j = json.loads(get("%s/predictions.php?action=list&date=%s&mode=nar&_=%d" % (base, d, int(time.time()))))
-        day = slim_day(d, j.get("records") or [])
+        try:
+            lk = json.loads(get("%s/predictions.php?action=listlocks&date=%s&mode=nar&_=%d" % (base, d, int(time.time())))).get("locks") or []
+        except Exception:      # noqa: BLE001
+            lk = []
+        day = slim_day(d, j.get("records") or [], lk)
         with open(p, "w", encoding="utf-8") as fh:
             json.dump(day, fh, ensure_ascii=False)
         rows.extend(day)
@@ -281,7 +294,30 @@ def build(rows, t10, rank, pop, pay, today):
         dict(label="10分前に◎が4番人気以下", **stat([x["bet"] for x in tt if (x.get("o_pop") or 0) >= 4], rnd)),
     ]
     return {"built": today, "from": START, "to": last_day, "races": len(races), "days": len({x["date"] for x in races}),
-            "t10_rows": len(t10), "sections": sec}
+            "t10_rows": len(t10), "sections": sec, "monthly": monthly(races, pop, rnd)}
+
+
+def monthly(races, pop, rnd):
+    """月ごとのまとめ（月間まとめの画像用）。数字の作り方は上の成績表と同じ（買った全レースが分母）"""
+    out = collections.OrderedDict()
+    for ym in sorted({x["date"][:6] for x in races}):
+        rs = [x for x in races if x["date"][:6] == ym]
+        days = sorted({x["date"] for x in rs})
+        tiers = [x for x in rs if x.get("tier")]
+        tm = [x for x in rs if x.get("old_bet") is not None]
+        wins = [x for x in rs if x["bet"][0] > 0]
+        best = max(wins, key=lambda x: x["bet"][0]) if wins else None
+        out[ym] = {
+            "from": days[0], "to": days[-1], "days": len(days),
+            "all": stat([x["bet"] for x in rs], rnd),
+            "tiers": {k: stat([x["bet"] for x in tiers if x["tier"] == k], rnd) for k in ("battle", "aim", "other")} if tiers else None,
+            "tier_races": len(tiers),
+            "new_old": ({"n": len(tm), "new": stat([x["bet"] for x in tm], rnd), "old": stat([x["old_bet"] for x in tm], rnd)} if tm else None),
+            "t_from": min((x["date"] for x in tm), default=None),
+            "best": ({"date": best["date"], "track": TC[best["tc"]], "no": best["no"], "num": best["o"], "name": best.get("name") or "",
+                      "tan": best["bet"][0], "pop": best.get("pop")} if best else None),
+        }
+    return out
 
 
 def to_text(sb):
@@ -330,7 +366,8 @@ def main():
     if a.print:
         print(txt)
         return
-    for name, data in (("scoreboard.json", json.dumps(sb, ensure_ascii=False, separators=(",", ":"))), ("scoreboard.txt", txt)):
+    for name, data in (("scoreboard.json", json.dumps(sb, ensure_ascii=False, separators=(",", ":"))), ("scoreboard.txt", txt),
+                       ("monthly.json", json.dumps({"built": sb["built"], "months": sb["monthly"]}, ensure_ascii=False, separators=(",", ":")))):
         tmp = os.path.join(a.out, name + ".tmp")
         with open(tmp, "w", encoding="utf-8") as fh:
             fh.write(data)
