@@ -15,6 +15,7 @@ on:
       - "backtest/deploy.py"
       - "backtest/site_config.py"
       - "backtest/build_nar_index.py"
+      - "backtest/build_time_feats.py"
       - "backtest/scoreboard.py"
       - ".github/workflows/deploy-site.yml"
   schedule:

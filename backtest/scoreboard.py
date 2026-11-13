@@ -133,6 +133,8 @@ def slim_day(date, recs):
                 "adj": (sh.get("adj") or [None])[0] if sh else None,
                 "nok": (sh.get("nokoryu") or [None])[0] if sh else None,
                 "koryu": sh.get("koryu") if sh else None,
+                # 時計つきモデル（mv 2.3・11/14〜）で並べたレースだけ: 切替前（C12）の◎
+                "old": (sh.get("old") or [None])[0] if (sh and sh.get("t") == 1) else None,
             })
     return out
 
@@ -208,7 +210,8 @@ def build(rows, t10, rank, pop, pay, today):
             return (p["t"].get(str(num), 0), p["f"].get(str(num), 0))
         races.append(dict(r, k=k, bet=bet(r["o"]), pop=pop.get(k + (r["o"],)),
                           adj_bet=bet(r["adj"]) if r.get("adj") else None,
-                          nok_bet=bet(r["nok"]) if r.get("nok") else None))
+                          nok_bet=bet(r["nok"]) if r.get("nok") else None,
+                          old_bet=bet(r["old"]) if r.get("old") else None))
     last_day = max((r["date"] for r in races), default=None)
     sec = collections.OrderedDict()
 
@@ -251,6 +254,15 @@ def build(rows, t10, rank, pop, pay, today):
         dict(label="　うち◎が本番と違ったレース：補正あり", **stat([x["adj_bet"] for x in sh if x["adj"] != x["o"]], rnd)),
         dict(label="JRA馬+6 が当たったレース：本番", **stat([x["bet"] for x in ko], rnd)),
         dict(label="JRA馬+6 が当たったレース：+6なし", **stat([x["nok_bet"] for x in ko], rnd)),
+    ]
+
+    # 時計つきモデル（11/14〜）と、切替前の並べ方を同じレースで比べる
+    tm = [x for x in races if x.get("old_bet") is not None]
+    sec["時計つきモデル（11/14〜）と切替前を同じレースで比べる"] = [
+        dict(label="時計つきモデルの◎（本番）", **stat([x["bet"] for x in tm], rnd)),
+        dict(label="切替前の並べ方の◎", **stat([x["old_bet"] for x in tm], rnd)),
+        dict(label="　うち◎が変わったレース：時計つき（本番）", **stat([x["bet"] for x in tm if str(x["old"]) != x["o"]], rnd)),
+        dict(label="　うち◎が変わったレース：切替前", **stat([x["old_bet"] for x in tm if str(x["old"]) != x["o"]], rnd)),
     ]
 
     # 10分前の記録

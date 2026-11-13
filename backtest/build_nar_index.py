@@ -265,6 +265,19 @@ def main():
         "trainers.json": build_people(rows, asof, entries_to, 5),
         "sires.json": build_people(rows, asof, entries_to, 6),
     }
+    # ★時計の値（2026-11-13）★ 近3走の時計指数・上がり指数（s）と、場×距離ごとの持ち時計の指数（b）。
+    #   学習データ（build_time_feats.py）と同じ関数で作る＝本番と学習で値がずれない。
+    from build_time_feats import index_time
+    tm = index_time(sorted(paths), asof, names=set(made["horses.json"]))
+    for nm, v in tm.items():
+        made["horses.json"][nm]["s"] = v["s"]
+        if v["b"]:
+            made["horses.json"][nm]["b"] = v["b"]
+    have = sum(1 for v in made["horses.json"].values() if v.get("s") and v["s"][0] is not None)
+    log("時計の値つき %d / %d 頭" % (have, len(made["horses.json"])))
+    if have < len(made["horses.json"]) * 0.8:
+        raise SystemExit("時計の値が付いた馬が8割未満です。壊れている可能性があるので中止")
+
     # ★空・激減では上書きしない★（取得や列の読み違いで索引が静かに壊れるのを防ぐ）
     floor = {"horses.json": 10000, "jockeys.json": 300, "trainers.json": 400, "sires.json": 500}
     for f, obj in made.items():
