@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1100" viewBox="0 0 1240 1100" font-family="'Noto Sans JP',sans-serif"><defs><pattern id="dot" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#0c0c0c"/><circle cx="3" cy="3" r="1" fill="#1d1b17"/></pattern></defs>
+<rect x="0" y="0" width="1240" height="1100" rx="0" fill="#050505" />
+<rect x="24" y="24" width="1192" height="1052" rx="10" fill="url(#dot)" stroke="#2a2a2a" stroke-width="3" />
+<text x="60" y="122" font-size="84" font-weight="400" fill="#ffb21c" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >潮見</text>
+<text x="250" y="86" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >カジ競馬 AI予想</text>
+<text x="250" y="124" font-size="32" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >11月14日（土）</text>
+<text x="1180" y="124" font-size="32" font-weight="400" fill="#6f6a5e" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >◎○▲△△</text>
+<rect x="60" y="160" width="548" height="410" rx="6" fill="#000" stroke="#333" stroke-width="2" />
+<rect x="76" y="176" width="92" height="60" rx="4" fill="#000" stroke="#ffb21c" stroke-width="2" />
+<text x="122" y="220" font-size="40" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >1R</text>
+<text x="184" y="204" font-size="24" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >C3ー5 1400m</text>
+<text x="184" y="234" font-size="24" font-weight="400" fill="#6f6a5e" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >15:35 発走</text>
+<rect x="476" y="180" width="116" height="52" rx="4" fill="#ff3b30" stroke="#ff3b30" stroke-width="2" />
+<text x="534" y="216" font-size="26" font-weight="400" fill="#fff" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >勝負</text>
+<rect x="76" y="256" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="293" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >◎</text>
+<rect x="136" y="256" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="295" font-size="38" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >5</text>
+<text x="228" y="293" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >オッターダッシュ</text>
+<text x="592" y="293" font-size="30" font-weight="400" fill="#2ee06a" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >64</text>
+<rect x="76" y="316" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="353" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >○</text>
+<rect x="136" y="316" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="355" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >7</text>
+<text x="228" y="353" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ラッコノユメ</text>
+<text x="592" y="353" font-size="30" font-weight="400" fill="#6f6a5e" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >31</text>
+<rect x="76" y="376" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="413" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >▲</text>
+<rect x="136" y="376" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="415" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >2</text>
+<text x="228" y="413" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >カワウソブレイブ</text>
+<rect x="76" y="436" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="473" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="136" y="436" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="475" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >4</text>
+<text x="228" y="473" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >セセラギキング</text>
+<rect x="76" y="496" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="533" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="136" y="496" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="535" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >9</text>
+<text x="228" y="533" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ミズカキエース</text>
+<rect x="632" y="160" width="548" height="410" rx="6" fill="#000" stroke="#333" stroke-width="2" />
+<rect x="648" y="176" width="92" height="60" rx="4" fill="#000" stroke="#ffb21c" stroke-width="2" />
+<text x="694" y="220" font-size="40" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >2R</text>
+<text x="756" y="204" font-size="24" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >2歳ー3 1300m</text>
+<text x="756" y="234" font-size="24" font-weight="400" fill="#6f6a5e" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >16:05 発走</text>
+<rect x="1048" y="180" width="116" height="52" rx="4" fill="#000" stroke="#ff3b30" stroke-width="2" />
+<text x="1106" y="216" font-size="26" font-weight="400" fill="#ff3b30" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >狙い目</text>
+<rect x="648" y="256" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="293" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >◎</text>
+<rect x="708" y="256" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="295" font-size="38" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >10</text>
+<text x="800" y="293" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >イタチノホシ</text>
+<text x="1164" y="293" font-size="30" font-weight="400" fill="#2ee06a" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >52</text>
+<rect x="648" y="316" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="353" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >○</text>
+<rect x="708" y="316" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="355" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >3</text>
+<text x="800" y="353" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >コツメスマイル</text>
+<text x="1164" y="353" font-size="30" font-weight="400" fill="#6f6a5e" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >45</text>
+<rect x="648" y="376" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="413" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >▲</text>
+<rect x="708" y="376" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="415" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >6</text>
+<text x="800" y="413" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ナガレボシオー</text>
+<rect x="648" y="436" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="473" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="708" y="436" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="475" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >1</text>
+<text x="800" y="473" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >カワベノハナ</text>
+<rect x="648" y="496" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="533" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="708" y="496" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="535" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >12</text>
+<text x="800" y="533" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ツキヨノラッコ</text>
+<rect x="60" y="594" width="548" height="410" rx="6" fill="#000" stroke="#333" stroke-width="2" />
+<rect x="76" y="610" width="92" height="60" rx="4" fill="#000" stroke="#ffb21c" stroke-width="2" />
+<text x="122" y="654" font-size="40" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >3R</text>
+<text x="184" y="638" font-size="24" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >C2ー4 1400m</text>
+<text x="184" y="668" font-size="24" font-weight="400" fill="#6f6a5e" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >16:40 発走</text>
+<rect x="76" y="690" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="727" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >◎</text>
+<rect x="136" y="690" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="729" font-size="38" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >2</text>
+<text x="228" y="727" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ミナモノカゼ</text>
+<text x="592" y="727" font-size="30" font-weight="400" fill="#2ee06a" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >47</text>
+<rect x="76" y="750" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="787" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >○</text>
+<rect x="136" y="750" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="789" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >9</text>
+<text x="228" y="787" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >シオカゼテイオー</text>
+<text x="592" y="787" font-size="30" font-weight="400" fill="#6f6a5e" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >41</text>
+<rect x="76" y="810" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="847" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >▲</text>
+<rect x="136" y="810" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="849" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >4</text>
+<text x="228" y="847" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ハマベノユウヒ</text>
+<rect x="76" y="870" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="907" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="136" y="870" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="909" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >3</text>
+<text x="228" y="907" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ナギサブルー</text>
+<rect x="76" y="930" width="52" height="50" rx="3" fill="#111" />
+<text x="102" y="967" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="136" y="930" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="174" y="969" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >8</text>
+<text x="228" y="967" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ウミネコライト</text>
+<rect x="632" y="594" width="548" height="410" rx="6" fill="#000" stroke="#333" stroke-width="2" />
+<rect x="648" y="610" width="92" height="60" rx="4" fill="#000" stroke="#ffb21c" stroke-width="2" />
+<text x="694" y="654" font-size="40" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >4R</text>
+<text x="756" y="638" font-size="24" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >B3ー2 1600m</text>
+<text x="756" y="668" font-size="24" font-weight="400" fill="#6f6a5e" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >17:15 発走</text>
+<rect x="648" y="690" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="727" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >◎</text>
+<rect x="708" y="690" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="729" font-size="38" font-weight="400" fill="#ffb21c" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >8</text>
+<text x="800" y="727" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >セセラギオウジ</text>
+<text x="1164" y="727" font-size="30" font-weight="400" fill="#2ee06a" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >49</text>
+<rect x="648" y="750" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="787" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >○</text>
+<rect x="708" y="750" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="789" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >1</text>
+<text x="800" y="787" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >カワモノガタリ</text>
+<text x="1164" y="787" font-size="30" font-weight="400" fill="#6f6a5e" text-anchor="end" font-family="'DotGothic16','Noto Sans JP',monospace" >44</text>
+<rect x="648" y="810" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="847" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >▲</text>
+<rect x="708" y="810" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="849" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >5</text>
+<text x="800" y="847" font-size="28" font-weight="400" fill="#f2f2f2" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ヨアケノラッコ</text>
+<rect x="648" y="870" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="907" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="708" y="870" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="909" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >11</text>
+<text x="800" y="907" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >ミズベノユメ</text>
+<rect x="648" y="930" width="52" height="50" rx="3" fill="#111" />
+<text x="674" y="967" font-size="30" font-weight="400" fill="#f2f2f2" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >△</text>
+<rect x="708" y="930" width="76" height="50" rx="3" fill="#000" stroke="#3a3320" stroke-width="2" />
+<text x="746" y="969" font-size="38" font-weight="400" fill="#d9981a" text-anchor="middle" font-family="'DotGothic16','Noto Sans JP',monospace" >6</text>
+<text x="800" y="967" font-size="28" font-weight="400" fill="#bdbdbd" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >アサナギスター</text>
+<text x="60" y="1050" font-size="24" font-weight="400" fill="#6f6a5e" text-anchor="start" font-family="'DotGothic16','Noto Sans JP',monospace" >オッズ非依存 自動算出 ／ 馬券は20歳から</text>
+</svg>

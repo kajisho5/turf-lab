@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1090" viewBox="0 0 1240 1090" font-family="'Noto Sans JP',sans-serif"><defs><pattern id="s0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="40" height="40" fill="#ff5d5d"/><rect width="20" height="40" fill="#ffe066"/></pattern><pattern id="s1" width="56" height="56" patternUnits="userSpaceOnUse"><rect width="56" height="56" fill="#4cc9f0"/><polygon points="28,4 52,28 28,52 4,28" fill="#f72585"/></pattern><pattern id="s2" width="48" height="48" patternUnits="userSpaceOnUse"><rect width="48" height="48" fill="#80ed99"/><circle cx="24" cy="24" r="12" fill="#22577a"/></pattern><pattern id="s3" width="60" height="44" patternUnits="userSpaceOnUse"><rect width="60" height="44" fill="#ffb703"/><polygon points="0,44 30,10 60,44 60,26 30,-8 0,26" fill="#8338ec"/></pattern></defs>
+<rect x="0" y="0" width="1240" height="1090" rx="0" fill="#131118" />
+<text x="48" y="128" font-size="100" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >潮見</text>
+<text x="270" y="92" font-size="26" font-weight="700" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >カジ競馬 AI予想</text>
+<text x="270" y="130" font-size="34" font-weight="700" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >11月14日（土）</text>
+<rect x="48" y="176" width="560" height="400" rx="22" fill="#1c1a23" />
+<clipPath id="c0"><rect x="48" y="176" width="560" height="400" rx="22"/></clipPath>
+<rect x="48" y="176" width="96" height="400" rx="0" fill="url(#s0)" clip-path="url(#c0)"/>
+<rect x="62" y="196" width="68" height="68" rx="34" fill="#131118" />
+<text x="96" y="244" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >1</text>
+<text x="96" y="556" font-size="26" font-weight="400" fill="#131118" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >R</text>
+<text x="172" y="234" font-size="26" font-weight="700" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >C3ー5　1400m</text>
+<text x="394" y="234" font-size="22" font-weight="700" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >15:35</text>
+<rect x="468" y="200" width="116" height="46" rx="23" fill="#ff5d5d" stroke="#ff5d5d" stroke-width="2" />
+<text x="526" y="232" font-size="24" font-weight="900" fill="#131118" text-anchor="middle" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >★勝負</text>
+<text x="172" y="314" font-size="40" font-weight="900" fill="#ff5d5d" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >◎</text>
+<text x="284" y="314" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >5</text>
+<text x="302" y="314" font-size="28" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >オッターダッシュ</text>
+<text x="584" y="314" font-size="30" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >64</text>
+<text x="172" y="384" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >○</text>
+<text x="284" y="384" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >7</text>
+<text x="302" y="384" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ラッコノユメ</text>
+<text x="584" y="384" font-size="24" font-weight="400" fill="#9a95a8" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >31</text>
+<text x="172" y="434" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >▲</text>
+<text x="284" y="434" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >2</text>
+<text x="302" y="434" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >カワウソブレイブ</text>
+<text x="172" y="484" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="284" y="484" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >4</text>
+<text x="302" y="484" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >セセラギキング</text>
+<text x="172" y="534" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="284" y="534" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >9</text>
+<text x="302" y="534" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ミズカキエース</text>
+<rect x="632" y="176" width="560" height="400" rx="22" fill="#1c1a23" />
+<clipPath id="c1"><rect x="632" y="176" width="560" height="400" rx="22"/></clipPath>
+<rect x="632" y="176" width="96" height="400" rx="0" fill="url(#s1)" clip-path="url(#c1)"/>
+<rect x="646" y="196" width="68" height="68" rx="34" fill="#131118" />
+<text x="680" y="244" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >2</text>
+<text x="680" y="556" font-size="26" font-weight="400" fill="#131118" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >R</text>
+<text x="756" y="234" font-size="26" font-weight="700" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >2歳ー3　1300m</text>
+<text x="978" y="234" font-size="22" font-weight="700" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >16:05</text>
+<rect x="1052" y="200" width="116" height="46" rx="23" fill="#1c1a23" stroke="#4cc9f0" stroke-width="2" />
+<text x="1110" y="232" font-size="24" font-weight="900" fill="#4cc9f0" text-anchor="middle" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >狙い目</text>
+<text x="756" y="314" font-size="40" font-weight="900" fill="#4cc9f0" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >◎</text>
+<text x="868" y="314" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >10</text>
+<text x="886" y="314" font-size="28" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >イタチノホシ</text>
+<text x="1168" y="314" font-size="30" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >52</text>
+<text x="756" y="384" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >○</text>
+<text x="868" y="384" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >3</text>
+<text x="886" y="384" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >コツメスマイル</text>
+<text x="1168" y="384" font-size="24" font-weight="400" fill="#9a95a8" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >45</text>
+<text x="756" y="434" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >▲</text>
+<text x="868" y="434" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >6</text>
+<text x="886" y="434" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ナガレボシオー</text>
+<text x="756" y="484" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="868" y="484" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >1</text>
+<text x="886" y="484" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >カワベノハナ</text>
+<text x="756" y="534" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="868" y="534" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >12</text>
+<text x="886" y="534" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ツキヨノラッコ</text>
+<rect x="48" y="600" width="560" height="400" rx="22" fill="#1c1a23" />
+<clipPath id="c2"><rect x="48" y="600" width="560" height="400" rx="22"/></clipPath>
+<rect x="48" y="600" width="96" height="400" rx="0" fill="url(#s2)" clip-path="url(#c2)"/>
+<rect x="62" y="620" width="68" height="68" rx="34" fill="#131118" />
+<text x="96" y="668" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >3</text>
+<text x="96" y="980" font-size="26" font-weight="400" fill="#131118" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >R</text>
+<text x="172" y="658" font-size="26" font-weight="700" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >C2ー4　1400m</text>
+<text x="394" y="658" font-size="22" font-weight="700" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >16:40</text>
+<text x="172" y="738" font-size="40" font-weight="900" fill="#80ed99" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >◎</text>
+<text x="284" y="738" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >2</text>
+<text x="302" y="738" font-size="28" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ミナモノカゼ</text>
+<text x="584" y="738" font-size="30" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >47</text>
+<text x="172" y="808" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >○</text>
+<text x="284" y="808" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >9</text>
+<text x="302" y="808" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >シオカゼテイオー</text>
+<text x="584" y="808" font-size="24" font-weight="400" fill="#9a95a8" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >41</text>
+<text x="172" y="858" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >▲</text>
+<text x="284" y="858" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >4</text>
+<text x="302" y="858" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ハマベノユウヒ</text>
+<text x="172" y="908" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="284" y="908" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >3</text>
+<text x="302" y="908" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ナギサブルー</text>
+<text x="172" y="958" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="284" y="958" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >8</text>
+<text x="302" y="958" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ウミネコライト</text>
+<rect x="632" y="600" width="560" height="400" rx="22" fill="#1c1a23" />
+<clipPath id="c3"><rect x="632" y="600" width="560" height="400" rx="22"/></clipPath>
+<rect x="632" y="600" width="96" height="400" rx="0" fill="url(#s3)" clip-path="url(#c3)"/>
+<rect x="646" y="620" width="68" height="68" rx="34" fill="#131118" />
+<text x="680" y="668" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >4</text>
+<text x="680" y="980" font-size="26" font-weight="400" fill="#131118" text-anchor="middle" font-family="'Archivo Black','Noto Sans JP',sans-serif" >R</text>
+<text x="756" y="658" font-size="26" font-weight="700" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >B3ー2　1600m</text>
+<text x="978" y="658" font-size="22" font-weight="700" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >17:15</text>
+<text x="756" y="738" font-size="40" font-weight="900" fill="#ffb703" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >◎</text>
+<text x="868" y="738" font-size="40" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >8</text>
+<text x="886" y="738" font-size="28" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >セセラギオウジ</text>
+<text x="1168" y="738" font-size="30" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >49</text>
+<text x="756" y="808" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >○</text>
+<text x="868" y="808" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >1</text>
+<text x="886" y="808" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >カワモノガタリ</text>
+<text x="1168" y="808" font-size="24" font-weight="400" fill="#9a95a8" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >44</text>
+<text x="756" y="858" font-size="26" font-weight="900" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >▲</text>
+<text x="868" y="858" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >5</text>
+<text x="886" y="858" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ヨアケノラッコ</text>
+<text x="756" y="908" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="868" y="908" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >11</text>
+<text x="886" y="908" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >ミズベノユメ</text>
+<text x="756" y="958" font-size="26" font-weight="900" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >△</text>
+<text x="868" y="958" font-size="28" font-weight="400" fill="#f6f4fa" text-anchor="end" font-family="'Archivo Black','Noto Sans JP',sans-serif" >6</text>
+<text x="886" y="958" font-size="26" font-weight="500" fill="#f6f4fa" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >アサナギスター</text>
+<text x="48" y="1056" font-size="22" font-weight="400" fill="#9a95a8" text-anchor="start" font-family="'Zen Kaku Gothic New','Noto Sans JP',sans-serif" >近走・騎手・血統・時計から自動算出（オッズ非依存）／馬券は20歳から</text>
+</svg>

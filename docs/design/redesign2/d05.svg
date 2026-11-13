@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1090" viewBox="0 0 1240 1090" font-family="'Noto Sans JP',sans-serif"><defs><linearGradient id="bg5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a1024"/><stop offset="1" stop-color="#05070f"/></linearGradient><linearGradient id="bar5" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1c4fd6"/><stop offset="1" stop-color="#0b2a7a"/></linearGradient><linearGradient id="hot5" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff3d6e"/><stop offset="1" stop-color="#b3123f"/></linearGradient></defs>
+<rect x="0" y="0" width="1240" height="1090" rx="0" fill="url(#bg5)" />
+<polygon points="66,52 486,52 460,148 40,148" fill="url(#bar5)"/>
+<text x="84" y="122" font-size="72" font-weight="900" fill="#ffffff" text-anchor="start" font-style="italic">潮見</text>
+<text x="250" y="122" font-size="40" font-weight="900" fill="#ffe14a" text-anchor="start" font-style="italic">AI予想</text>
+<polygon points="488,84 818,84 800,148 470,148" fill="#0d1630"/>
+<text x="500" y="128" font-size="30" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">11月14日（土）</text>
+<text x="1192" y="128" font-size="34" font-weight="900" fill="#a9b6cc" text-anchor="end" font-style="italic">カジ競馬</text>
+<polygon points="66,184 606,184 588,246 48,246" fill="url(#hot5)"/>
+<text x="88" y="230" font-size="44" font-weight="700" fill="#ffffff" text-anchor="start" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">1R</text>
+<text x="166" y="228" font-size="26" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">C3ー5　1400m　15:35</text>
+<text x="572" y="228" font-size="28" font-weight="900" fill="#ffe14a" text-anchor="end" font-style="italic">★勝負</text>
+<polygon points="64,260 604,260 588,334 48,334" fill="#ffe14a"/>
+<text x="84" y="314" font-size="40" font-weight="900" fill="#0a1024" text-anchor="start" >◎</text>
+<polygon points="142,266 212,266 202,328 132,328" fill="#0a1024"/>
+<text x="174" y="315" font-size="46" font-weight="700" fill="#ffe14a" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">5</text>
+<text x="230" y="313" font-size="33" font-weight="900" fill="#0a1024" text-anchor="start" font-style="italic">オッターダッシュ</text>
+<text x="568" y="314" font-size="40" font-weight="700" fill="#0a1024" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">64</text>
+<polygon points="60,346 600,346 588,394 48,394" fill="#111a33"/>
+<text x="84" y="381" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >○</text>
+<polygon points="142,352 198,352 188,388 132,388" fill="#3fd0ff"/>
+<text x="166" y="382" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">7</text>
+<text x="212" y="381" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ラッコノユメ</text>
+<text x="568" y="381" font-size="26" font-weight="700" fill="#a9b6cc" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">31</text>
+<polygon points="60,404 600,404 588,452 48,452" fill="#111a33"/>
+<text x="84" y="439" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >▲</text>
+<polygon points="142,410 198,410 188,446 132,446" fill="#3fd0ff"/>
+<text x="166" y="440" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">2</text>
+<text x="212" y="439" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">カワウソブレイブ</text>
+<polygon points="60,462 600,462 588,510 48,510" fill="#111a33"/>
+<text x="84" y="497" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="142,468 198,468 188,504 132,504" fill="#3fd0ff"/>
+<text x="166" y="498" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">4</text>
+<text x="212" y="497" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">セセラギキング</text>
+<polygon points="60,520 600,520 588,568 48,568" fill="#111a33"/>
+<text x="84" y="555" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="142,526 198,526 188,562 132,562" fill="#3fd0ff"/>
+<text x="166" y="556" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">9</text>
+<text x="212" y="555" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ミズカキエース</text>
+<polygon points="650,184 1190,184 1172,246 632,246" fill="url(#bar5)"/>
+<text x="672" y="230" font-size="44" font-weight="700" fill="#ffffff" text-anchor="start" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">2R</text>
+<text x="750" y="228" font-size="26" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">2歳ー3　1300m　16:05</text>
+<text x="1156" y="228" font-size="28" font-weight="900" fill="#ffffff" text-anchor="end" font-style="italic">狙い目</text>
+<polygon points="648,260 1188,260 1172,334 632,334" fill="#ffe14a"/>
+<text x="668" y="314" font-size="40" font-weight="900" fill="#0a1024" text-anchor="start" >◎</text>
+<polygon points="726,266 796,266 786,328 716,328" fill="#0a1024"/>
+<text x="758" y="315" font-size="46" font-weight="700" fill="#ffe14a" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">10</text>
+<text x="814" y="313" font-size="33" font-weight="900" fill="#0a1024" text-anchor="start" font-style="italic">イタチノホシ</text>
+<text x="1152" y="314" font-size="40" font-weight="700" fill="#0a1024" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">52</text>
+<polygon points="644,346 1184,346 1172,394 632,394" fill="#111a33"/>
+<text x="668" y="381" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >○</text>
+<polygon points="726,352 782,352 772,388 716,388" fill="#3fd0ff"/>
+<text x="750" y="382" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">3</text>
+<text x="796" y="381" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">コツメスマイル</text>
+<text x="1152" y="381" font-size="26" font-weight="700" fill="#a9b6cc" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">45</text>
+<polygon points="644,404 1184,404 1172,452 632,452" fill="#111a33"/>
+<text x="668" y="439" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >▲</text>
+<polygon points="726,410 782,410 772,446 716,446" fill="#3fd0ff"/>
+<text x="750" y="440" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">6</text>
+<text x="796" y="439" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ナガレボシオー</text>
+<polygon points="644,462 1184,462 1172,510 632,510" fill="#111a33"/>
+<text x="668" y="497" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="726,468 782,468 772,504 716,504" fill="#3fd0ff"/>
+<text x="750" y="498" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">1</text>
+<text x="796" y="497" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">カワベノハナ</text>
+<polygon points="644,520 1184,520 1172,568 632,568" fill="#111a33"/>
+<text x="668" y="555" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="726,526 782,526 772,562 716,562" fill="#3fd0ff"/>
+<text x="750" y="556" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">12</text>
+<text x="796" y="555" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ツキヨノラッコ</text>
+<polygon points="66,602 606,602 588,664 48,664" fill="url(#bar5)"/>
+<text x="88" y="648" font-size="44" font-weight="700" fill="#ffffff" text-anchor="start" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">3R</text>
+<text x="166" y="646" font-size="26" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">C2ー4　1400m　16:40</text>
+<polygon points="64,678 604,678 588,752 48,752" fill="#ffe14a"/>
+<text x="84" y="732" font-size="40" font-weight="900" fill="#0a1024" text-anchor="start" >◎</text>
+<polygon points="142,684 212,684 202,746 132,746" fill="#0a1024"/>
+<text x="174" y="733" font-size="46" font-weight="700" fill="#ffe14a" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">2</text>
+<text x="230" y="731" font-size="33" font-weight="900" fill="#0a1024" text-anchor="start" font-style="italic">ミナモノカゼ</text>
+<text x="568" y="732" font-size="40" font-weight="700" fill="#0a1024" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">47</text>
+<polygon points="60,764 600,764 588,812 48,812" fill="#111a33"/>
+<text x="84" y="799" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >○</text>
+<polygon points="142,770 198,770 188,806 132,806" fill="#3fd0ff"/>
+<text x="166" y="800" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">9</text>
+<text x="212" y="799" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">シオカゼテイオー</text>
+<text x="568" y="799" font-size="26" font-weight="700" fill="#a9b6cc" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">41</text>
+<polygon points="60,822 600,822 588,870 48,870" fill="#111a33"/>
+<text x="84" y="857" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >▲</text>
+<polygon points="142,828 198,828 188,864 132,864" fill="#3fd0ff"/>
+<text x="166" y="858" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">4</text>
+<text x="212" y="857" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ハマベノユウヒ</text>
+<polygon points="60,880 600,880 588,928 48,928" fill="#111a33"/>
+<text x="84" y="915" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="142,886 198,886 188,922 132,922" fill="#3fd0ff"/>
+<text x="166" y="916" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">3</text>
+<text x="212" y="915" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ナギサブルー</text>
+<polygon points="60,938 600,938 588,986 48,986" fill="#111a33"/>
+<text x="84" y="973" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="142,944 198,944 188,980 132,980" fill="#3fd0ff"/>
+<text x="166" y="974" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">8</text>
+<text x="212" y="973" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ウミネコライト</text>
+<polygon points="650,602 1190,602 1172,664 632,664" fill="url(#bar5)"/>
+<text x="672" y="648" font-size="44" font-weight="700" fill="#ffffff" text-anchor="start" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">4R</text>
+<text x="750" y="646" font-size="26" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">B3ー2　1600m　17:15</text>
+<polygon points="648,678 1188,678 1172,752 632,752" fill="#ffe14a"/>
+<text x="668" y="732" font-size="40" font-weight="900" fill="#0a1024" text-anchor="start" >◎</text>
+<polygon points="726,684 796,684 786,746 716,746" fill="#0a1024"/>
+<text x="758" y="733" font-size="46" font-weight="700" fill="#ffe14a" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">8</text>
+<text x="814" y="731" font-size="33" font-weight="900" fill="#0a1024" text-anchor="start" font-style="italic">セセラギオウジ</text>
+<text x="1152" y="732" font-size="40" font-weight="700" fill="#0a1024" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">49</text>
+<polygon points="644,764 1184,764 1172,812 632,812" fill="#111a33"/>
+<text x="668" y="799" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >○</text>
+<polygon points="726,770 782,770 772,806 716,806" fill="#3fd0ff"/>
+<text x="750" y="800" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">1</text>
+<text x="796" y="799" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">カワモノガタリ</text>
+<text x="1152" y="799" font-size="26" font-weight="700" fill="#a9b6cc" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">44</text>
+<polygon points="644,822 1184,822 1172,870 632,870" fill="#111a33"/>
+<text x="668" y="857" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >▲</text>
+<polygon points="726,828 782,828 772,864 716,864" fill="#3fd0ff"/>
+<text x="750" y="858" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">5</text>
+<text x="796" y="857" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ヨアケノラッコ</text>
+<polygon points="644,880 1184,880 1172,928 632,928" fill="#111a33"/>
+<text x="668" y="915" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="726,886 782,886 772,922 716,922" fill="#3fd0ff"/>
+<text x="750" y="916" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">11</text>
+<text x="796" y="915" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">ミズベノユメ</text>
+<polygon points="644,938 1184,938 1172,986 632,986" fill="#111a33"/>
+<text x="668" y="973" font-size="28" font-weight="900" fill="#ffffff" text-anchor="start" >△</text>
+<polygon points="726,944 782,944 772,980 716,980" fill="#3fd0ff"/>
+<text x="750" y="974" font-size="30" font-weight="700" fill="#0a1024" text-anchor="middle" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" font-style="italic">6</text>
+<text x="796" y="973" font-size="27" font-weight="700" fill="#ffffff" text-anchor="start" font-style="italic">アサナギスター</text>
+<text x="48" y="1056" font-size="22" font-weight="400" fill="#a9b6cc" text-anchor="start" >近走・騎手・血統・時計から自動算出（オッズ非依存）／馬券は20歳から</text>
+</svg>
