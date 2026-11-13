@@ -25,6 +25,7 @@
 
 import puppeteer from "@cloudflare/puppeteer";
 
+import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -110,6 +111,7 @@ async function notifyMail(env, kind, r, err) {
       posted += m.posted.length;
       lines.push(`■${lbl}: ${m.posted.length}件投稿`);
       m.posted.forEach((p, i) => lines.push(`  ${i + 1}. https://x.com/kaji_keiba/status/${p.id}（画像${p.images}枚）`));
+      if (m.mergeError) lines.push(`  ※1件にまとめた投稿は通らなかったので、分けて投稿しました — ${String(m.mergeError).slice(0, 200)}`);
     } else if (m.error) {
       // 中央は平日に開催が無いので「レース無し」は失敗扱いにしない
       const noRace = /no races|レースがありません|0件|count":0/.test(String(m.error));
@@ -140,11 +142,21 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
       const t0 = Date.now();
       try {
         const out = await renderOne(browser, env, kind, mode, date);
-        const posts = out.ok ? toPosts(kind, mode, out, caption) : [];
+        const thread = out.ok ? toThread(kind, mode, out, caption) : [];
+        const one = mergePosts(thread);          // 1件にまとめた形（まとめられない時は null）
+        const posts = one ? [one] : thread;
         summary.modes[mode] = { ok: out.ok, error: out.error || null, sec: Math.round((Date.now() - t0) / 1000),
           posts: posts.map(p => ({ text: p.text, images: p.images.length })) };
         if (!dry && posts.length) {
-          const r = await postThread(env, posts);
+          let r;
+          try { r = await postThread(env, posts); }
+          catch (e) {
+            // 1件にまとめた投稿をXが受け付けなかった（画像の枚数・文の長さなど）→ 今までどおり分けて出す
+            if (!one) throw e;
+            summary.modes[mode].mergeError = String(e && e.message || e);
+            console.error("merged post failed, falling back to thread", summary.modes[mode].mergeError);
+            r = await postThread(env, thread);
+          }
           summary.modes[mode].posted = r;
         }
       } catch (e) {
@@ -175,30 +187,15 @@ async function renderOne(browser, env, kind, mode, date) {
   }
 }
 
-/* __autoOut → 実際に投稿する posts[{text, images[dataURL]}] に整形 */
-function toPosts(kind, mode, out, caption) {
-  const md = out.date && out.date.length === 8 ? `${+out.date.slice(4, 6)}/${+out.date.slice(6, 8)}` : out.date;
-  const modeLbl = mode === "nar" ? "地方競馬" : "中央競馬";
-  if (kind === "morning") {
-    // 各場カードを4枚/ツイートに分割。キャプションは共通「M/D\n◯◯の予想です」
-    const imgs = (out.cards || []).map(c => c.image).filter(Boolean);
-    const posts = [];
-    for (let i = 0; i < imgs.length; i += 4) {
-      posts.push({ text: caption || `${md}\n${modeLbl}の予想です`, images: imgs.slice(i, i + 4) });
-    }
-    return posts;
-  }
-  // evening: tweet.html が posts[{text, images[]}] を既に4分割込みで用意している
-  return (out.posts || []).map(p => ({ text: p.text || "", images: (p.images || []).filter(Boolean) }));
-}
-
-/* ---------- X 投稿（OAuth1.0a・スレッド） ---------- */
+/* ---------- X 投稿（OAuth1.0a）。posts が1件なら1投稿、複数ならスレッド ----------
+   2026-11-13: Xの画像上限が4→20枚になった（API の media_ids も最大20）。まず1件にまとめて出し、
+   通らなければ runAll が今までどおり4枚ずつのスレッドで出し直す。 */
 async function postThread(env, posts) {
   const done = [];
   let replyTo = null;
   for (const p of posts) {
     const mediaIds = [];
-    for (const dataUrl of p.images.slice(0, 4)) {
+    for (const dataUrl of p.images.slice(0, MAX_MEDIA)) {
       const id = await uploadMedia(env, dataUrl);
       if (id) mediaIds.push(id);
     }
