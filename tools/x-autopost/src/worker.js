@@ -20,7 +20,7 @@
    ルート:
      GET /run?kind=morning|evening&key=<TRIGGER_KEY>[&dry=1][&mode=nar|jra]
          手動実行/テスト。dry=1 なら投稿せず要約JSONを返す。
-     cron: 23:30 UTC=朝8:30 / 13:00 UTC=夜22:00（wrangler.toml）。朝/夜は動いた時刻で決める
+     cron: 23:30 UTC=朝8:30 / 13:30 UTC=夜22:30（wrangler.toml）。朝/夜は動いた時刻で決める
    ===================================================================== */
 
 import puppeteer from "@cloudflare/puppeteer";
