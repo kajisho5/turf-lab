@@ -20,13 +20,14 @@
    ルート:
      GET /run?kind=morning|evening&key=<TRIGGER_KEY>[&dry=1][&mode=nar|jra]
          手動実行/テスト。dry=1 なら投稿せず要約JSONを返す。
-     cron: 23:30 UTC=朝8:30 / 13:30 UTC=夜22:30（wrangler.toml）。朝/夜は動いた時刻で決める
+     cron: 23:30 UTC=朝8:30 / 13:30 UTC=夜22:30 / 21:30 UTC=朝の前の点検6:30（wrangler.toml）。どの回かは動いた時刻で決める
    ===================================================================== */
 
 import puppeteer from "@cloudflare/puppeteer";
 
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, runRetry, rehearsal } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -37,7 +38,7 @@ const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じ
 
 /** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
 const MONTHLY_CRON = "0 0 1 * *";       // 月間まとめ（毎月1日 9:00 日本時間）。wrangler.toml の crons と同じ文字列
-const HITS_CRON = "*/10 1-13 * * *";    // ★勝負の的中速報（日本時間 10:00〜22:50 の10分おき）。wrangler.toml の crons と同じ文字列
+const HITS_CRON = "*/10 0-14 * * *";    // ★勝負の的中速報＋失敗した回のやり直し（日本時間 9:00〜23:50 の10分おき）。wrangler.toml の crons と同じ文字列
 const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
 
 /** 動いた時刻（ミリ秒）の、日本時間で見た「前の月」を YYYYMM で返す */
@@ -79,8 +80,17 @@ export default {
     }
     // ★勝負の的中速報（10分おき）。朝・夜の回とは別の時刻の指定で動く
     if (event.cron === HITS_CRON) {
-      if (env.HITS !== "1") return;
       ctx.waitUntil((async () => {
+        // 失敗した回のやり直し（朝 9:00・9:20／夜 22:50・23:10 の回だけ見る。src/guard.js）
+        try {
+          if (retryKind(event.scheduledTime) && env.DRYRUN !== "1") {
+            const rr = await runRetry(env, event.scheduledTime, MODES,
+              (kind, mode) => runAll(env, kind, { dry: false, only: mode }),
+              (kind, r, note) => notifyMail(env, kind, r, null, note));
+            if (rr && (rr.warned || (rr.run && rr.run.length))) console.log("autopost retry", JSON.stringify(rr));
+          }
+        } catch (e) { console.error("retry", String(e && e.message || e)); }
+        if (env.HITS !== "1") return;
         try {
           const r = await runHits(env, (text, toId) => createTweet(env, text, [], toId), { dry: env.DRYRUN === "1" });
           if (r.checked || r.posted.length) console.log("autopost hits", JSON.stringify(r));
@@ -98,11 +108,35 @@ export default {
       })());
       return;
     }
+    // 朝の前の点検（6:30）。投稿も予想の保存もしない。問題がある時だけメールする（src/guard.js）
+    if (isRehearsalTime(event.scheduledTime)) {
+      ctx.waitUntil((async () => {
+        const bad = await rehearsal(env, event.scheduledTime, async () => {
+          const url = "https://api.twitter.com/2/users/me";
+          const res = await fetch(url, { headers: { Authorization: await oauthHeader(env, "GET", url, {}) } });
+          return { ok: res.ok, status: res.status, body: (await res.text()).slice(0, 200) };
+        });
+        console.log("autopost rehearsal", JSON.stringify(bad));
+        if (bad.length && env.MAIL) await env.MAIL.send({
+          to: "kajiyama@seventh-well.com",
+          from: { email: "autopost@notify.seventh-well.com", name: "カジ競馬 自動投稿" },
+          subject: `【⚠朝の前の点検】問題 ${bad.length}件（8:30の投稿の前に）`,
+          text: "8:30 の投稿の前の点検で問題が見つかりました（投稿はしていません）。\n\n" + bad.map(x => "・" + x).join("\n")
+            + "\n\nXの鍵の登録し直し: https://dash.cloudflare.com/78ef1242bb9514e7f6ccf32f9f94e744/workers/services/view/kajikeiba-autopost/production/settings\n"
+            + "記録: https://dash.cloudflare.com/78ef1242bb9514e7f6ccf32f9f94e744/workers/services/view/kajikeiba-autopost/production/observability/events\n",
+        });
+      })().catch(e => console.error("rehearsal", e)));
+      return;
+    }
     const kind = kindForTime(event.scheduledTime);
     ctx.waitUntil((async () => {
       let r = null, err = null;
+      const day = jst(event.scheduledTime).date;
+      try { await markStart(env, day, kind); } catch (e) { console.error("markStart", String(e && e.message || e)); }
       try { r = await runAll(env, kind, { dry: env.DRYRUN === "1" }); console.log("autopost result", JSON.stringify(r)); }
       catch (e) { err = e; console.error("scheduled", kind, e); }
+      // 各モードの結果を残す（失敗したモードだけ、あとの回でやり直すため）
+      try { await saveState(env, day, kind, { modes: stateOf(r, MODES), tries: 0 }); } catch (e) { console.error("saveState", String(e && e.message || e)); }
       try { await notifyMail(env, kind, r, err); } catch (e) { console.error("notify mail failed", String(e && e.message || e), String(e && e.code || "")); }
     })());
   },
@@ -130,10 +164,11 @@ export default {
 /* ---------- 結果メール（成功・失敗とも。2026-10-30 ユーザー指示） ----------
    送信: Cloudflare Email Service（送信元ドメイン notify.seventh-well.com は登録済み）。
    宛先は wrangler.toml の send_email の destination_address に固定（他へは送れない）。 */
-async function notifyMail(env, kind, r, err) {
+async function notifyMail(env, kind, r, err, note) {
   if (!env.MAIL) return;
-  const kindLbl = kind === "morning" ? "朝の予想" : kind === "monthly" ? "月間まとめ" : "夜の結果";
+  const kindLbl = (kind === "morning" ? "朝の予想" : kind === "monthly" ? "月間まとめ" : "夜の結果") + (note && r ? "・やり直し" : "");
   const lines = [];
+  if (note) lines.push(r ? `※${note}` : note);
   let posted = 0, failed = 0;
   if (err) { failed++; lines.push(`全体エラー: ${String(err && err.message || err)}`); }
   for (const [mode, m] of Object.entries((r && r.modes) || {})) {
@@ -143,6 +178,11 @@ async function notifyMail(env, kind, r, err) {
       lines.push(`■${lbl}: ${m.posted.length}件投稿`);
       m.posted.forEach((p, i) => lines.push(`  ${i + 1}. https://x.com/kaji_keiba/status/${p.id}（画像${p.images}枚）`));
       if (m.mergeError) lines.push(`  ※1件にまとめた投稿は通らなかったので、分けて投稿しました — ${String(m.mergeError).slice(0, 200)}`);
+    } else if (m.partial && m.partial.length) {
+      failed++;
+      lines.push(`■${lbl}: 途中まで投稿して止まりました（${m.partial.length}件）— ${String(m.error).slice(0, 200)}`);
+      m.partial.forEach((p, i) => lines.push(`  ${i + 1}. https://x.com/kaji_keiba/status/${p.id}（画像${p.images}枚）`));
+      lines.push("  ※二重投稿を避けるため、自動のやり直しはしません。続きは手で出してください。");
     } else if (m.error) {
       // 中央は平日に開催が無いので「レース無し」は失敗扱いにしない
       const noRace = /no races|レースがありません|0件|count":0/.test(String(m.error));
@@ -153,6 +193,7 @@ async function notifyMail(env, kind, r, err) {
     }
   }
   if (r && r.dry) lines.unshift("※お試しモード（Xには投稿していません）");
+  if (!r && note) failed++;
   const status = failed ? "⚠失敗あり" : (posted ? "投稿OK" : "投稿なし");
   const jst = new Date(Date.now() + 9 * 3600e3).toISOString().slice(5, 16).replace("T", " ");
   await env.MAIL.send({
@@ -180,14 +221,16 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
           posts: posts.map(p => ({ text: p.text, images: p.images.length })) };
         if (!dry && posts.length) {
           let r;
-          try { r = await postThread(env, posts); }
-          catch (e) {
-            // 1件にまとめた投稿をXが受け付けなかった（画像の枚数・文の長さなど）→ 今までどおり分けて出す
-            if (!one) throw e;
-            summary.modes[mode].mergeError = String(e && e.message || e);
-            console.error("merged post failed, falling back to thread", summary.modes[mode].mergeError);
-            r = await postThread(env, thread);
-          }
+          try {
+            try { r = await postThread(env, posts); }
+            catch (e) {
+              // 1件にまとめた投稿をXが受け付けなかった（画像の枚数・文の長さなど）→ 今までどおり分けて出す
+              if (!one) throw e;
+              summary.modes[mode].mergeError = String(e && e.message || e);
+              console.error("merged post failed, falling back to thread", summary.modes[mode].mergeError);
+              r = await postThread(env, thread);
+            }
+          } catch (e) { if (e && typeof e === "object") e.date = out.date; throw e; }
           summary.modes[mode].posted = r;
           // 朝の投稿のIDを覚えておく（的中速報をこの投稿への返信で出すため）。失敗しても投稿は成功のまま
           if (kind === "morning" && r && r[0] && r[0].id) {
@@ -196,6 +239,11 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
         }
       } catch (e) {
         summary.modes[mode] = { ok: false, error: String(e && e.message || e), sec: Math.round((Date.now() - t0) / 1000) };
+        // 途中まで投稿できていた分（スレッドの何件目かで止まった）。やり直すと二重になるので記録しておく
+        if (e && e.done && e.done.length) {
+          summary.modes[mode].partial = e.done;
+          if (kind === "morning" && e.done[0].id && e.date) { try { await rememberMorning(env, e.date, mode, e.done[0].id); } catch (_) { /* noop */ } }
+        }
       }
     }
   } finally {
@@ -243,15 +291,18 @@ async function renderOne(browser, env, kind, mode, date, extra) {
 async function postThread(env, posts) {
   const done = [];
   let replyTo = null;
+  const up = async (p) => {
+    const ids = [];
+    for (const dataUrl of p.images.slice(0, MAX_MEDIA)) { const id = await uploadMedia(env, dataUrl); if (id) ids.push(id); }
+    return ids;
+  };
   for (const p of posts) {
-    const mediaIds = [];
-    for (const dataUrl of p.images.slice(0, MAX_MEDIA)) {
-      const id = await uploadMedia(env, dataUrl);
-      if (id) mediaIds.push(id);
-    }
-    const id = await createTweet(env, p.text, mediaIds, replyTo);
-    replyTo = id;                       // 次を同スレッドにぶら下げる
-    done.push({ id, images: mediaIds.length });
+    try {
+      const mediaIds = await up(p);
+      const id = await createTweet(env, p.text, mediaIds, replyTo);
+      replyTo = id;                       // 次を同スレッドにぶら下げる
+      done.push({ id, images: mediaIds.length });
+    } catch (e) { if (e && typeof e === "object") e.done = done; throw e; }   // どこまで出せたかを付けて上に伝える
   }
   return done;
 }
