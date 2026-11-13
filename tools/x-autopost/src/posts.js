@@ -9,7 +9,8 @@ export function toThread(kind, mode, out, caption) {
   const md = out.date && out.date.length === 8 ? `${+out.date.slice(4, 6)}/${+out.date.slice(6, 8)}` : out.date;
   const modeLbl = mode === "nar" ? "地方競馬" : "中央競馬";
   if (kind === "morning") {
-    const imgs = (out.cards || []).map(c => c.image).filter(Boolean);
+    // 1枚目は「今日の★勝負」（★勝負が0の日は無い）。2枚目から場ごとのカード
+    const imgs = [out.summary && out.summary.image].concat((out.cards || []).map(c => c.image)).filter(Boolean);
     const posts = [];
     for (let i = 0; i < imgs.length; i += THREAD_MEDIA) {
       posts.push({ text: caption || `${md}\n${modeLbl}の予想です`, images: imgs.slice(i, i + THREAD_MEDIA) });

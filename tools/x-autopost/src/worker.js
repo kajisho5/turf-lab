@@ -26,6 +26,7 @@
 import puppeteer from "@cloudflare/puppeteer";
 
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
+import { runHits, rememberMorning } from "./hits.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -35,6 +36,7 @@ const RENDER_TIMEOUT_MS = 420000;           // __autoOut 待ちの上限（朝�
 const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じない時間（既定60秒では足りない）
 
 /** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
+const HITS_CRON = "*/10 1-13 * * *";    // ★勝負の的中速報（日本時間 10:00〜22:50 の10分おき）。wrangler.toml の crons と同じ文字列
 const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
 
 export function kindForTime(ms) {
@@ -65,6 +67,17 @@ export default {
           text: "Xの鍵の確認（投稿はしていません）\n" + line + "\n",
         });
       })().catch(e => console.error("keycheck", e)));
+      return;
+    }
+    // ★勝負の的中速報（10分おき）。朝・夜の回とは別の時刻の指定で動く
+    if (event.cron === HITS_CRON) {
+      if (env.HITS !== "1") return;
+      ctx.waitUntil((async () => {
+        try {
+          const r = await runHits(env, (text, toId) => createTweet(env, text, [], toId), { dry: env.DRYRUN === "1" });
+          if (r.checked || r.posted.length) console.log("autopost hits", JSON.stringify(r));
+        } catch (e) { console.error("hits", String(e && e.message || e)); }
+      })());
       return;
     }
     const kind = kindForTime(event.scheduledTime);
@@ -158,6 +171,10 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
             r = await postThread(env, thread);
           }
           summary.modes[mode].posted = r;
+          // 朝の投稿のIDを覚えておく（的中速報をこの投稿への返信で出すため）。失敗しても投稿は成功のまま
+          if (kind === "morning" && r && r[0] && r[0].id) {
+            try { await rememberMorning(env, out.date, mode, r[0].id); } catch (e) { console.error("rememberMorning", String(e && e.message || e)); }
+          }
         }
       } catch (e) {
         summary.modes[mode] = { ok: false, error: String(e && e.message || e), sec: Math.round((Date.now() - t0) / 1000) };
