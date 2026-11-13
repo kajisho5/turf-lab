@@ -14,7 +14,7 @@ browser = { binding = "BROWSER" }
 
 # ★cron（時刻はUTC）★ 8:30 JST=前日23:30 UTC / 22:00 JST=13:00 UTC（2026-11-13: 全体を30分遅らせた）
 [triggers]
-crons = ["30 23 * * *", "0 13 * * *"]
+crons = ["30 23 * * *", "0 13 * * *", "22 3 * * *"]   # 3つ目は鍵の確認用の臨時（確認が済んだら外す）
 
 [vars]
 # 生成元（legacyのtweet.html）。?auto=morning|evening&mode=nar|jra を付けて開く。
