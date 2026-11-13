@@ -42,7 +42,7 @@ export function battleRaces(records, locks) {
       const f = p[r.no] || p[String(r.no)];
       if (!f || !f.battle) return;
       out.push({ rid: String(r.race_id), track: rec.trackName || r.track || "", no: r.no, post: String(r.post || ""),
-        num: String(r.marks[0].num), name: String(r.marks[0].name || "") });
+        num: String(r.marks[0].num), name: String(r.marks[0].name || ""), strong: r.strong ? String(r.strong) : null });
     });
   });
   return out.sort((a, b) => (a.post < b.post ? -1 : a.post > b.post ? 1 : (a.rid < b.rid ? -1 : 1)));
@@ -59,6 +59,7 @@ export function dueRaces(races, doneSet, nowMin) {
 /* 速報の文。played/won はこのレースを含めた今日の★勝負の戦績 */
 export function hitText(r, res, played, won) {
   const lines = ["🎯 ★勝負 的中", `${r.track}${r.no}R ◎${r.num} ${r.name}　1着`];
+  if (r.strong) lines.push(`強み：${r.strong}`);          // 朝に保存した文をそのまま使う（作り直さない）
   const tan = res.tan[r.num], fuku = res.fuku[r.num];
   if (tan && fuku) lines.push(`単勝 ${tan}円／複勝 ${fuku}円`);
   else if (tan) lines.push(`単勝 ${tan}円`);

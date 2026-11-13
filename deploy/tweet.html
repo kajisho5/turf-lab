@@ -2913,7 +2913,16 @@ async function scoreRace(html, r, trackName){
     shadow={ v:2, adj:_top(_a), nokoryu:_top(_b), koryu:(scored.some(function(x){return x._koryu;})?1:0), c12:(scored.some(function(x){return x._c12;})?1:0),
              t:(scored.some(function(x){return x._t;})?1:0), old:_oldTop };
   }catch(_){ shadow=null; }
-  return { no:r.no, name:raceName, track:trackName, race_id:r.race_id, post:(r.post||null), surface:(cond.surface||null), dist:(cond.dist||null), going:(cond.going||null), grade:(r.grade||null), marks, ranked, shadow, brkFull:(marks[0]&&marks[0].brkFull)||null, localLift:(marks[0]&&marks[0].localLift)||null, field:nums.length, firmO, firm1, oProb, hasOdds:!!odds, advice, chaos, locked:!!(_tc && loadLock(_date,_tc)), ovr:_ovr, scratched:(ps.scratched||[]) };
+  /* ◎の強み（地方・全頭の材料がそろったレースだけ）。朝に決めた文を予想と一緒に保存し、後から作り直さない */
+  let strong=null;
+  try{
+    if(MODE==="nar" && !isBanei && marks[0] && marks[0].num!=null && Object.keys(_ltrFeat).length===nums.length){
+      const _e=ctx.entries[marks[0].num];
+      const _rec=_e && _LTR_HIDX.nar && _LTR_HIDX.nar[_e.name];
+      strong=strengthLine(_ltrFeat, marks[0].num, (_rec&&_rec.t&&trackName)?_rec.t[trackName]:null);
+    }
+  }catch(_){ strong=null; }
+  return { no:r.no, name:raceName, track:trackName, race_id:r.race_id, post:(r.post||null), surface:(cond.surface||null), dist:(cond.dist||null), going:(cond.going||null), grade:(r.grade||null), marks, ranked, shadow, strong, brkFull:(marks[0]&&marks[0].brkFull)||null, localLift:(marks[0]&&marks[0].localLift)||null, field:nums.length, firmO, firm1, oProb, hasOdds:!!odds, advice, chaos, locked:!!(_tc && loadLock(_date,_tc)), ovr:_ovr, scratched:(ps.scratched||[]) };
 }
 /* 荒れ指数 0-100。高いほど波乱含み。オッズ未確定なら頭数のみで簡易算出 */
 function chaosIndex(odds, scored, marks, fieldN){
@@ -3220,7 +3229,7 @@ function savePredictions(date,tc,trackName,races,resArr){
          （2026-07-31、実際に全レースが夜に書き換わり結果に都合よくなっていた）。
          手動の「全場予想」ボタンからの保存は noclobber=false で従来通り上書き可。 */
       noclobber: !!(LINE_AUTO || autoOddsBusy),
-      races: src.map((m)=>({ no:m.no, name:m.name, race_id:m.race_id||null, post:(m.post||null), surface:(m.surface||null), dist:(m.dist||null), going:(m.going||null), marks:m.marks, ranked:(m.ranked||null), firmO:(m.firmO!=null?m.firmO:null), firm1:(m.firm1!=null?m.firm1:null), oProb:(m.oProb!=null?m.oProb:null), hasOdds:(m.hasOdds!==false), field:(m.field||0), chaos:(m.chaos||null), skip:!!m.skip, skipReason:m.skipReason||null, ovr:(m.ovr||null), scratched:(m.scratched||[]), shadow:(m.shadow||null) })),
+      races: src.map((m)=>({ no:m.no, name:m.name, race_id:m.race_id||null, post:(m.post||null), surface:(m.surface||null), dist:(m.dist||null), going:(m.going||null), marks:m.marks, ranked:(m.ranked||null), firmO:(m.firmO!=null?m.firmO:null), firm1:(m.firm1!=null?m.firm1:null), oProb:(m.oProb!=null?m.oProb:null), hasOdds:(m.hasOdds!==false), field:(m.field||0), chaos:(m.chaos||null), skip:!!m.skip, skipReason:m.skipReason||null, ovr:(m.ovr||null), scratched:(m.scratched||[]), shadow:(m.shadow||null), strong:(m.strong||null) })),
       wx: (_WX_SAVE[tc]||null) };
     PRED_CACHE[predKey(date,tc)]=payload;   // セッション内キャッシュ（同一セッションの答え合わせ用）
     /* サーバー保存。フル版が弾かれたら（WAF/POSTサイズ制限）軽量版で自動リトライ。
@@ -5969,6 +5978,26 @@ function drawTrackCanvas(trackName, races, date, noSave, tweetText){
   if(!noSave){ const dl=`${trackName}_推奨馬_${date}.png`; if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); } }
   return cv;
 }
+/* ===== ◎の「強み」1行（2026-11-13・docs/design/X_STRENGTH_AND_MONTHLY_DESIGN.md）=====
+   その馬について事実として言えることだけを1つ出す。「AIがこの理由で選んだ」とは書かない。
+   上から順に見て、最初に当てはまった1つ。どれにも当てはまらなければ null。
+     feats = 馬番→採点に使った材料（sva・btf・afa・jkr）／ num = ◎の馬番 ／ local = ◎のこの場の [3着内率%, 走数]
+   1〜3 は「値がある馬が5頭以上いて、◎が単独の1位」の時だけ。 */
+function strengthLine(feats, num, local){
+  const top=function(key){
+    const v=[]; Object.keys(feats||{}).forEach(function(n){ const x=feats[n]&&feats[n][key]; if(typeof x==="number"&&isFinite(x)) v.push([String(n),x]); });
+    if(v.length<5) return false;
+    v.sort(function(a,b){ return b[1]-a[1]; });
+    return v[0][0]===String(num) && v[0][1]>v[1][1];
+  };
+  if(top("sva")) return "近走の時計がメンバー1位";
+  if(top("btf")) return "この距離の持ち時計が1位";
+  if(top("afa")) return "近走の上がりがメンバー最速";
+  if(local && local[1]>=5 && local[0]>=60) return "この場で3着内 "+local[1]+"走中"+Math.round(local[0]*local[1]/100)+"回";
+  const me=feats&&feats[num];
+  if(me && typeof me.jkr==="number" && me.jkr>=0.5) return "騎手の3着内率 "+Math.round(me.jkr*100)+"%";
+  return null;
+}
 /* ===== 朝の1枚目「今日の★勝負」（2026-11-13・docs/design/X_BATTLE_SUMMARY_DESIGN.md）=====
    全場予想の中から、朝に★勝負と判定したレースだけを発走の早い順に並べる。別の予想は作らない。
    12レースを超える日は信頼度の高い12レースまで（並びは発走順のまま）。 */
@@ -5981,7 +6010,7 @@ function battleSummaryRows(groups){
       total++;
       if(!isBattle(r)) return;
       rows.push({ tc:String(tc), track:(g.trackName||r.track||""), no:+r.no, post:String(r.post||""), name:String(r.name||""),
-                  dist:(r.dist!=null?+r.dist:null), o:r.marks[0]||null, t:r.marks[1]||null,
+                  dist:(r.dist!=null?+r.dist:null), o:r.marks[0]||null, t:r.marks[1]||null, strong:(r.strong||null),
                   firm:(typeof r.firmO==="number"&&isFinite(r.firmO))?r.firmO:0 });
     });
   });
@@ -5998,9 +6027,13 @@ function drawBattleSummaryCanvas(bs, date){
   if(!bs||!bs.rows||!bs.rows.length) return null;
   const C={ bg1:"#121826", bg2:"#0a0e16", panel:"#1b1f2b", line:"#333333", txt:"#ffffff", sub:"#cccccc",
             mkO:"#ff7171", mk1:"#ffc700", aim1:"#ffd43d", aim2:"#ff7171", chipTxt:"#1a1400" };
-  const W=1240, pad=48, gutter=24, cardW=(W-pad*2-gutter)/2, cardH=150, rowGap=18, top=204;
+  const W=1240, pad=48, gutter=24, cardW=(W-pad*2-gutter)/2, rowGap=18, top=204;
   const nRows=Math.ceil(bs.rows.length/2);
-  const H=top + nRows*(cardH+rowGap) - rowGap + 28 + 124;
+  /* 段ごとの高さ: 左右どちらかに「強み」の行があれば190、無ければ150 */
+  const rowH=[], rowY=[]; let _y=top;
+  for(let i=0;i<nRows;i++){ const a=bs.rows[i*2], b=bs.rows[i*2+1]; const h=((a&&a.strong)||(b&&b.strong))?190:150; rowH.push(h); rowY.push(_y); _y+=h+rowGap; }
+  const bodyEnd=_y-rowGap;
+  const H=bodyEnd + 28 + 124;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
   const x=cv.getContext("2d"); x.textBaseline="alphabetic";
   const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
@@ -6033,7 +6066,7 @@ function drawBattleSummaryCanvas(bs, date){
   x.fillStyle=grad(pad,W-pad); x.fillRect(pad,176,W-pad*2,2);
   // レースの枠
   bs.rows.forEach(function(r,i){
-    const cx=pad+(i%2)*(cardW+gutter), cy=top+Math.floor(i/2)*(cardH+rowGap);
+    const cx=pad+(i%2)*(cardW+gutter), cy=rowY[Math.floor(i/2)], cardH=rowH[Math.floor(i/2)];
     roundRect(x,cx,cy,cardW,cardH,16); x.fillStyle=C.panel; x.fill(); x.strokeStyle=grad(cx,cx+cardW); x.lineWidth=3; x.stroke();
     // 1段目: 発走時刻／場とレース番号の札／条件と距離
     x.font="700 32px "+NUM; x.fillStyle=C.txt; const pt=r.post||"--:--"; x.fillText(pt,cx+24,cy+50);
@@ -6051,15 +6084,22 @@ function drawBattleSummaryCanvas(bs, date){
       const mx=cx+24+x.measureText(m).width+18;
       x.font="700 36px "+JP; x.fillStyle=C.txt; x.fillText(fit(r.o.name||"", cx+cardW-24-mx), mx, cy+104);
     }
-    // 3段目: ○
+    // 強み（あれば）: 「強み」の札＋文
+    if(r.strong){
+      roundRect(x,cx+24,cy+118,76,34,6); x.fillStyle="#12303f"; x.fill(); x.strokeStyle="#57b8ff"; x.lineWidth=1.5; x.stroke();
+      x.font="700 22px "+JP; x.fillStyle="#57b8ff"; x.textAlign="center"; x.fillText("強み",cx+62,cy+143); x.textAlign="left";
+      x.font="400 24px "+JP; x.fillStyle=C.txt; x.fillText(fit(r.strong, cardW-24-112), cx+112, cy+143);
+    }
+    // ○（強みの行がある枠は40下げる）
     if(r.t){
-      x.font="700 24px "+NUM; x.fillStyle=C.mk1; const m2="○"+r.t.num; x.fillText(m2,cx+24,cy+136);
+      const oy=cy+(r.strong?176:136);
+      x.font="700 24px "+NUM; x.fillStyle=C.mk1; const m2="○"+r.t.num; x.fillText(m2,cx+24,oy);
       const mx2=cx+24+x.measureText(m2).width+14;
-      x.font="400 24px "+JP; x.fillStyle=C.sub; x.fillText(fit(r.t.name||"", cx+cardW-24-mx2), mx2, cy+136);
+      x.font="400 24px "+JP; x.fillStyle=C.sub; x.fillText(fit(r.t.name||"", cx+cardW-24-mx2), mx2, oy);
     }
   });
   // 下の帯
-  const fy=top + nRows*(cardH+rowGap) - rowGap + 28;
+  const fy=bodyEnd + 28;
   x.fillStyle=C.line; x.fillRect(pad,fy,W-pad*2,2);
   x.font="700 24px "+JP; x.fillStyle=C.txt;
   x.fillText("◎が1着なら、この投稿の返信でお知らせします"+(bs.more>0?("　／　ほか"+bs.more+"レース（2枚目から）"):""), pad, fy+44);
