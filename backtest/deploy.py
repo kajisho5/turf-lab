@@ -43,6 +43,7 @@ MAP = [
     # 実運用の成績表（backtest/scoreboard.py が毎朝作る。運営側だけに置く）
     ("deploy/data/scoreboard.json",    "/seventh-well.com/odds/data/scoreboard.json"),
     ("deploy/data/monthly.json",      "/seventh-well.com/odds/data/monthly.json"),   # 月間まとめ（scoreboard.py が作る）
+    ("deploy/data/weekly.json",       "/seventh-well.com/odds/data/weekly.json"),    # 週間まとめ（scoreboard.py が作る）
     ("deploy/data/scoreboard.txt",     "/seventh-well.com/odds/data/scoreboard.txt"),
     ("deploy/data/jra_horses.json",   "/seventh-well.com/odds/data/jra_horses.json"),
     # 天気→馬場見込みの較正表（weather_calibrate.py生成。tweet.htmlの表示用）

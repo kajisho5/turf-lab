@@ -1,5 +1,5 @@
 // 自動投稿の見張り（やり直し・朝の前の点検）の試験。Xにもネットにも触らない
-import { jst, isRehearsalTime, retryKind, modeState, stateOf, planRetry, markStart, saveState, loadState, runRetry, rehearsal, GUARD_FROM } from "../src/guard.js";
+import { weeklyTarget, claimWeekly, weeklyDone, jst, isRehearsalTime, retryKind, modeState, stateOf, planRetry, markStart, saveState, loadState, runRetry, rehearsal, GUARD_FROM } from "../src/guard.js";
 let ok = 0, ng = 0;
 const eq = (n, a, b) => { const r = JSON.stringify(a) === JSON.stringify(b); r ? ok++ : (ng++, console.log("NG", n, JSON.stringify(a), JSON.stringify(b))); };
 const at = (s) => Date.parse(s + "+09:00");            // 日本時間の文字列 → ミリ秒
@@ -12,6 +12,13 @@ eq("9:00 は点検ではない", isRehearsalTime(at("2026-11-14T09:00:00")), fal
 eq("日付は日本時間", jst(at("2026-11-14T06:30:00")).date, "20261114");
 eq("やり直し 朝", [retryKind(at("2026-11-14T09:00:00")), retryKind(at("2026-11-14T09:20:00")), retryKind(at("2026-11-14T09:10:00")), retryKind(at("2026-11-14T10:00:00"))], ["morning", "morning", null, null]);
 eq("やり直し 夜", [retryKind(at("2026-11-14T22:50:00")), retryKind(at("2026-11-14T23:10:00")), retryKind(at("2026-11-14T22:40:00")), retryKind(at("2026-11-14T23:00:00"))], ["evening", "evening", null, null]);
+
+// 週間まとめの回（2026-11-16 は月曜）
+eq("月曜 9:10 → 先週の月曜", weeklyTarget(at("2026-11-16T09:10:00")), "20261109");
+eq("月曜 12:10・15:10 も", [weeklyTarget(at("2026-11-16T12:10:00")), weeklyTarget(at("2026-11-16T15:10:00"))], ["20261109", "20261109"]);
+eq("月曜でも別の時刻は出さない", [weeklyTarget(at("2026-11-16T09:00:00")), weeklyTarget(at("2026-11-16T09:20:00")), weeklyTarget(at("2026-11-16T10:10:00"))], [null, null, null]);
+eq("火曜・日曜は出さない", [weeklyTarget(at("2026-11-17T09:10:00")), weeklyTarget(at("2026-11-15T09:10:00"))], [null, null]);
+eq("年またぎ", weeklyTarget(at("2027-01-04T09:10:00")), "20261228");
 
 // 1モードの結果の読み方
 eq("投稿できた", modeState({ ok: true, posted: [{ id: "1", images: 9 }] }), "ok");
@@ -98,6 +105,8 @@ function fakeDB() {
   await markStart(env5, d, "evening");
   eq("始まりの印は結果を上書きしない", (await loadState(env5, d, "evening")).warned, 1);
 }
+{ const env = { DB: fakeDB() };
+  eq("週間: 1回目だけ印が付く", [await weeklyDone(env, "20261109"), await claimWeekly(env, "20261109"), await claimWeekly(env, "20261109"), await weeklyDone(env, "20261109")], [false, true, false, true]); }
 // 朝の前の点検
 {
   const pages = { "tweet.html": "… window.__autoOut …", "core/ltr_model_t.js": "narT", "data/horses.json": '{"a":1}', "data/horses_time.json": '{"a":1}', "data/nar_index_asof.json": '{"asof":"20261113"}' };

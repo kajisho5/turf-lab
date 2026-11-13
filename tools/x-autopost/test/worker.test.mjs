@@ -113,4 +113,22 @@ const state = async (env, kind) => JSON.parse((await env.DB.prepare("SELECT body
   eq("想定外の回は投稿しない", [tweets.length, opened.length], [0, 0]);
   await run(env, EVENING, "2026-11-14T22:30:00"); await run(env, EVENING, "2026-11-14T22:30:00");
   eq("同じ回は1度だけ", tweets.length, 1); }
+// 7) 週間まとめ: 月曜 9:10。まだ集計が無ければ出さず、12:10 に出す。出したあとは出さない
+{ reset(); const env = mkEnv();
+  outs = { nar: { ok: false, kind: "weekly", error: "no races（20261109 の週は日曜ぶんの結果がまだ入っていない）" } };
+  await run(env, TEN, "2026-11-16T09:10:00");
+  eq("週間: まだ無い → 出さない・メールも無し", [tweets.length, mails.length, /auto=weekly&mode=nar&wk=20261109/.test(opened[0])], [0, 0, true]);
+  outs = { nar: { ok: true, kind: "weekly", image: PNG, text: "先週（11/9〜11/15）の成績です" } };
+  await run(env, TEN, "2026-11-16T12:10:00");
+  eq("週間: 12:10 に出す", [tweets.length, tweets[0].text, tweets[0].media.media_ids.length, mails[0].startsWith("【投稿OK】週間まとめ")], [1, "先週（11/9〜11/15）の成績です", 1, true]);
+  const n = opened.length; await run(env, TEN, "2026-11-16T15:10:00");
+  eq("週間: 出したあとは開きもしない", [tweets.length, opened.length], [1, n]);
+  await run(env, TEN, "2026-11-17T09:10:00");
+  eq("週間: 火曜は何もしない", [tweets.length, opened.length], [1, n]); }
+// 8) 週間まとめ: 3回とも出せなかったら、最後の回だけメールで知らせる
+{ reset(); const env = mkEnv();
+  outs = { nar: { ok: false, kind: "weekly", error: "no races（20261109 の週は150レース未満）" } };
+  for (const t of ["09:10", "12:10", "15:10"]) await run(env, TEN, `2026-11-16T${t}:00`);
+  eq("週間: 出せない週は最後に1通だけ", [tweets.length, mails.length], [0, 1]); }
+console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);

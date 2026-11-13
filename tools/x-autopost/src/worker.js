@@ -27,7 +27,7 @@ import puppeteer from "@cloudflare/puppeteer";
 
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
-import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal } from "./guard.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -85,6 +85,20 @@ export default {
     //   文字列が一致しないので下の「朝/夜」に落ちて、夜の答え合わせが 19:20 に投稿された。
     if (String(event.cron || "").startsWith("*/10 ")) {
       ctx.waitUntil((async () => {
+        // 週間まとめ（月曜 9:10。出せなかった時だけ 12:10・15:10 にもう一度）。docs/design/X_WEEKLY_DESIGN.md
+        try {
+          const wk = weeklyTarget(event.scheduledTime);
+          if (wk && env.DRYRUN !== "1" && !(await weeklyDone(env, wk))) {
+            let r = null, err = null;
+            try { r = await runWeekly(env, wk, {}); console.log("autopost weekly", JSON.stringify(r)); } catch (e) { err = e; console.error("weekly", e); }
+            const m = r && r.modes && r.modes.nar;
+            // 出した時と、ほんとうの失敗の時だけメール（「まだ集計が無い」は次の回に任せる。最後の 15:10 だけ知らせる）
+            const last = jst(event.scheduledTime).h === 15;
+            if (err || (m && (m.posted || !/no races/.test(String(m.error || "")) || last))) {
+              try { await notifyMail(env, "weekly", r, err); } catch (e) { console.error("notify mail failed", String(e && e.message || e)); }
+            }
+          }
+        } catch (e) { console.error("weekly", String(e && e.message || e)); }
         // 失敗した回のやり直し（朝 9:00・9:20／夜 22:50・23:10 の回だけ見る。src/guard.js）
         try {
           if (retryKind(event.scheduledTime) && env.DRYRUN !== "1") {
@@ -179,7 +193,7 @@ export default {
    宛先は wrangler.toml の send_email の destination_address に固定（他へは送れない）。 */
 async function notifyMail(env, kind, r, err, note) {
   if (!env.MAIL) return;
-  const kindLbl = (kind === "morning" ? "朝の予想" : kind === "monthly" ? "月間まとめ" : "夜の結果") + (note && r ? "・やり直し" : "");
+  const kindLbl = (kind === "morning" ? "朝の予想" : kind === "monthly" ? "月間まとめ" : kind === "weekly" ? "週間まとめ" : "夜の結果") + (note && r ? "・やり直し" : "");
   const lines = [];
   if (note) lines.push(r ? `※${note}` : note);
   let posted = 0, failed = 0;
@@ -274,6 +288,22 @@ async function runMonthly(env, ym, { dry } = {}) {
     const posts = (out.ok && out.image) ? [{ text: out.text || "", images: [out.image] }] : [];
     summary.modes.nar = { ok: out.ok, error: out.error || null, posts: posts.map(p => ({ text: p.text, images: p.images.length })) };
     if (!dry && posts.length) summary.modes.nar.posted = await postThread(env, posts);
+  } finally {
+    try { await browser.close(); } catch (_) { /* noop */ }
+  }
+  return summary;
+}
+
+/* 週間まとめ: tweet.html?auto=weekly&wk=YYYYMMDD（先週の月曜）を開いて画像1枚を投稿する。
+   150レース未満の週・日曜ぶんの結果がまだ無い週はページ側が断る（投稿しない）。投稿の直前に印を付けて二重投稿を防ぐ */
+async function runWeekly(env, wk, { dry } = {}) {
+  const browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS });
+  const summary = { kind: "weekly", wk, dry: !!dry, at: new Date().toISOString(), modes: {} };
+  try {
+    const out = await renderOne(browser, env, "weekly", "nar", null, `&wk=${wk}`);
+    const posts = (out.ok && out.image) ? [{ text: out.text || "", images: [out.image] }] : [];
+    summary.modes.nar = { ok: out.ok, error: out.error || null, posts: posts.map(p => ({ text: p.text, images: p.images.length })) };
+    if (!dry && posts.length && await claimWeekly(env, wk)) summary.modes.nar.posted = await postThread(env, posts);
   } finally {
     try { await browser.close(); } catch (_) { /* noop */ }
   }

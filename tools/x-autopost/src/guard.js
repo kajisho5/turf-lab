@@ -25,6 +25,26 @@ export function retryKind(ms) {
   if ((h === 22 && m === 50) || (h === 23 && m === 10)) return "evening";
   return null;
 }
+/** 週間まとめを出す回か。月曜の 9:10・12:10・15:10（日本時間）なら「先週の月曜の日付」を返す。それ以外は null。
+    1回目で出せなかった時（毎朝の公開が遅れて日曜ぶんの結果がまだ無い等）だけ、あとの回が出す */
+export function weeklyTarget(ms) {
+  const t = (Number(ms) || Date.now()) + 9 * 3600e3, j = new Date(t);
+  if (j.getUTCDay() !== 1 || j.getUTCMinutes() !== 10 || ![9, 12, 15].includes(j.getUTCHours())) return null;
+  return new Date(t - 7 * 86400e3).toISOString().slice(0, 10).replace(/-/g, "");
+}
+/** 週間まとめの二重投稿の防止。まだ出していなければ印を付けて true（印が付けられた時だけ投稿する） */
+export async function claimWeekly(env, wk) {
+  if (!env.DB) return false;
+  await env.DB.prepare(HITS_DDL).run();
+  const r = await env.DB.prepare("INSERT OR IGNORE INTO xpost_log(k,date,mode,tweet_id,body,ts) VALUES(?,?,?,?,?,?)")
+    .bind(`w:${wk}`, wk, "nar", null, null, Date.now()).run();
+  return !!(r.meta && r.meta.changes);
+}
+export async function weeklyDone(env, wk) {
+  if (!env.DB) return true;
+  await env.DB.prepare(HITS_DDL).run();
+  return !!(await env.DB.prepare("SELECT k FROM xpost_log WHERE k=?").bind(`w:${wk}`).first());
+}
 const NO_RACE = /no races|レースがありません|0件|count":0/;
 const AUTH = /Bad Authentication|Unauthorized|Could not authenticate|"code":\s*(215|32|89)\b|\b(401|403):/i;
 /** 1モードぶんの結果 → "ok"（投稿した）/"part"（途中まで）/"none"（出すものが無い）/"dry"/"auth"（鍵）/"fail"（やり直せる失敗） */

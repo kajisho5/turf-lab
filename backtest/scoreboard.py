@@ -294,7 +294,8 @@ def build(rows, t10, rank, pop, pay, today):
         dict(label="10分前に◎が4番人気以下", **stat([x["bet"] for x in tt if (x.get("o_pop") or 0) >= 4], rnd)),
     ]
     return {"built": today, "from": START, "to": last_day, "races": len(races), "days": len({x["date"] for x in races}),
-            "t10_rows": len(t10), "sections": sec, "monthly": monthly(races, pop, rnd)}
+            "t10_rows": len(t10), "sections": sec, "monthly": monthly(races, pop, rnd),
+            "weekly": weekly(races, rnd, today, last_day)}
 
 
 def monthly(races, pop, rnd):
@@ -314,6 +315,35 @@ def monthly(races, pop, rnd):
             "tier_races": len(tiers),
             "new_old": ({"n": len(tm), "new": stat([x["bet"] for x in tm], rnd), "old": stat([x["old_bet"] for x in tm], rnd)} if tm else None),
             "t_from": min((x["date"] for x in tm), default=None),
+            "best": ({"date": best["date"], "track": TC[best["tc"]], "no": best["no"], "num": best["o"], "name": best.get("name") or "",
+                      "tan": best["bet"][0], "pop": best.get("pop")} if best else None),
+        }
+    return out
+
+
+def weekly(races, rnd, today, last_day):
+    """週ごとのまとめ（週間まとめの画像用・docs/design/X_WEEKLY_DESIGN.md）。月曜〜日曜。終わった週を新しい順に2つ。
+    数字の作り方は成績表・月間まとめと同じ（買った全レースが分母）。キーは週の月曜の日付。
+    complete = 日曜ぶんまで結果が入っているか（入っていない週は投稿しない）"""
+    t = datetime.datetime.strptime(today, "%Y%m%d")
+    this_mon = t - datetime.timedelta(days=t.weekday())
+    out = collections.OrderedDict()
+    for back in (1, 2):
+        mon = this_mon - datetime.timedelta(days=7 * back)
+        dts = [(mon + datetime.timedelta(days=i)).strftime("%Y%m%d") for i in range(7)]
+        rs = [x for x in races if dts[0] <= x["date"] <= dts[6]]
+        tiers = [x for x in rs if x.get("tier")]
+        wins = [x for x in rs if x["bet"][0] > 0]
+        best = max(wins, key=lambda x: x["bet"][0]) if wins else None
+        days = []
+        for d in dts:
+            ds = [x for x in rs if x["date"] == d]
+            days.append({"date": d, "n": len(ds), "hit3": round(100.0 * sum(1 for x in ds if x["bet"][1] > 0) / len(ds), 1) if ds else None})
+        out[dts[0]] = {
+            "from": dts[0], "to": dts[6], "complete": bool(last_day and last_day >= dts[6]),
+            "all": stat([x["bet"] for x in rs], rnd),
+            "tiers": {k: stat([x["bet"] for x in tiers if x["tier"] == k], rnd) for k in ("battle", "aim", "other")} if tiers else None,
+            "tier_races": len(tiers), "days": days,
             "best": ({"date": best["date"], "track": TC[best["tc"]], "no": best["no"], "num": best["o"], "name": best.get("name") or "",
                       "tan": best["bet"][0], "pop": best.get("pop")} if best else None),
         }
@@ -367,7 +397,8 @@ def main():
         print(txt)
         return
     for name, data in (("scoreboard.json", json.dumps(sb, ensure_ascii=False, separators=(",", ":"))), ("scoreboard.txt", txt),
-                       ("monthly.json", json.dumps({"built": sb["built"], "months": sb["monthly"]}, ensure_ascii=False, separators=(",", ":")))):
+                       ("monthly.json", json.dumps({"built": sb["built"], "months": sb["monthly"]}, ensure_ascii=False, separators=(",", ":"))),
+                       ("weekly.json", json.dumps({"built": sb["built"], "weeks": sb["weekly"]}, ensure_ascii=False, separators=(",", ":")))):
         tmp = os.path.join(a.out, name + ".tmp")
         with open(tmp, "w", encoding="utf-8") as fh:
             fh.write(data)
