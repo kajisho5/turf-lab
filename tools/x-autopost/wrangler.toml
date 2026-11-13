@@ -23,6 +23,10 @@ TWEET_URL = "https://seventh-well.com/odds/tweet.html"
 DRYRUN = "0"
 # "1"=★勝負の的中速報を出す。止める時は "0"（朝・夜の投稿には影響しない）
 HITS = "1"
+# "0"=高配当の的中（単勝1,000円以上）の単独の投稿を止める。それ以外は出す（HITS が "1" の時だけ動く）
+BIGHIT = "1"
+# "0"=重賞の日の1枚（発走2時間前）を止める。それ以外は出す
+GRADE = "1"
 
 # --- secrets（wrangler secret put で登録。ここには書かない・私は値を見ない）---
 #   X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET  … Xの4鍵(OAuth1.0a)

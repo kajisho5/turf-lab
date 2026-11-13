@@ -626,7 +626,7 @@ function setupGate(){
      ヘッドレスは毎回localStorageが空でゲートを通れない。?auto=morning|evening|line の時だけ
      openApp()に進む。ゲートのパスはこのファイル内のハッシュ＝本物の秘匿ではなく、
      自動モードは公開予想の生成しかしないので通過を許す。 */
-  try{ if(/^(morning|evening|line|monthly|weekly)$/.test(new URLSearchParams(location.search).get("auto")||"")){ openApp(); return; } }catch(_){}
+  try{ if(/^(morning|evening|line|monthly|weekly|card)$/.test(new URLSearchParams(location.search).get("auto")||"")){ openApp(); return; } }catch(_){}
   try{ if(localStorage.getItem(GATE_KEY)==="1"){ openApp(); return; } }catch(_){}
   const inp=document.getElementById("gatePw"), btn=document.getElementById("gateBtn"), err=document.getElementById("gateErr");
   const tryPw=async()=>{ if(await sha256Hex((inp.value||"").trim())===PASSPHRASE_SHA256){ try{localStorage.setItem(GATE_KEY,"1");}catch(_){ } openApp(); }
@@ -2203,7 +2203,11 @@ function init(){
             const _bs=battleSummaryRows(allResults);
             if(_bs.rows.length){ const _sc=drawBattleSummaryCanvas(_bs,date); if(_sc) summary={image:_sc.toDataURL("image/png"), count:_bs.battle, shown:_bs.rows.length}; }
           }catch(_){ summary=null; }
-          window.__autoOut={ok:true, kind:"morning", mode:MODE, date, count:cards.length, cards, summary};
+          /* 重賞のレース（発走2時間前に1枚出す用。自動投稿が受け取って覚える）。予想は上で出したものと同じ */
+          const grades=[];
+          try{ for(const tc of Object.keys(allResults)){ const g=allResults[tc]; if(!g) continue;
+            (g.races||[]).forEach(r=>{ if(r && r.grade && !r.skip && r.race_id && (r.marks||[]).length && r.post) grades.push({rid:String(r.race_id), track:g.trackName, no:r.no, name:String(r.name||""), grade:String(r.grade), post:String(r.post)}); }); } }catch(_){}
+          window.__autoOut={ok:true, kind:"morning", mode:MODE, date, count:cards.length, cards, summary, grades};
         }catch(e){ window.__autoOut={ok:false, error:String((e&&e.message)||e)}; }
       })();
     }
@@ -2243,6 +2247,73 @@ function init(){
           const md=function(d){ return (+String(d).slice(4,6))+"/"+(+String(d).slice(6,8)); };
           window.__autoOut={ok:true, kind:"weekly", wk, races:w.all.n, image:cv.toDataURL("image/png"), text:"先週（"+md(w.from)+"〜"+md(w.to)+"）の成績です\n#競馬予想 #地方競馬"};
         }catch(e){ window.__autoOut={ok:false, kind:"weekly", error:String((e&&e.message)||e)}; }
+      })();
+    }
+    /* ---- 1レースだけの1枚: ?auto=card&type=hit|grade&mode=nar|jra&date=YYYYMMDD&rid=…（docs/design/X_HIT_AND_GRADE_DESIGN.md）----
+       hit   … 高配当の的中（&st=N-M ＝今日の◎の N戦M勝）。◎が1着でなければ断る
+       grade … 重賞の日の1枚（&g=G3 など）
+       予想は朝に保存したものをそのまま読む（作り直さない）。window.__autoOut={ok,kind:"card",type,rid,image,text} */
+    if(new URLSearchParams(location.search).get("auto")==="card"){
+      (async()=>{
+        const _p=new URLSearchParams(location.search); const type=String(_p.get("type")||""), rid=String(_p.get("rid")||""), date=String(_p.get("date")||"");
+        const fail=(m)=>{ window.__autoOut={ok:false, kind:"card", type, rid, error:m}; };
+        try{
+          window.__autoOut={status:"running"};
+          if(!/^(hit|grade)$/.test(type) || !/^\d{12}$/.test(rid) || !/^\d{8}$/.test(date)) return fail("type・rid・date が正しくない");
+          const _am=_p.get("mode");
+          if(_am==="jra"||_am==="nar"){ MODE=_am; const _me=$("#mode"); if(_me)_me.value=_am; loadTracks(); }
+          LINE_AUTO=true;
+          await ensureAutoFonts();
+          if($("#date")) $("#date").value=date;
+          const j=await fetch(`predictions.php?action=list&mode=${encodeURIComponent(MODE)}&date=${date}&_=${Date.now()}`,{headers:{Accept:"application/json"},cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+          let pr=null, tn="";
+          ((j&&j.records)||[]).forEach(rec=>(rec.races||[]).forEach(r=>{ if(r && String(r.race_id)===rid){ pr=r; tn=String(rec.trackName||""); } }));
+          if(!pr || pr.skip || !(pr.marks||[]).length) return fail("朝の予想が保存されていない");
+          const tag=(MODE==="jra")?"#中央競馬":"#地方競馬";
+          if(type==="hit"){
+            const c=await checkRace(Object.assign({},pr), tn);
+            if(!c || !c.decided) return fail("結果がまだ確定していない");
+            const o=(c.marks||[])[0];
+            if(!o || o.rank!==1) return fail("◎が1着ではない");
+            const yen=(list)=>{ const q=(list||[]).find(x=>(x.nums||[]).map(String).includes(String(o.num))); return q?+q.yen:0; };
+            const tan=yen(c.pay&&c.pay.tansho), fuku=yen(c.pay&&c.pay.fukusho);
+            if(!(tan>0)) return fail("単勝の払戻が読めない");
+            let pop=null;   // 人気は結果の表から読む（読めなければ出さない）
+            for(let t=0;t<3 && pop==null;t++){
+              try{
+                const html=await fetchDecoded(resultURL(rid));
+                const rows=parseResult(html); const w=rows.find(x=>String(x.num)===String(o.num));
+                if(w && w.pop) pop=+w.pop;
+                else if(w){   // 地方の結果の表は人気の書き方が違う（OddsPeople）。1着の行から直接読む
+                  const tr=(html.match(/<tr[\s\S]*?<\/tr>/g)||[]).find(r=>/class="Rank"[^>]*>\s*1\s*</.test(r));
+                  const q=tr && tr.match(/OddsPeople[^>]*>\s*(\d{1,2})\s*</);
+                  if(q) pop=+q[1];
+                  break;
+                }
+              }catch(_){}
+              if(pop==null && t<2) await new Promise(r=>setTimeout(r,1200)); }
+            const stm=String(_p.get("st")||"").match(/^(\d{1,3})-(\d{1,3})$/);
+            const st=stm?[+stm[1],+stm[2]]:null;
+            const cv=drawHitCanvas({ date, track:tn, no:pr.no, name:String(pr.name||""), dist:pr.dist, field:pr.field, strong:(pr.strong||null),
+              tan, fuku, pop, st, marks:(c.marks||[]).map(m=>({mk:m.mk, num:m.num, name:m.name, rank:m.rank, wk:fWaku(m,pr)})) });
+            const lines=["🎯 朝の予想が的中", `${tn}${pr.no}R ◎${o.num} ${o.name}　1着`, `単勝 ${tan.toLocaleString()}円`+(pop?`（${pop}番人気）`:"")];
+            if(st) lines.push(`今日の◎：${st[0]}戦${st[1]}勝`);
+            lines.push("#競馬予想 "+tag);
+            window.__autoOut={ok:true, kind:"card", type, rid, tan, pop, image:cv.toDataURL("image/png"), text:lines.join("\n")};
+          } else {
+            let jp=null;   // このレースの過去の傾向（地方の重賞だけ・5回以上ある時だけ）
+            try{ if(MODE==="nar"){ const J=await fetch("jusho_profiles.json").then(r=>r.ok?r.json():null); const q=J&&J[tn+"|"+normJusho(pr.name)]; if(q && q.wins>=5) jp=q; } }catch(_){}
+            const jk={}; (pr.ranked||[]).forEach(h=>{ jk[String(h.num)]=h.jockey||""; });
+            const g=String(_p.get("g")||"重賞").slice(0,6);
+            const cv=drawGradeCanvas({ date, track:tn, no:pr.no, name:String(pr.name||""), post:pr.post, surface:pr.surface, dist:pr.dist, field:pr.field, grade:g,
+              strong:(pr.strong||null), firmO:pr.firmO, firm1:pr.firm1, jp,
+              marks:(pr.marks||[]).map(m=>({mk:m.mk, num:m.num, name:m.name, kyaku:m.kyaku||null, jockey:jk[String(m.num)]||"", wk:fWaku(m,pr)})) });
+            const lines=[`🏆 ${pr.name}（${tn}${pr.no}R${pr.post?(" "+pr.post+"発走"):""}）`];
+            (pr.marks||[]).slice(0,3).forEach(m=>lines.push(`${m.mk}${m.num} ${m.name}`));
+            lines.push("朝の予想と同じです"); lines.push("#競馬予想 "+tag);
+            window.__autoOut={ok:true, kind:"card", type, rid, image:cv.toDataURL("image/png"), text:lines.join("\n")};
+          }
+        }catch(e){ fail(String((e&&e.message)||e)); }
       })();
     }
     if(new URLSearchParams(location.search).get("auto")==="evening"){
@@ -6245,6 +6316,112 @@ function drawBattleSummaryCanvas(bs, date){
   fFoot(x,T,W,pad,bodyEnd+34,[
     ["◎が1着なら、この投稿の返信でお知らせします"+(bs.more>0?("　／　ほか"+bs.more+"レース（2枚目から）"):""),T.ink,true],
     ["全レースの予想は2枚目から　／　近走・騎手・血統・時計から自動算出（オッズ非依存）　／　馬券は20歳から",T.sub,false]]);
+  return cv;
+}
+/* ===== 高配当の的中の1枚（2026-11-13・docs/design/X_HIT_AND_GRADE_DESIGN.md）=====
+   朝に出した予想の◎が1着で、単勝が高配当だった時に単独で出す1枚。予想は朝に保存したものをそのまま使う。
+   d={date,track,no,name,dist,field,strong,tan,fuku,pop,st:[戦,勝]|null,marks:[{mk,num,name,rank,wk}]} */
+function drawHitCanvas(d){
+  const T=themeF(), W=1240, H=700, pad=48;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
+  x.textBaseline="alphabetic"; x.fillStyle=T.bg; x.fillRect(0,0,W,H);
+  x.font="900 76px "+T.JP; x.fillStyle=T.ink; x.fillText("朝の予想、的中",pad,112);
+  x.textAlign="right"; x.font="700 30px "+T.JP; x.fillText(fDate(d.date),W-pad,78);
+  x.font="500 24px "+T.JP; x.fillStyle=T.sub;
+  x.fillText(clip(x,[d.track+" "+d.no+"R", d.dist?(d.dist+"m"):"", d.field?(d.field+"頭"):"", d.name].filter(Boolean).join("　"),620),W-pad,118); x.textAlign="left";
+  fRR(x,pad,152,W-pad*2,300,22,T.card,T.ink,4);
+  const o=d.marks[0];
+  // 右: 単勝の払戻（大きく）
+  x.textAlign="right"; x.font="700 30px "+T.JP; x.fillStyle=T.sub; x.fillText("単勝",W-84,232);
+  x.font="700 48px "+T.JP; x.fillStyle=T.ink; x.fillText("円",W-84,372); const yw=x.measureText("円").width+8;
+  x.font="700 150px "+T.NUM; const tt=(+d.tan).toLocaleString(); x.fillText(tt,W-84-yw,372); const tw=x.measureText(tt).width;
+  if(d.fuku){ x.font="500 28px "+T.JP; x.fillStyle=T.sub; x.fillText("複勝 "+(+d.fuku).toLocaleString()+"円",W-84,418); }
+  x.textAlign="left";
+  // 左: ◎・馬番の札・馬名（払戻の数字にかからない幅まで。長ければ字を小さくする）
+  x.font="700 64px "+T.JP; x.fillStyle=T.ink; x.fillText("◎",84,262);
+  fChip(x,T,164,196,104,o.num,o.wk||0);
+  const nmMax=(W-84-yw-tw-30)-296; let fs=64;
+  while(fs>36){ x.font="900 "+fs+"px "+T.JP; if(x.measureText(o.name||"").width<=nmMax) break; fs-=2; }
+  x.font="900 "+fs+"px "+T.JP; x.fillStyle=T.ink; x.fillText(clip(x,o.name||"",nmMax),296,252);
+  fRR(x,296,280,96,48,24,T.ink,null); x.font="700 28px "+T.JP; x.fillStyle=T.bg; x.textAlign="center"; x.fillText("1着",344,314); x.textAlign="left";
+  if(d.pop){ x.fillStyle=T.ink; x.fillText(d.pop+"番人気",410,314); }
+  if(d.strong){ x.font="700 24px "+T.JP; x.fillStyle=T.sub; x.fillText("強み",84,410); x.font="500 26px "+T.JP; x.fillStyle=T.ink; x.fillText(clip(x,d.strong,nmMax+150),150,410); }
+  // 朝の5つの印と着順
+  x.font="700 24px "+T.JP; x.fillStyle=T.sub; x.fillText("朝に出した予想",pad,508);
+  const n=Math.min(5,d.marks.length), gap=4, bw=(W-pad*2-gap*(n-1))/n;
+  d.marks.slice(0,5).forEach(function(m,i){ const bx=pad+i*(bw+gap);
+    fRR(x,bx,524,bw,92,14,T.card,null);
+    x.font="700 26px "+T.JP; x.fillStyle=(m.mk==="△")?T.sub:T.ink; x.fillText(m.mk,bx+16,562);
+    fChip(x,T,bx+52,536,36,m.num,m.wk||0);
+    const in3=(m.rank!=null&&m.rank<=3);
+    x.font=(in3?"700":"400")+" 26px "+T.JP; x.fillStyle=in3?T.ink:T.sub; x.fillText(m.rank!=null?(m.rank+"着"):"着外",bx+100,563);
+    x.font="500 22px "+T.JP; x.fillStyle=T.sub; x.fillText(clip(x,m.name||"",bw-32),bx+16,602); });
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub;
+  x.fillText((d.st?("今日の◎："+d.st[0]+"戦"+d.st[1]+"勝（外れも数えています）　／　"):"")+"予想は朝に公開、あとから変えていません　／　馬券は20歳から",pad,664);
+  return cv;
+}
+/* ===== 重賞の日の1枚（同じ設計書）=====
+   朝に出した予想から重賞の1レースを大きく見せる。予想は変えない。過去の傾向（jp）は地方の重賞で5回以上ある時だけ。
+   d={date,track,no,name,post,surface,dist,field,grade,strong,firmO,firm1,jp,marks:[{mk,num,name,kyaku,jockey,wk}]} */
+function drawGradeCanvas(d){
+  const T=themeF(), W=1240, pad=48;
+  const rest=d.marks.slice(1,5);
+  const H=256+236+24+rest.length*96+(d.jp?(16+54+180+36):36)+66+10;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
+  x.textBaseline="alphabetic"; x.fillStyle=T.bg; x.fillRect(0,0,W,H);
+  const KY={ "逃げ":"逃","先行":"先","差し":"差","追い込み":"追","自在":"自在" };
+  // 上の段: 格の札・場とレース・発走・距離・頭数／日付
+  x.font="700 30px "+T.JP; const gw=Math.ceil(x.measureText(d.grade).width)+48;
+  fRR(x,pad,56,gw,52,26,T.ink,null); x.fillStyle=T.bg; x.textAlign="center"; x.fillText(d.grade,pad+gw/2,93); x.textAlign="left";
+  x.font="700 28px "+T.JP; x.fillStyle=T.ink;
+  x.fillText([d.track+" "+d.no+"R", d.post?(d.post+" 発走"):"", (d.surface||"")+(d.dist?(d.dist+"m"):""), d.field?(d.field+"頭"):""].filter(Boolean).join("　"),pad+gw+20,94);
+  x.textAlign="right"; x.fillText(fDate(d.date),W-pad,94); x.textAlign="left";
+  const lgx=fLegend(x,T,W-pad,180,"馬番の色は枠の色");
+  // レース名（長ければ字を小さくする）
+  let fs=104; while(fs>48){ x.font="900 "+fs+"px "+T.JP; if(x.measureText(d.name).width<=lgx-pad-24) break; fs-=4; }
+  x.font="900 "+fs+"px "+T.JP; x.fillStyle=T.ink; x.fillText(clip(x,d.name,lgx-pad-24),pad,216);
+  // ◎
+  let y=256; const o=d.marks[0];
+  fRR(x,pad,y,W-pad*2,236,22,T.card,T.ink,4);
+  x.font="700 64px "+T.JP; x.fillStyle=T.ink; x.fillText("◎",84,y+120);
+  fChip(x,T,164,y+44,110,o.num,o.wk||0); x.fillStyle=T.ink;
+  const hasF=(typeof d.firmO==="number"&&isFinite(d.firmO));
+  let ns=68; const nmax=W-84-(hasF?150:0)-302; while(ns>40){ x.font="900 "+ns+"px "+T.JP; if(x.measureText(o.name||"").width<=nmax) break; ns-=2; }
+  x.font="900 "+ns+"px "+T.JP; x.fillText(clip(x,o.name||"",nmax),302,y+104);
+  x.font="500 26px "+T.JP; x.fillStyle=T.sub;
+  x.fillText([o.jockey?(o.jockey+" 騎手"):"", KY[o.kyaku]||o.kyaku||""].filter(Boolean).join("　／　"),302,y+156);
+  if(hasF){ x.textAlign="right"; x.font="700 96px "+T.NUM; x.fillStyle=T.ink; x.fillText(String(d.firmO),W-84,y+110);
+    x.font="500 22px "+T.JP; x.fillStyle=T.sub; x.fillText("信頼度",W-84,y+150); x.textAlign="left"; }
+  if(d.strong){ fRR(x,84,y+178,76,36,8,null,T.sub,2); x.font="700 22px "+T.JP; x.fillStyle=T.sub; x.textAlign="center"; x.fillText("強み",122,y+204); x.textAlign="left";
+    x.font="500 26px "+T.JP; x.fillStyle=T.ink; x.fillText(clip(x,d.strong,W-84-176),176,y+204); }
+  y+=260;
+  // ○▲△△
+  rest.forEach(function(m,i){
+    fRR(x,pad,y,W-pad*2,84,16,T.card,null);
+    x.font="700 38px "+T.JP; x.fillStyle=(m.mk==="△")?T.sub:T.ink; x.fillText(m.mk,84,y+56);
+    fChip(x,T,150,y+14,56,m.num,m.wk||0);
+    x.font="700 38px "+T.JP; x.fillStyle=T.ink; x.fillText(clip(x,m.name||"",440),230,y+56);
+    if(m.jockey){ x.font="500 26px "+T.JP; x.fillStyle=T.sub; x.fillText(clip(x,m.jockey+" 騎手",190),700,y+54); }
+    const kt=KY[m.kyaku]||m.kyaku;
+    if(kt){ x.font="700 24px "+T.JP; const kw=x.measureText(kt).width+24; fRR(x,900,y+24,kw,38,8,null,T.sub,2); x.fillStyle=T.sub; x.textAlign="center"; x.fillText(kt,900+kw/2,y+52); x.textAlign="left"; }
+    if(i===0 && typeof d.firm1==="number" && isFinite(d.firm1)){ x.textAlign="right"; x.font="700 44px "+T.NUM; x.fillStyle=T.sub; x.fillText(String(d.firm1),W-84,y+58); x.textAlign="left"; }
+    y+=96; });
+  // このレースの過去N回
+  if(d.jp){ const jp=d.jp;
+    y+=16; x.font="900 32px "+T.JP; x.fillStyle=T.ink; x.fillText("このレースの過去"+jp.n+"回（"+jp.from+"〜"+jp.to+"年）",pad,y+30); y+=54;
+    const bw=(W-pad*2-48)/3;
+    [["勝ち馬が3番人気以内",String(jp.winPop3),"/"+jp.wins+"回"],
+     ["勝ち馬が先行タイプ",(jp.winFront!=null?String(Math.round(jp.winFront*100)):"-"),"%"],
+     ["8番人気以下が3着内",String(jp.p3Pop8plus),"回"]].forEach(function(b,i){ const bx=pad+i*(bw+24);
+      fRR(x,bx,y,bw,180,18,T.card,null);
+      x.font="700 26px "+T.JP; x.fillStyle=T.sub; x.fillText(b[0],bx+28,y+46);
+      x.font="700 88px "+T.NUM; x.fillStyle=T.ink; x.fillText(b[1],bx+28,y+132); const vw=x.measureText(b[1]).width;
+      x.font="700 36px "+T.JP; x.fillText(b[2],bx+28+vw+8,y+132); });
+    y+=180+36;
+  } else y+=36;
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub;
+  x.fillText("朝に出した予想と同じです（この1枚のために変えていません）"+(d.jp?"。過去の傾向は公式データの集計":""),pad,y);
+  x.fillText("近走・騎手・血統・時計から自動算出（オッズ非依存）　／　馬券は20歳から",pad,y+34);
   return cv;
 }
 function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }

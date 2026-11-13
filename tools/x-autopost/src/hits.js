@@ -7,7 +7,8 @@
 const SITE = "https://seventh-well.com/odds";
 const AFTER_MIN = 3;        // 発走の何分後から結果を見に行くか
 const GIVE_UP_MIN = 120;    // 発走から何分たっても確定しなければあきらめる
-const MAX_FETCH = 8;        // 1回の実行で結果を見に行くレース数の上限
+const MAX_FETCH = 12;       // 1回の実行で結果を見に行くレース数の上限（全レースを見るようにしたので 8 → 12）
+export const BIG_TAN = 1000;   // 高配当の的中（単独で出す）の線引き＝単勝の払戻がこの額以上。根拠は docs/design/X_HIT_AND_GRADE_DESIGN.md
 
 export const HITS_DDL = `CREATE TABLE IF NOT EXISTS xpost_log (
   k TEXT PRIMARY KEY, date TEXT NOT NULL, mode TEXT NOT NULL, tweet_id TEXT, body TEXT, ts INTEGER NOT NULL)`;
@@ -48,6 +49,32 @@ export function battleRaces(records, locks) {
   return out.sort((a, b) => (a.post < b.post ? -1 : a.post > b.post ? 1 : (a.rid < b.rid ? -1 : 1)));
 }
 
+/* 朝に予想を出した全レースを発走順に並べる（battle＝朝に★勝負と公開したか）。高配当の的中はこの全部が対象 */
+export function allRaces(records, locks) {
+  const pub = {};
+  (locks || []).forEach(l => { const t = String(l.tc || ""); if (t.startsWith("pub_") && l.pub) pub[t.slice(4)] = l.pub; });
+  const out = [];
+  (records || []).forEach(rec => {
+    const p = pub[String(rec.tc)] || {};
+    (rec.races || []).forEach(r => {
+      if (!r || r.skip || !r.race_id || !(r.marks || []).length) return;
+      const f = p[r.no] || p[String(r.no)];
+      out.push({ rid: String(r.race_id), track: rec.trackName || r.track || "", no: r.no, post: String(r.post || ""),
+        num: String(r.marks[0].num), name: String(r.marks[0].name || ""), strong: r.strong ? String(r.strong) : null, battle: !!(f && f.battle) });
+    });
+  });
+  return out.sort((a, b) => (a.post < b.post ? -1 : a.post > b.post ? 1 : (a.rid < b.rid ? -1 : 1)));
+}
+
+/* 高配当の的中の文（画像が作れなかった時の代わり。ふだんはページが作った文を使う）。played/won は今日の◎の戦績 */
+export function bigText(r, res, played, won, mode) {
+  const lines = ["🎯 朝の予想が的中", `${r.track}${r.no}R ◎${r.num} ${r.name}　1着`];
+  const tan = res.tan[r.num]; if (tan) lines.push(`単勝 ${tan.toLocaleString("ja-JP")}円`);
+  lines.push(`今日の◎：${played}戦${won}勝`);
+  lines.push("#競馬予想 " + (mode === "jra" ? "#中央競馬" : "#地方競馬"));
+  return lines.join("\n");
+}
+
 /* "HH:MM" → その日の0時からの分。読めなければ null */
 export function postMin(s) { const m = String(s || "").match(/^(\d{1,2}):(\d{2})$/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
 
@@ -81,25 +108,34 @@ export async function rememberMorning(env, date, mode, tweetId) {
     .bind(`m:${date}:${mode}`, date, mode, String(tweetId), null, Date.now()).run();
 }
 
-/* 10分おきの回。reply(text, toId) は投稿して投稿IDを返す関数（worker.js が渡す） */
-export async function runHits(env, reply, { dry } = {}) {
-  const out = { date: null, checked: 0, posted: [], missed: 0, skipped: null };
+/* 10分おきの回。reply(text, toId) は投稿して投稿IDを返す関数（worker.js が渡す）。
+   big(r, mode, date, st) は高配当の的中を画像つきの単独の投稿で出して投稿IDを返す関数（無ければ出さない）。
+   記録: r:レースID＝そのレースの◎の結果（全レース）／h:レースID＝★勝負の結果（今までどおり） */
+export async function runHits(env, reply, { dry, big } = {}) {
+  const out = { date: null, checked: 0, posted: [], missed: 0, big: [], skipped: null };
   if (!env.DB) { out.skipped = "DB なし"; return out; }
   const j = new Date(Date.now() + 9 * 3600e3);
   const date = j.toISOString().slice(0, 10).replace(/-/g, ""); out.date = date;
   const nowMin = j.getUTCHours() * 60 + j.getUTCMinutes();
+  const bigOn = !!big && env.BIGHIT !== "0";
   await env.DB.prepare(HITS_DDL).run();
   for (const mode of ["nar", "jra"]) {
     const m = await env.DB.prepare("SELECT tweet_id FROM xpost_log WHERE k=?").bind(`m:${date}:${mode}`).first();
     if (!m || !m.tweet_id) continue;                       // 朝の投稿が無い日は何もしない
     const pred = await getJson(`${SITE}/predictions.php?action=list&mode=${mode}&date=${date}`);
     const lk = await getJson(`${SITE}/predictions.php?action=listlocks&mode=${mode}&date=${date}`);
-    const races = battleRaces(pred.records, lk.locks);
+    const all = allRaces(pred.records, lk.locks);
+    const races = bigOn ? all : all.filter(r => r.battle);   // 高配当を止めている時は、今までどおり★勝負だけ見に行く
     if (!races.length) continue;
-    const rows = (await env.DB.prepare("SELECT k, body FROM xpost_log WHERE date=? AND mode=? AND k LIKE 'h:%'").bind(date, mode).all()).results || [];
-    const done = new Set(rows.map(x => String(x.k).slice(2)));
-    let played = rows.length, won = rows.filter(x => { try { return JSON.parse(x.body).hit === 1; } catch { return false; } }).length;
-    for (const r of dueRaces(races, done, nowMin).slice(0, MAX_FETCH)) {
+    const hRows = (await env.DB.prepare("SELECT k, body FROM xpost_log WHERE date=? AND mode=? AND k LIKE 'h:%'").bind(date, mode).all()).results || [];
+    const rRows = (await env.DB.prepare("SELECT k, body FROM xpost_log WHERE date=? AND mode=? AND k LIKE 'r:%'").bind(date, mode).all()).results || [];
+    const isWin = (x, key) => { try { return JSON.parse(x.body)[key] === 1; } catch { return false; } };
+    const hDone = new Set(hRows.map(x => String(x.k).slice(2))), rDone = new Set(rRows.map(x => String(x.k).slice(2)));
+    let played = hRows.length, won = hRows.filter(x => isWin(x, "hit")).length;        // ★勝負の戦績
+    let aPlayed = rRows.length, aWon = rRows.filter(x => isWin(x, "win")).length;       // 全レースの◎の戦績
+    // まだ見ていないレース（★勝負は h:、それ以外は r: が無いもの）
+    const todo = races.filter(r => bigOn ? !rDone.has(r.rid) : !hDone.has(r.rid));
+    for (const r of dueRaces(todo, new Set(), nowMin).slice(0, MAX_FETCH)) {
       const base = mode === "nar" ? "https://nar.netkeiba.com" : "https://race.netkeiba.com";
       const u = btoa(`${base}/race/result.html?race_id=${r.rid}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
       let res = null;
@@ -107,20 +143,46 @@ export async function runHits(env, reply, { dry } = {}) {
       out.checked++;
       if (!res) continue;                                   // まだ確定していない → 次の回
       const hit = res.win.includes(r.num) ? 1 : 0;
-      played++; won += hit;
-      const text = hit ? hitText(r, res, played, won) : null;
-      // 先に記録を取る（取れた時だけ投稿＝二重投稿を防ぐ）
-      const ins = await env.DB.prepare("INSERT OR IGNORE INTO xpost_log(k,date,mode,tweet_id,body,ts) VALUES(?,?,?,?,?,?)")
-        .bind(`h:${r.rid}`, date, mode, null, JSON.stringify({ hit, text, win: res.win }), Date.now()).run();
-      if (!ins.meta || !ins.meta.changes) continue;
-      if (!hit) { out.missed++; continue; }
-      if (dry) { out.posted.push({ rid: r.rid, text, dry: true }); continue; }
-      try {
-        const id = await reply(text, m.tweet_id);
-        await env.DB.prepare("UPDATE xpost_log SET tweet_id=? WHERE k=?").bind(String(id), `h:${r.rid}`).run();
-        out.posted.push({ rid: r.rid, id });
-      } catch (e) {
-        out.posted.push({ rid: r.rid, error: String(e && e.message || e) });   // 投稿に失敗しても出し直さない（記録は残る）
+      const tan = res.tan[r.num] || 0;
+      const isBig = bigOn && hit === 1 && tan >= BIG_TAN;
+      // 全レースの記録（高配当を出す時だけ付ける。先に記録が取れた時だけ先へ進む＝二重投稿を防ぐ）
+      if (bigOn) {
+        const insR = await env.DB.prepare("INSERT OR IGNORE INTO xpost_log(k,date,mode,tweet_id,body,ts) VALUES(?,?,?,?,?,?)")
+          .bind(`r:${r.rid}`, date, mode, null, JSON.stringify({ win: hit, tan, big: isBig ? 1 : 0 }), Date.now()).run();
+        if (!insR.meta || !insR.meta.changes) continue;
+        aPlayed++; aWon += hit;
+      }
+      // ★勝負の記録と返信（今までどおり。高配当で単独の投稿を出すレースは返信しない）
+      if (r.battle && !hDone.has(r.rid)) {
+        played++; won += hit;
+        const text = hit ? hitText(r, res, played, won) : null;
+        const ins = await env.DB.prepare("INSERT OR IGNORE INTO xpost_log(k,date,mode,tweet_id,body,ts) VALUES(?,?,?,?,?,?)")
+          .bind(`h:${r.rid}`, date, mode, null, JSON.stringify({ hit, text, win: res.win, big: isBig ? 1 : 0 }), Date.now()).run();
+        if (ins.meta && ins.meta.changes) {
+          if (!hit) out.missed++;
+          else if (isBig) { /* 下の単独の投稿で出す */ }
+          else if (dry) out.posted.push({ rid: r.rid, text, dry: true });
+          else {
+            try {
+              const id = await reply(text, m.tweet_id);
+              await env.DB.prepare("UPDATE xpost_log SET tweet_id=? WHERE k=?").bind(String(id), `h:${r.rid}`).run();
+              out.posted.push({ rid: r.rid, id });
+            } catch (e) {
+              out.posted.push({ rid: r.rid, error: String(e && e.message || e) });   // 投稿に失敗しても出し直さない（記録は残る）
+            }
+          }
+        }
+      }
+      if (isBig) {
+        const st = { played: aPlayed, won: aWon, tan, text: bigText(r, res, aPlayed, aWon, mode) };
+        if (dry) { out.big.push({ rid: r.rid, tan, text: st.text, dry: true }); continue; }
+        try {
+          const id = await big(r, mode, date, st);
+          await env.DB.prepare("UPDATE xpost_log SET tweet_id=? WHERE k=?").bind(String(id), `r:${r.rid}`).run();
+          out.big.push({ rid: r.rid, tan, id });
+        } catch (e) {
+          out.big.push({ rid: r.rid, tan, error: String(e && e.message || e) });      // 失敗しても出し直さない
+        }
       }
     }
   }

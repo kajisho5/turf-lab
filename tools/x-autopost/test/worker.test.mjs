@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, mkdtempSync, copyFileSync } from "node:fs"
 import { tmpdir } from "node:os"; import { join, dirname } from "node:path"; import { fileURLToPath, pathToFileURL } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url)), src = join(here, "..", "src");
 const dir = mkdtempSync(join(tmpdir(), "autopost-"));
-for (const f of ["posts.js", "hits.js", "guard.js"]) copyFileSync(join(src, f), join(dir, f));
+for (const f of ["posts.js", "hits.js", "guard.js", "grade.js"]) copyFileSync(join(src, f), join(dir, f));
 let code = readFileSync(join(src, "worker.js"), "utf8");
 const imp = 'import puppeteer from "@cloudflare/puppeteer";';
 if (!code.includes(imp)) { console.log("NG worker.js の読み込みの行が変わった"); process.exit(1); }

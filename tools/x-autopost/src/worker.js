@@ -27,6 +27,7 @@ import puppeteer from "@cloudflare/puppeteer";
 
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
+import { runGrades, saveGrades } from "./grade.js";
 import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
@@ -108,10 +109,19 @@ export default {
             if (rr && (rr.warned || (rr.run && rr.run.length))) console.log("autopost retry", JSON.stringify(rr));
           }
         } catch (e) { console.error("retry", String(e && e.message || e)); }
+        // 重賞の日の1枚（発走2時間前に単独で出す。src/grade.js）。止める時は GRADE="0"
+        if (env.GRADE !== "0") {
+          try {
+            const g = await runGrades(env, (r, mode, date) => postCard(env, mode, date, `&type=grade&rid=${r.rid}&g=${encodeURIComponent(r.grade || "重賞")}`, null), { dry: env.DRYRUN === "1" });
+            if (g.posted.length) console.log("autopost grade", JSON.stringify(g));
+          } catch (e) { console.error("grade", String(e && e.message || e)); }
+        }
         if (env.HITS !== "1") return;
         try {
-          const r = await runHits(env, (text, toId) => createTweet(env, text, [], toId), { dry: env.DRYRUN === "1" });
-          if (r.checked || r.posted.length) console.log("autopost hits", JSON.stringify(r));
+          // big＝高配当の的中（単勝1,000円以上）を画像つきの単独の投稿で出す。止める時は BIGHIT="0"
+          const r = await runHits(env, (text, toId) => createTweet(env, text, [], toId), { dry: env.DRYRUN === "1",
+            big: (race, mode, date, st) => postCard(env, mode, date, `&type=hit&rid=${race.rid}&st=${st.played}-${st.won}`, st.text) });
+          if (r.checked || r.posted.length || r.big.length) console.log("autopost hits", JSON.stringify(r));
         } catch (e) { console.error("hits", String(e && e.message || e)); }
       })());
       return;
@@ -262,6 +272,10 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
           // 朝の投稿のIDを覚えておく（的中速報をこの投稿への返信で出すため）。失敗しても投稿は成功のまま
           if (kind === "morning" && r && r[0] && r[0].id) {
             try { await rememberMorning(env, out.date, mode, r[0].id); } catch (e) { console.error("rememberMorning", String(e && e.message || e)); }
+            // その日の重賞を覚えておく（発走2時間前に1枚出す用）。失敗しても朝の投稿は成功のまま
+            if (out.grades && out.grades.length) {
+              try { await saveGrades(env, out.date, mode, out.grades); summary.modes[mode].grades = out.grades.length; } catch (e) { console.error("saveGrades", String(e && e.message || e)); }
+            }
           }
         }
       } catch (e) {
@@ -308,6 +322,19 @@ async function runWeekly(env, wk, { dry } = {}) {
     try { await browser.close(); } catch (_) { /* noop */ }
   }
   return summary;
+}
+
+/* 1レースだけの1枚（高配当の的中・重賞）を作って単独で投稿し、投稿IDを返す。
+   画像が作れなかった時: fallbackText があれば文だけで出す。無ければ投稿しない（エラーにする） */
+async function postCard(env, mode, date, extra, fallbackText) {
+  const browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS });
+  let out;
+  try { out = await renderOne(browser, env, "card", mode, date, extra); }
+  finally { try { await browser.close(); } catch (_) { /* noop */ } }
+  const ok = out && out.ok && out.image;
+  if (!ok && !fallbackText) throw new Error("card: " + String(out && out.error || "画像が作れなかった"));
+  const r = await postThread(env, [{ text: ok ? (out.text || fallbackText || "") : fallbackText, images: ok ? [out.image] : [] }]);
+  return r[0].id;
 }
 
 /* tweet.html を1枚開いて window.__autoOut を回収 */
