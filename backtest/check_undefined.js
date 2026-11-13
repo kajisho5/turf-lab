@@ -28,7 +28,7 @@ const ROOT = path.dirname(__dirname);
 // ブラウザ/JS の組み込み。ここに無いものが「未定義」として報告される。
 const GLOBALS = new Set(`
 window document navigator location history screen console alert confirm prompt
-ltrScore LTR_MODEL
+ltrScore LTR_MODEL ltrScoreT LTR_MODEL_T
 setTimeout setInterval clearTimeout clearInterval requestAnimationFrame cancelAnimationFrame
 queueMicrotask structuredClone reportError getComputedStyle matchMedia
 fetch Request Response Headers FormData Blob File FileReader URL URLSearchParams
