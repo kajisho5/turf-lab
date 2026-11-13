@@ -1,5 +1,5 @@
 // 毎朝のデータ更新を起こす仕組みの試験（GitHubにもネットにも触らない）
-import { jstDay, needWake, wakeDeploy } from "../src/wake.js";
+import { jstDay, needWake, wakeDeploy, daysLeft } from "../src/wake.js";
 let ok = 0, ng = 0;
 const eq = (n, a, b) => { const r = JSON.stringify(a) === JSON.stringify(b); r ? ok++ : (ng++, console.log("NG", n, JSON.stringify(a), JSON.stringify(b))); };
 const T = Date.UTC(2026, 10, 13, 19, 40);   // 日本時間 2026-11-14 04:40
@@ -24,4 +24,6 @@ eq("更新済みなら起こさない", [r.woke, calls.length], [false, 1]);
 globalThis.fetch = mk({ asof: "20261112", built: "20261113" }, 401);
 r = await wakeDeploy({ GH_DISPATCH_TOKEN: "dummy-token-for-test" }, T);
 eq("鍵が違う時は失敗として返す", [r.woke, r.status, r.body], [false, 401, "Bad credentials"]);
+eq("期限まであと何日（GitHub の書き方）", daysLeft("2026-12-01 03:00:00 UTC", T), 17);
+eq("期限なし・読めない時は null", [daysLeft(null, T), daysLeft("", T), daysLeft("なし", T)], [null, null, null]);
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);

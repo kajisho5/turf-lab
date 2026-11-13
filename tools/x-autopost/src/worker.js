@@ -28,7 +28,7 @@ import puppeteer from "@cloudflare/puppeteer";
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
-import { wakeDeploy } from "./wake.js";
+import { wakeDeploy, tokenDaysLeft } from "./wake.js";
 import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
@@ -143,6 +143,18 @@ export default {
             + "\n\n手で起こす: https://github.com/kajisho5/turf-lab/actions/workflows/deploy-site.yml （右の「Run workflow」→ 緑の「Run workflow」）\n"
             + "鍵の登録: https://dash.cloudflare.com/78ef1242bb9514e7f6ccf32f9f94e744/workers/services/view/kajikeiba-autopost/production/settings\n",
         });
+        // 鍵の期限が近い時は知らせる（4:40 の回だけ。21日を切ったら毎朝1通）
+        if (jst(event.scheduledTime).h === 4) {
+          const left = await tokenDaysLeft(env, event.scheduledTime);
+          if (left != null && left < 21 && env.MAIL) await env.MAIL.send({
+            to: "kajiyama@seventh-well.com",
+            from: { email: "autopost@notify.seventh-well.com", name: "カジ競馬 自動投稿" },
+            subject: `【⚠毎朝のデータ更新】GitHub の鍵の期限まで残り ${left} 日`,
+            text: "毎朝のデータ更新を起こす鍵（GH_DISPATCH_TOKEN）の期限が近づいています。\n"
+              + "作り直す: https://github.com/settings/personal-access-tokens （turf-lab-wake を開いて「Regenerate token」）\n"
+              + "登録し直す: https://dash.cloudflare.com/78ef1242bb9514e7f6ccf32f9f94e744/workers/services/view/kajikeiba-autopost/production/settings\n",
+          });
+        }
       })().catch(e => console.error("wake", e)));
       return;
     }

@@ -29,3 +29,17 @@ export async function wakeDeploy(env, ms) {
   const body = res.ok ? "" : (await res.text()).slice(0, 200);
   return { today, woke: res.ok, status: res.status, body, asof };
 }
+
+/* 鍵の期限まであと何日か（GitHub が返答の見出しに入れてくる期限を読む。値そのものは見ない）。
+   期限なしの鍵・読めなかった時は null。毎朝の回で呼び、21日を切ったらメールで知らせる */
+export function daysLeft(expHeader, ms) {
+  const t = Date.parse(String(expHeader || "").replace(" UTC", "Z").replace(" ", "T"));
+  return isFinite(t) ? Math.floor((t - (Number(ms) || Date.now())) / 86400e3) : null;
+}
+export async function tokenDaysLeft(env, ms) {
+  if (!env.GH_DISPATCH_TOKEN) return null;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}`, { headers: { Authorization: `Bearer ${env.GH_DISPATCH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "kajikeiba-autopost" } });
+    return daysLeft(r.headers.get("github-authentication-token-expiration"), ms);
+  } catch { return null; }
+}
