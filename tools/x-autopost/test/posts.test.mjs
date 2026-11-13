@@ -21,4 +21,7 @@ eq("夜まとめの文",m.text,"的中まとめ\n\n段階別"); eq("夜まとめ
 eq("21枚はまとめない",mergePosts([{text:"a",images:img(11)},{text:"b",images:img(10)}]),null);
 // 文だけ → まとめない（画像が無い）
 eq("文だけはまとめない",mergePosts([{text:"a",images:[]},{text:"b",images:[]}]),null);
+// 前の月（日本時間）。worker.js は puppeteer を読むのでここでは同じ式を確かめる
+const prevMonth=(ms)=>{ const j=new Date(ms+9*3600e3); const d=new Date(Date.UTC(j.getUTCFullYear(),j.getUTCMonth()-1,1)); return `${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,"0")}`; };
+eq("12/1 9:00 → 11月",prevMonth(Date.UTC(2026,11,1,0,0)),"202611"); eq("1/1 9:00 → 前年12月",prevMonth(Date.UTC(2027,0,1,0,0)),"202612");
 console.log("OK",ok,"NG",ng); process.exit(ng?1:0);

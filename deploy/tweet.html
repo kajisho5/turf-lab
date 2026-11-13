@@ -626,7 +626,7 @@ function setupGate(){
      ヘッドレスは毎回localStorageが空でゲートを通れない。?auto=morning|evening|line の時だけ
      openApp()に進む。ゲートのパスはこのファイル内のハッシュ＝本物の秘匿ではなく、
      自動モードは公開予想の生成しかしないので通過を許す。 */
-  try{ if(/^(morning|evening|line)$/.test(new URLSearchParams(location.search).get("auto")||"")){ openApp(); return; } }catch(_){}
+  try{ if(/^(morning|evening|line|monthly)$/.test(new URLSearchParams(location.search).get("auto")||"")){ openApp(); return; } }catch(_){}
   try{ if(localStorage.getItem(GATE_KEY)==="1"){ openApp(); return; } }catch(_){}
   const inp=document.getElementById("gatePw"), btn=document.getElementById("gateBtn"), err=document.getElementById("gateErr");
   const tryPw=async()=>{ if(await sha256Hex((inp.value||"").trim())===PASSPHRASE_SHA256){ try{localStorage.setItem(GATE_KEY,"1");}catch(_){ } openApp(); }
@@ -2208,6 +2208,23 @@ function init(){
     }
     /* ★夜の結果系（4種）★ 的中まとめ(文)／回収率です(画像2)／段階別(文)／答え合わせ(画像・各場)。
        ?auto=evening&mode=nar|jra[&date=YYYYMMDD]。window.__autoOut.posts=[{text,images[]}]。 */
+    /* ---- 月間まとめ: ?auto=monthly&ym=YYYYMM。window.__autoOut={ok,kind:"monthly",ym,image,text} ---- */
+    if(new URLSearchParams(location.search).get("auto")==="monthly"){
+      (async()=>{
+        try{
+          window.__autoOut={status:"running"};
+          const ym=String(new URLSearchParams(location.search).get("ym")||"");
+          if(!/^\d{6}$/.test(ym)){ window.__autoOut={ok:false, kind:"monthly", error:"ym が無い"}; return; }
+          LINE_AUTO=true;
+          await ensureAutoFonts();
+          const j=await fetch("data/monthly.json?_="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+          const mon=j&&j.months&&j.months[ym];
+          if(!monthlyUsable(mon)){ window.__autoOut={ok:false, kind:"monthly", ym, error:"no races（"+ym+" は500レース未満か、まだ集計が無い）"}; return; }
+          const cv=drawMonthlyCanvas(mon, ym);
+          window.__autoOut={ok:true, kind:"monthly", ym, races:mon.all.n, image:cv.toDataURL("image/png"), text:(+ym.slice(4,6))+"月の成績です\n#競馬予想 #地方競馬"};
+        }catch(e){ window.__autoOut={ok:false, kind:"monthly", error:String((e&&e.message)||e)}; }
+      })();
+    }
     if(new URLSearchParams(location.search).get("auto")==="evening"){
       (async()=>{
         try{
@@ -5976,6 +5993,102 @@ function drawTrackCanvas(trackName, races, date, noSave, tweetText){
   const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,C.aim1); fgb.addColorStop(1,C.aim2);
   x.fillStyle=fgb; x.fillRect(0,H-6,W,6);   // ブランドバー
   if(!noSave){ const dl=`${trackName}_推奨馬_${date}.png`; if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); } }
+  return cv;
+}
+/* ===== 月間まとめ（2026-11-13・docs/design/X_STRENGTH_AND_MONTHLY_DESIGN.md）=====
+   data/monthly.json（backtest/scoreboard.py が毎朝作る。朝の予想 × 公式の着順・払戻・買った全レースが分母）を1枚にする。
+   出す段: 大きい数字3つ／区分ごと（その月のほぼ全レースに朝の区分の記録がある時だけ）／
+           新モデルと前のモデル（比べられるレースが300以上ある時だけ）／今月いちばんの的中。 */
+function monthlyUsable(mon){ return !!(mon && mon.all && mon.all.n>=500); }
+function drawMonthlyCanvas(mon, ym){
+  if(!monthlyUsable(mon)) return null;
+  const C={ bg1:"#121826", bg2:"#0a0e16", panel:"#1b1f2b", row:"#171c27", line:"#333333", edge:"#555b66", txt:"#ffffff", sub:"#cccccc",
+            mkO:"#ff7171", aim1:"#ffd43d", aim2:"#ff7171", aimT:"#ff8d44" };
+  const A=mon.all, mo=+String(ym).slice(4,6);
+  const showTier = !!(mon.tiers && mon.tier_races>=A.n*0.9);
+  const showNO = !!(mon.new_old && mon.new_old.n>=300);
+  const W=1240, pad=48;
+  let H=204+200+34;                                  // 見出し＋大きい数字
+  if(showTier) H+=58+50+3*64+26;
+  if(showNO) H+=58+120+40;
+  if(mon.best) H+=58+64+26;
+  H+=92;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d"); x.textBaseline="alphabetic";
+  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2); x.fillStyle=bg; x.fillRect(0,0,W,H);
+  const JP="'Noto Sans JP',sans-serif", NUM="'Saira Condensed','Noto Sans JP',sans-serif";
+  const grad=function(x0,x1){ const g=x.createLinearGradient(x0,0,x1,0); g.addColorStop(0,C.aim1); g.addColorStop(1,C.aim2); return g; };
+  const md=function(d){ return (+String(d).slice(4,6))+"/"+(+String(d).slice(6,8)); };
+  const pc=function(v){ return (v==null?"-":(+v).toFixed(1))+"%"; };
+  // 見出し
+  const hb=x.createLinearGradient(0,56,0,122); hb.addColorStop(0,"#ffd43d"); hb.addColorStop(1,"#ffb400");
+  roundRect(x,pad,56,10,66,5); x.fillStyle=hb; x.fill();
+  x.font="700 64px "+JP; x.fillStyle=C.txt; x.fillText(mo+"月の成績", pad+30, 112);
+  x.font="700 24px "+JP;
+  const chips=[["地方　全"+A.n+"レース",C.sub],[md(mon.from)+"〜"+md(mon.to)+(mon.t_from&&mon.t_from>mon.from?("　"+md(mon.t_from)+"から新モデル"):""),C.txt]];
+  let cxr=W-pad;
+  for(let i=chips.length-1;i>=0;i--){ const t=chips[i][0], w2=x.measureText(t).width+44, x2=cxr-w2;
+    roundRect(x,x2,66,w2,48,24); x.fillStyle=C.row; x.fill(); x.strokeStyle=C.edge; x.lineWidth=2; x.stroke();
+    x.fillStyle=chips[i][1]; x.textAlign="center"; x.fillText(t,x2+w2/2,99); x.textAlign="left"; cxr=x2-16; }
+  x.font="400 24px "+JP; x.fillStyle=C.sub;
+  x.fillText("朝に出した予想を、公式の着順と払戻で採点した結果です（外れも全部入っています）", pad, 156);
+  x.fillStyle=grad(pad,W-pad); x.fillRect(pad,176,W-pad*2,2);
+  // 大きい数字3つ
+  const bw=(W-pad*2-48)/3;
+  const big=[["◎が3着以内",A.hit3, A.n+"レース中 "+Math.round(A.n*A.hit3/100)+"回"],
+             ["◎の複勝を全部買うと",A.fuku,"100円が"+Math.round(A.fuku)+"円（回収率）"],
+             ["◎の単勝を全部買うと",A.tan,"100円が"+Math.round(A.tan)+"円（回収率）"]];
+  big.forEach(function(b,i){ const bx=pad+i*(bw+24), by=204;
+    roundRect(x,bx,by,bw,200,16); x.fillStyle=C.panel; x.fill(); x.strokeStyle=C.edge; x.lineWidth=2; x.stroke();
+    x.textAlign="center";
+    x.font="700 26px "+JP; x.fillStyle=C.sub; x.fillText(b[0],bx+bw/2,by+52);
+    x.font="700 84px "+NUM; x.fillStyle=C.txt; const nt=(+b[1]).toFixed(1); const nw=x.measureText(nt).width;
+    x.font="700 40px "+NUM; const pw=x.measureText("%").width;
+    x.font="700 84px "+NUM; x.textAlign="left"; x.fillText(nt,bx+bw/2-(nw+pw)/2,by+138);
+    x.font="700 40px "+NUM; x.fillText("%",bx+bw/2-(nw+pw)/2+nw,by+138);
+    x.textAlign="center"; x.font="400 22px "+JP; x.fillStyle=C.sub; x.fillText(b[2],bx+bw/2,by+178); x.textAlign="left"; });
+  let y=204+200+34;
+  // 区分ごと
+  if(showTier){
+    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText("区分ごと（朝に公開した区分）", pad, y+24); y+=58;
+    const cols=[560,760,960,1168];
+    x.font="700 24px "+JP; x.fillStyle=C.sub; x.fillText("区分",pad+24,y+26);
+    x.textAlign="right"; ["レース","◎3着内","複の回収率","単の回収率"].forEach(function(t,i){ x.fillText(t,cols[i],y+26); }); x.textAlign="left";
+    x.fillStyle=C.line; x.fillRect(pad,y+40,W-pad*2,2); y+=50;
+    [["battle","★勝負",C.aim1],["aim","狙い目",C.aimT],["other","そのほか",C.txt]].forEach(function(t,i){
+      const st=mon.tiers[t[0]]||{n:0};
+      if(i%2===0){ roundRect(x,pad,y,W-pad*2,56,8); x.fillStyle=C.row; x.fill(); }
+      x.font="700 24px "+JP; x.fillStyle=t[2]; x.fillText(t[1],pad+24,y+37);
+      x.font="400 24px "+JP; x.fillStyle=C.txt; x.textAlign="right";
+      [String(st.n), st.n?pc(st.hit3):"-", st.n?pc(st.fuku):"-", st.n?pc(st.tan):"-"].forEach(function(v,j){ x.fillText(v,cols[j],y+37); });
+      x.textAlign="left"; y+=64; });
+    y+=26;
+  }
+  // 新モデルと前のモデル
+  if(showNO){
+    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText("新モデルと前のモデル（同じ"+mon.new_old.n+"レースで比べたら）", pad, y+24); y+=58;
+    const hw=(W-pad*2-24)/2;
+    [["新モデル（本番）",mon.new_old["new"],true],["前のモデル（予想だけ記録）",mon.new_old.old,false]].forEach(function(t,i){
+      const bx=pad+i*(hw+24);
+      roundRect(x,bx,y,hw,120,16); x.fillStyle=C.panel; x.fill(); x.strokeStyle=t[2]?grad(bx,bx+hw):C.edge; x.lineWidth=t[2]?3:2; x.stroke();
+      x.font="700 24px "+JP; x.fillStyle=t[2]?C.aim1:C.sub; x.fillText(t[0],bx+24,y+44);
+      x.font="400 24px "+JP; x.fillStyle=C.txt; x.fillText("◎3着内 "+pc(t[1].hit3)+"　複 "+pc(t[1].fuku)+"　単 "+pc(t[1].tan),bx+24,y+92); });
+    y+=120+40;
+  }
+  // 今月いちばんの的中
+  if(mon.best){
+    const b=mon.best;
+    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText("今月いちばんの的中", pad, y+24); y+=58;
+    roundRect(x,pad,y,W-pad*2,64,12); x.fillStyle=C.row; x.fill();
+    let lx=pad+24; const put=function(t,col,bold){ x.font=(bold?"700":"400")+" 26px "+JP; x.fillStyle=col; x.fillText(t,lx,y+42); lx+=x.measureText(t).width; };
+    put(md(b.date)+" "+b.track+b.no+"R　",C.txt); put("◎"+b.num,C.mkO,true); put(" "+b.name+"　単勝 ",C.txt);
+    put((+b.tan).toLocaleString()+"円",C.txt,true); if(b.pop) put("（"+b.pop+"番人気）",C.txt);
+    y+=64+26;
+  }
+  x.fillStyle=C.line; x.fillRect(pad,y,W-pad*2,2);
+  x.font="400 22px "+JP; x.fillStyle=C.sub;
+  x.fillText("回収率は買った全レースが分母。100%未満＝買えば増える予想ではありません　／　馬券は20歳から", pad, y+42);
+  x.fillStyle=grad(0,W); x.fillRect(0,H-8,W,8);
   return cv;
 }
 /* ===== ◎の「強み」1行（2026-11-13・docs/design/X_STRENGTH_AND_MONTHLY_DESIGN.md）=====

@@ -36,8 +36,16 @@ const RENDER_TIMEOUT_MS = 420000;           // __autoOut 待ちの上限（朝�
 const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じない時間（既定60秒では足りない）
 
 /** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
+const MONTHLY_CRON = "0 0 1 * *";       // 月間まとめ（毎月1日 9:00 日本時間）。wrangler.toml の crons と同じ文字列
 const HITS_CRON = "*/10 1-13 * * *";    // ★勝負の的中速報（日本時間 10:00〜22:50 の10分おき）。wrangler.toml の crons と同じ文字列
 const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
+
+/** 動いた時刻（ミリ秒）の、日本時間で見た「前の月」を YYYYMM で返す */
+export function prevMonth(ms) {
+  const j = new Date((Number(ms) || Date.now()) + 9 * 3600 * 1000);
+  const d = new Date(Date.UTC(j.getUTCFullYear(), j.getUTCMonth() - 1, 1));
+  return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
 
 export function kindForTime(ms) {
   const h = new Date((Number(ms) || Date.now()) + 9 * 3600 * 1000).getUTCHours();
@@ -80,6 +88,16 @@ export default {
       })());
       return;
     }
+    // 月間まとめ（毎月1日 9:00）。前の月の成績を1枚で出す
+    if (event.cron === MONTHLY_CRON) {
+      ctx.waitUntil((async () => {
+        let r = null, err = null;
+        try { r = await runMonthly(env, prevMonth(event.scheduledTime), { dry: env.DRYRUN === "1" }); console.log("autopost monthly", JSON.stringify(r)); }
+        catch (e) { err = e; console.error("monthly", e); }
+        try { await notifyMail(env, "monthly", r, err); } catch (e) { console.error("notify mail failed", String(e && e.message || e)); }
+      })());
+      return;
+    }
     const kind = kindForTime(event.scheduledTime);
     ctx.waitUntil((async () => {
       let r = null, err = null;
@@ -114,7 +132,7 @@ export default {
    宛先は wrangler.toml の send_email の destination_address に固定（他へは送れない）。 */
 async function notifyMail(env, kind, r, err) {
   if (!env.MAIL) return;
-  const kindLbl = kind === "morning" ? "朝の予想" : "夜の結果";
+  const kindLbl = kind === "morning" ? "朝の予想" : kind === "monthly" ? "月間まとめ" : "夜の結果";
   const lines = [];
   let posted = 0, failed = 0;
   if (err) { failed++; lines.push(`全体エラー: ${String(err && err.message || err)}`); }
@@ -186,11 +204,26 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
   return summary;
 }
 
+/* 月間まとめ: tweet.html?auto=monthly&ym=YYYYMM を開いて画像1枚を投稿する。500レース未満の月は投稿しない（ページ側が断る） */
+async function runMonthly(env, ym, { dry } = {}) {
+  const browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS });
+  const summary = { kind: "monthly", ym, dry: !!dry, at: new Date().toISOString(), modes: {} };
+  try {
+    const out = await renderOne(browser, env, "monthly", "nar", null, `&ym=${ym}`);
+    const posts = (out.ok && out.image) ? [{ text: out.text || "", images: [out.image] }] : [];
+    summary.modes.nar = { ok: out.ok, error: out.error || null, posts: posts.map(p => ({ text: p.text, images: p.images.length })) };
+    if (!dry && posts.length) summary.modes.nar.posted = await postThread(env, posts);
+  } finally {
+    try { await browser.close(); } catch (_) { /* noop */ }
+  }
+  return summary;
+}
+
 /* tweet.html を1枚開いて window.__autoOut を回収 */
-async function renderOne(browser, env, kind, mode, date) {
+async function renderOne(browser, env, kind, mode, date, extra) {
   const page = await browser.newPage();
   try {
-    const u = `${env.TWEET_URL}?auto=${kind}&mode=${mode}` + (date ? `&date=${date}` : "");
+    const u = `${env.TWEET_URL}?auto=${kind}&mode=${mode}` + (date ? `&date=${date}` : "") + (extra || "");
     await page.goto(u, { waitUntil: "domcontentloaded", timeout: 90000 });
     const out = await page.waitForFunction(
       () => (window.__autoOut && (window.__autoOut.ok === true || window.__autoOut.ok === false)) ? window.__autoOut : null,
