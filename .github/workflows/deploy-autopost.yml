@@ -30,3 +30,31 @@ jobs:
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  # 公開のあと、Xの鍵4つが登録されたままか確かめる（名前だけ見る。値は出ない）
+  # 2026-11-13: 公開の経路を替えた翌朝に鍵が消えていて、朝の投稿が失敗した。次は公開した時点で気づけるようにする
+  verify-keys:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: "22" }
+      - name: 鍵の名前を確認
+        working-directory: tools/x-autopost
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm ci --silent
+          npx wrangler secret list > /tmp/names.json
+          miss=""
+          for k in X_API_KEY X_API_SECRET X_ACCESS_TOKEN X_ACCESS_SECRET; do
+            grep -q "\"$k\"" /tmp/names.json || miss="$miss $k"
+          done
+          if [ -n "$miss" ]; then
+            echo "::error::Xの鍵が登録されていません:$miss（このままだと次の自動投稿は失敗します）"
+            exit 1
+          fi
+          echo "Xの鍵は4つとも登録されています"
