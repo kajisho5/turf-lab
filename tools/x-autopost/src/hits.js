@@ -71,7 +71,7 @@ export function bigText(r, res, played, won, mode) {
   const lines = ["🎯 朝の予想が的中", `${r.track}${r.no}R ◎${r.num} ${r.name}　1着`];
   const tan = res.tan[r.num]; if (tan) lines.push(`単勝 ${tan.toLocaleString("ja-JP")}円`);
   lines.push(`今日の◎：${played}戦${won}勝`);
-  lines.push("#競馬予想 " + (mode === "jra" ? "#中央競馬" : "#地方競馬"));
+  lines.push("#競馬予想 " + (mode === "jra" ? "#競馬" : "#地方競馬"));
   return lines.join("\n");
 }
 

@@ -252,7 +252,7 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
       try {
         const out = await renderOne(browser, env, kind, mode, date);
         const thread = out.ok ? toThread(kind, mode, out, caption) : [];
-        const one = mergePosts(thread);          // 1件にまとめた形（まとめられない時は null）
+        const one = mergePosts(thread, kind === "evening" ? out.caption : null);   // 1件にまとめた形（まとめられない時は null）
         const posts = one ? [one] : thread;
         summary.modes[mode] = { ok: out.ok, error: out.error || null, sec: Math.round((Date.now() - t0) / 1000),
           posts: posts.map(p => ({ text: p.text, images: p.images.length })) };

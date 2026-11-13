@@ -2207,7 +2207,18 @@ function init(){
           const grades=[];
           try{ for(const tc of Object.keys(allResults)){ const g=allResults[tc]; if(!g) continue;
             (g.races||[]).forEach(r=>{ if(r && r.grade && !r.skip && r.race_id && (r.marks||[]).length && r.post) grades.push({rid:String(r.race_id), track:g.trackName, no:r.no, name:String(r.name||""), grade:String(r.grade), post:String(r.post)}); }); } }catch(_){}
-          window.__autoOut={ok:true, kind:"morning", mode:MODE, date, count:cards.length, cards, summary, grades};
+          /* 投稿の文（2026-11-13 本人が選んだ形「A＝数字を先頭に」）。自動投稿はこれをそのまま使う */
+          let caption=null;
+          try{
+            const _bs2=battleSummaryRows(allResults), _f=_bs2.rows[0];
+            const _md=(+date.slice(4,6))+"/"+(+date.slice(6,8))+"（"+"日月火水木金土"[new Date(Date.UTC(+date.slice(0,4),+date.slice(4,6)-1,+date.slice(6,8))).getUTCDay()]+"）";
+            const L=[_md+(MODE==="nar"?"地方競馬":"中央競馬")+" 全"+_bs2.total+"レースの予想"];
+            if(_bs2.battle) L.push("★勝負は"+_bs2.battle+"レース"+(_f&&_f.post?("。最初は"+_f.post+" "+_f.track+_f.no+"R"):""));
+            L.push("オッズを見る前に出して、このあと変えません"); L.push("夜に全部答え合わせします");
+            L.push("#競馬予想 #"+(MODE==="nar"?"地方競馬":"競馬"));
+            if(_bs2.total) caption=L.join("\n");
+          }catch(_){ caption=null; }
+          window.__autoOut={ok:true, kind:"morning", mode:MODE, date, count:cards.length, cards, summary, grades, caption};
         }catch(e){ window.__autoOut={ok:false, error:String((e&&e.message)||e)}; }
       })();
     }
@@ -2226,7 +2237,7 @@ function init(){
           const mon=j&&j.months&&j.months[ym];
           if(!monthlyUsable(mon)){ window.__autoOut={ok:false, kind:"monthly", ym, error:"no races（"+ym+" は500レース未満か、まだ集計が無い）"}; return; }
           const cv=drawMonthlyCanvas(mon, ym);
-          window.__autoOut={ok:true, kind:"monthly", ym, races:mon.all.n, image:cv.toDataURL("image/png"), text:(+ym.slice(4,6))+"月の成績です\n#競馬予想 #地方競馬"};
+          window.__autoOut={ok:true, kind:"monthly", ym, races:mon.all.n, image:cv.toDataURL("image/png"), text:(+ym.slice(4,6))+"月 地方 "+mon.all.n+"レースの成績\n◎が3着以内 "+(+mon.all.hit3).toFixed(1)+"%\n◎の単勝を全部買うと 回収"+(+mon.all.tan).toFixed(1)+"%、複勝 "+(+mon.all.fuku).toFixed(1)+"%\n外れも全部入れた数字です\n#競馬予想 #地方競馬"};
         }catch(e){ window.__autoOut={ok:false, kind:"monthly", error:String((e&&e.message)||e)}; }
       })();
     }
@@ -2245,7 +2256,7 @@ function init(){
           if(why){ window.__autoOut={ok:false, kind:"weekly", wk, error:"no races（"+wk+" の週は"+why+"）"}; return; }
           const cv=drawMonthlyCanvas(w, null, true);
           const md=function(d){ return (+String(d).slice(4,6))+"/"+(+String(d).slice(6,8)); };
-          window.__autoOut={ok:true, kind:"weekly", wk, races:w.all.n, image:cv.toDataURL("image/png"), text:"先週（"+md(w.from)+"〜"+md(w.to)+"）の成績です\n#競馬予想 #地方競馬"};
+          window.__autoOut={ok:true, kind:"weekly", wk, races:w.all.n, image:cv.toDataURL("image/png"), text:"先週（"+md(w.from)+"〜"+md(w.to)+"）地方 "+w.all.n+"レースの成績\n◎が3着以内 "+(+w.all.hit3).toFixed(1)+"%\n◎の単勝を全部買うと 回収"+(+w.all.tan).toFixed(1)+"%、複勝 "+(+w.all.fuku).toFixed(1)+"%\n外れも全部入れた数字です\n#競馬予想 #地方競馬"};
         }catch(e){ window.__autoOut={ok:false, kind:"weekly", error:String((e&&e.message)||e)}; }
       })();
     }
@@ -2269,7 +2280,7 @@ function init(){
           let pr=null, tn="";
           ((j&&j.records)||[]).forEach(rec=>(rec.races||[]).forEach(r=>{ if(r && String(r.race_id)===rid){ pr=r; tn=String(rec.trackName||""); } }));
           if(!pr || pr.skip || !(pr.marks||[]).length) return fail("朝の予想が保存されていない");
-          const tag=(MODE==="jra")?"#中央競馬":"#地方競馬";
+          const tag=(MODE==="jra")?"#競馬":"#地方競馬";   // ほかの投稿と同じタグ
           if(type==="hit"){
             const c=await checkRace(Object.assign({},pr), tn);
             if(!c || !c.decided) return fail("結果がまだ確定していない");
@@ -2408,7 +2419,34 @@ function init(){
           }
           // 結果の保存（results.php）が終わるのを待つ。20秒たっても終わらなければ先へ進む（投稿は止めない）
           try{ await Promise.race([Promise.allSettled(window.__resSaves||[]), new Promise(function(r){ setTimeout(r,20000); })]); }catch(_){}
-          window.__autoOut={ok:true, kind:"evening", mode:MODE, date, count:posts.length, posts, resSaves:(window.__resSaves||[]).length};
+          /* 1件にまとめて出す時の文（2026-11-13 本人が選んだ形「A＝数字を先頭に」）。
+             数字は回収率の画像（1枚目）と同じ計算（calcRecovery()＝買ったレース・分母は全部）。◎の成績とマイナスも書く */
+          let caption=null;
+          try{
+            const tA=calcRecovery(), n=tA&&tA.tanO?tA.tanO.races:0;
+            if(n){
+              const pct=(r)=> r&&r.inv>0?Math.round(r.ret/r.inv*100):null;
+              let inv=0, ret=0; Object.keys(tA).forEach(k=>{ const q=tA[k]; if(q&&typeof q.inv==="number"){ inv+=q.inv; ret+=q.ret; } });
+              const tot=inv>0?Math.round(ret/inv*100):null;
+              let nAll=0; for(const _tc of Object.keys(allCheck)){ (allCheck[_tc].races||[]).forEach(c=>{ if(c&&c.decided&&!c.skip&&(c.marks||[]).length) nAll++; }); }
+              // いちばんの的中＝◎の単勝でいちばん払戻が大きかったレース（買ったレースの中から）
+              let best=null;
+              for(const _tc of Object.keys(allCheck)){ const g=allCheck[_tc]; (g.races||[]).forEach(c=>{
+                if(!c||!c.decided||c.skip||c.pass||!(c.marks||[]).length) return; const o=c.marks[0];
+                const q=((c.pay&&c.pay.tansho)||[]).find(x=>(x.nums||[]).map(String).includes(String(o.num)));
+                if(q && (!best||q.yen>best.yen)) best={yen:+q.yen, tn:g.trackName, no:c.no, num:o.num}; }); }
+              const md=(+date.slice(4,6))+"/"+(+date.slice(6,8));
+              const L=[md+" "+(MODE==="nar"?"地方":"中央")+" 答え合わせ（"+n+"レース"+(nAll>n?("・見送り"+(nAll-n)+"を除く"):"")+"）"];
+              if(tA.fukuO&&tA.fukuO.races) L.push("◎が3着以内 "+tA.fukuO.hit+"回（"+Math.round(tA.fukuO.hit/tA.fukuO.races*100)+"%）");
+              if(pct(tA.tanO)!=null) L.push("◎の単勝を全部買うと 回収"+pct(tA.tanO)+"%"+(pct(tA.fukuO)!=null?("、複勝 "+pct(tA.fukuO)+"%"):""));
+              if(tot!=null) L.push("全部の券種の合計は"+tot+"%で"+(tot>=100?"プラス":"マイナス"));
+              if(best) L.push("いちばんの的中："+best.tn+best.no+"R ◎"+best.num+" 単勝 "+best.yen.toLocaleString()+"円");
+              L.push("外れも全部、画像にのせています");
+              L.push("#競馬予想 #"+(MODE==="nar"?"地方競馬":"競馬"));
+              caption=L.join("\n");
+            }
+          }catch(_){ caption=null; }
+          window.__autoOut={ok:true, kind:"evening", mode:MODE, date, count:posts.length, posts, caption, resSaves:(window.__resSaves||[]).length};
         }catch(e){ window.__autoOut={ok:false, error:String((e&&e.message)||e)}; }
       })();
     }

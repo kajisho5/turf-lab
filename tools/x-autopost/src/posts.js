@@ -13,7 +13,8 @@ export function toThread(kind, mode, out, caption) {
     const imgs = [out.summary && out.summary.image].concat((out.cards || []).map(c => c.image)).filter(Boolean);
     const posts = [];
     for (let i = 0; i < imgs.length; i += THREAD_MEDIA) {
-      posts.push({ text: caption || `${md}\n${modeLbl}の予想です`, images: imgs.slice(i, i + THREAD_MEDIA) });
+      // 文: 手で指定した文 → ページが作った文（数字を先頭にした形）→ それも無ければ昔の文
+      posts.push({ text: caption || out.caption || `${md}\n${modeLbl}の予想です`, images: imgs.slice(i, i + THREAD_MEDIA) });
     }
     return posts;
   }
@@ -24,13 +25,14 @@ export function toThread(kind, mode, out, caption) {
 /* 分けて出す形 → 1件にまとめた形。まとめる意味が無い（もともと1件）・画像が20枚を超える時は null。
    文は「画像なしの投稿の文」をつなぐ（的中まとめ・段階別成績）。画像つき投稿の文（回収率です／答え合わせです）は
    画像の見出しなので落とす。文だけの投稿が1つも無ければ、最初の投稿の文を使う（朝の予想はこちら）。 */
-export function mergePosts(posts) {
+export function mergePosts(posts, caption) {
   if (!posts || posts.length < 2) return null;
   const images = [];
   posts.forEach(p => (p.images || []).forEach(i => images.push(i)));
   if (!images.length || images.length > MAX_MEDIA) return null;
   const texts = posts.filter(p => !(p.images || []).length && p.text).map(p => p.text);
-  const text = texts.length ? tidyMerged(texts) : (posts[0].text || "");
+  // caption＝ページが作った1件用の文（夜の回）。あればそれを使う。無ければ今までどおり文をつないで整える
+  const text = caption ? String(caption) : texts.length ? tidyMerged(texts) : (posts[0].text || "");
   return { text, images };
 }
 
