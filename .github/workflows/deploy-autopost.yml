@@ -6,12 +6,33 @@ on:
     branches: [main]
     paths:
       - "tools/x-autopost/**"
+      - "tools/deploy_window.py"
       - ".github/workflows/deploy-autopost.yml"
   workflow_dispatch:
 concurrency:
   group: deploy-autopost
   cancel-in-progress: false
 jobs:
+  # 投稿の回の前後は公開しない（その時間帯に入っていたら、過ぎるまで待ってから公開する）。tools/deploy_window.py
+  #   2026-11-13 19:10 の事故（公開の直後に夜の答え合わせが誤って出た）の再発防止
+  window:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v6
+      - name: 投稿の回の前後なら、過ぎるまで待つ
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = "schedule" ]; then echo "毎朝の回は待たない"; exit 0; fi
+          w=$(python3 tools/deploy_window.py)
+          if [ "$w" -gt 0 ]; then
+            echo "::warning::投稿の回の前後なので、$((w/60))分待ってから公開します"
+            sleep "$w"
+          else
+            echo "今すぐ公開してよい時間帯"
+          fi
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -25,7 +46,7 @@ jobs:
       - name: 投稿の組み立ての試験
         run: node tools/x-autopost/test/posts.test.mjs && node tools/x-autopost/test/hits.test.mjs && node tools/x-autopost/test/guard.test.mjs && node tools/x-autopost/test/worker.test.mjs
   deploy:
-    needs: check
+    needs: [check, window]
     uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
     with:
       working-directory: tools/x-autopost

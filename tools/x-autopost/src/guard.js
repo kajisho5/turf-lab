@@ -150,6 +150,15 @@ export async function rehearsal(env, ms, whoami, get = fetch) {
     const d2 = jst((Number(ms) || Date.now()) - 2 * 86400e3).date;       // おととい
     if (!j.asof || String(j.asof) < d2) bad.push(`成績の索引が古いままです（${j.asof || "不明"} まで）。毎朝の公開が2日以上止まっています。`);
   } catch (e) { bad.push("索引の日付を読めません: " + String(e && e.message || e)); }
+  // きのうの夜の答え合わせが受け取った払戻と、公式の払戻の突き合わせ（毎朝の公開で backtest/scoreboard.py が作る）
+  try {
+    const r = await get(`${SITE}/data/evening_check.json?_=${t}`);
+    if (r.ok) {
+      const j = await r.json(), y = jst((Number(ms) || Date.now()) - 86400e3).date;
+      const nm = ((j && j.missing) || []).length, nd = ((j && j.diff) || []).length;
+      if (j && j.date === y && (nm || nd)) bad.push(`きのうの夜の答え合わせ: 公式の払戻と合わないレースがあります（夜の記録なし ${nm}・払戻が違う ${nd}）。中身: ${SITE}/data/scoreboard.txt`);
+    }
+  } catch (e) { /* 突き合わせの結果が読めないだけなら知らせない */ }
   try { if (env.DB) await env.DB.prepare("SELECT 1").first(); else bad.push("記録の置き場（D1）がつながっていません"); }
   catch (e) { bad.push("記録の置き場（D1）が読めません: " + String(e && e.message || e)); }
   return bad;

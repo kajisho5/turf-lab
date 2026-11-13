@@ -44,6 +44,7 @@ MAP = [
     ("deploy/data/scoreboard.json",    "/seventh-well.com/odds/data/scoreboard.json"),
     ("deploy/data/monthly.json",      "/seventh-well.com/odds/data/monthly.json"),   # 月間まとめ（scoreboard.py が作る）
     ("deploy/data/weekly.json",       "/seventh-well.com/odds/data/weekly.json"),    # 週間まとめ（scoreboard.py が作る）
+    ("deploy/data/evening_check.json", "/seventh-well.com/odds/data/evening_check.json"),   # 夜の答え合わせと公式の突き合わせ（scoreboard.py が作る）
     ("deploy/data/scoreboard.txt",     "/seventh-well.com/odds/data/scoreboard.txt"),
     ("deploy/data/jra_horses.json",   "/seventh-well.com/odds/data/jra_horses.json"),
     # 天気→馬場見込みの較正表（weather_calibrate.py生成。tweet.htmlの表示用）

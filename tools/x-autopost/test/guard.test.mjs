@@ -120,5 +120,9 @@ function fakeDB() {
   eq("索引が1日古いだけなら言わない", await rehearsal(env, t, good, get({ "data/nar_index_asof.json": '{"asof":"20261112"}' })), []);
   eq("索引が2日以上古い", (await rehearsal(env, t, good, get({ "data/nar_index_asof.json": '{"asof":"20261111"}' }))).length, 1);
   eq("D1なし", (await rehearsal({}, t, good, get())).length, 1);
+  eq("夜の答え合わせ: 合っていれば言わない", await rehearsal(env, t, good, get({ "data/evening_check.json": '{"date":"20261113","races":40,"seen":40,"missing":[],"diff":[]}' })), []);
+  eq("夜の答え合わせ: きのうぶんに違いがあれば知らせる", (await rehearsal(env, t, good, get({ "data/evening_check.json": '{"date":"20261113","races":40,"seen":38,"missing":["潮見3R"],"diff":["鳴瀬5R 複勝の金額"]}' })))[0].includes("夜の記録なし 1・払戻が違う 1"), true);
+  eq("夜の答え合わせ: 古い日ぶんは言わない", await rehearsal(env, t, good, get({ "data/evening_check.json": '{"date":"20261112","missing":["潮見3R"],"diff":[]}' })), []);
+  eq("夜の答え合わせ: ファイルが無くても問題にしない", await rehearsal(env, t, good, get()), []);
 }
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);

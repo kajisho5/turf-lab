@@ -2335,7 +2335,9 @@ function init(){
           for(let i=0;i<checkImgs.length;i+=4){
             posts.push({text:(i===0?"答え合わせです":`答え合わせです（${Math.floor(i/4)+1}）`), images:checkImgs.slice(i,i+4)});
           }
-          window.__autoOut={ok:true, kind:"evening", mode:MODE, date, count:posts.length, posts};
+          // 結果の保存（results.php）が終わるのを待つ。20秒たっても終わらなければ先へ進む（投稿は止めない）
+          try{ await Promise.race([Promise.allSettled(window.__resSaves||[]), new Promise(function(r){ setTimeout(r,20000); })]); }catch(_){}
+          window.__autoOut={ok:true, kind:"evening", mode:MODE, date, count:posts.length, posts, resSaves:(window.__resSaves||[]).length};
         }catch(e){ window.__autoOut={ok:false, error:String((e&&e.message)||e)}; }
       })();
     }
@@ -6426,12 +6428,17 @@ async function checkRace(pr, _tn){
         name:(r.name||null), jockey:(r.jockey||null),
         pop:(r.pop!=null?r.pop:null), waku:(r.waku!=null?r.waku:null) }));
       if(Object.keys(_ranks).length){
-        fetch("results.php?action=save",{method:"POST",headers:{"Content-Type":"application/json"},
+        /* ★自動投稿の回では、保存が終わるのを待ってからページを閉じる（2026-11-13）★
+           今までは投げっぱなし（keepalive）で、ページを閉じた後も送り続ける方式だった。この方式は同時に送れる量が合計64KBまでで、
+           1日ぶん（40〜50レース）を続けて送ると後ろのレースが落ちる（と見ている）。11/12 は園田の9レースの結果がサーバーに残っていなかった。
+           自動の回は keepalive を使わず、送信を window.__resSaves に積んで、夜の回の最後にまとめて待つ。 */
+        const _sv=fetch("results.php?action=save",{method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({race_id:pr.race_id, ranks:_ranks, finishers:_finishers, pays:pay,
                                raceName:(pr.name||_result.name||null), surface:(_result.surface||pr.surface||null),
                                dist:(_result.dist||pr.dist||null),
                                date:(($("#date")&&$("#date").value||"").trim()||jstTodayStr()), mode:MODE}),
-          keepalive:true}).catch(()=>{});
+          keepalive:!LINE_AUTO}).catch(()=>{});
+        if(LINE_AUTO){ (window.__resSaves=window.__resSaves||[]).push(_sv); }
       }
     }
   }catch(_){}

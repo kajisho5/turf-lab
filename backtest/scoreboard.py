@@ -350,6 +350,56 @@ def weekly(races, rnd, today, last_day):
     return out
 
 
+def evening_check(rows, pay, base, day):
+    """夜の答え合わせが見た結果（results.php に残る着順・払戻）を、公式の払戻と突き合わせる。
+    day の予想したレースについて: 夜の記録が無い／単勝・複勝の払戻が公式と違う、を数える。
+    夜の投稿の数字そのものは残していないので、比べるのは「夜の回が受け取った払戻」。"""
+    out = {"date": day, "races": 0, "seen": 0, "missing": [], "diff": []}
+    if not day:
+        return out
+    rs = [r for r in rows if r["date"] == day and r.get("rid") and r["tc"] in TC and (TC[r["tc"]], r["date"], r["no"]) in pay]
+    seen_rid, uniq = set(), []
+    for r in rs:
+        if r["rid"] not in seen_rid:
+            seen_rid.add(r["rid"]); uniq.append(r)
+    out["races"] = len(uniq)
+    got = {}
+    for i in range(0, len(uniq), 40):
+        ids = ",".join(str(r["rid"]) for r in uniq[i:i + 40])
+        j = json.loads(get("%s/results.php?action=get&ids=%s&_=%d" % (base, ids, int(time.time()))))
+        if isinstance(j.get("results"), dict):
+            got.update(j["results"])
+        time.sleep(0.2)
+    for r in uniq:
+        lab = "%s%sR" % (TC[r["tc"]], r["no"])
+        e = got.get(str(r["rid"]))
+        if not e or not isinstance(e.get("pays"), dict):
+            out["missing"].append(lab)
+            continue
+        out["seen"] += 1
+        off = pay[(TC[r["tc"]], r["date"], r["no"])]
+
+        def as_map(items):
+            m = {}
+            for it in items or []:
+                try:
+                    m[str(int(it["nums"][0]))] = int(it["yen"])
+                except Exception:      # noqa: BLE001
+                    pass
+            return m
+        ev_t, ev_f = as_map(e["pays"].get("tansho")), as_map(e["pays"].get("fukusho"))
+        of_t = {str(int(k)): v for k, v in off["t"].items()}
+        of_f = {str(int(k)): v for k, v in off["f"].items()}
+        bad = []
+        if ev_t != of_t:
+            bad.append("単勝（夜 %s／公式 %s）" % (ev_t or "なし", of_t or "なし"))
+        if ev_f != of_f:
+            bad.append("複勝（夜 %d頭／公式 %d頭）" % (len(ev_f), len(of_f)) if set(ev_f) != set(of_f) else "複勝の金額")
+        if bad:
+            out["diff"].append(lab + " " + "・".join(bad))
+    return out
+
+
 def to_text(sb):
     L = []
     L.append("カジ競馬 実運用の成績表")
@@ -368,6 +418,13 @@ def to_text(sb):
                 ci = "［%.1f〜%.1f］" % tuple(it["fuku_ci"])
             L.append("  %s" % it["label"])
             L.append("    %dレース ／ ◎3着内 %.1f%% ／ 単勝回収 %.1f%% ／ 複勝回収 %.1f%% %s" % (it["n"], it["hit3"], it["tan"], it["fuku"], ci))
+        L.append("")
+    ec = sb.get("evening_check")
+    if ec and ec.get("date"):
+        L.append("■ 夜の答え合わせが受け取った払戻と、公式の払戻の突き合わせ（%s）" % ec["date"])
+        L.append("  %dレース中 %dレースを確認 ／ 夜の記録なし %d ／ 公式と違う %d" % (ec["races"], ec["seen"], len(ec["missing"]), len(ec["diff"])))
+        for x in (ec["missing"][:12] and ["記録なし: " + "、".join(ec["missing"][:12])] or []) + ec["diff"][:12]:
+            L.append("    " + x)
         L.append("")
     L.append("注意：保存された予想は手動のやり直しで上書きされ得る。人気別は確定の人気。")
     L.append("過去の検証（49,323レース）：◎3着内 59.6% ／ 単勝回収 82.0% ／ 複勝回収 86.4%")
@@ -388,6 +445,14 @@ def main():
         raise SystemExit("保存された予想が %d レースしか読めません。取得に失敗している可能性があるので中止" % len(rows))
     t10 = load_t10(a.base, today)
     sb = build(rows, t10, rank, pop, pay, today)
+    try:
+        sb["evening_check"] = evening_check(rows, pay, a.base, sb.get("to"))
+        ec = sb["evening_check"]
+        if ec["missing"] or ec["diff"]:
+            print("::warning::夜の答え合わせと公式の払戻が合わないレースがあります（%s・記録なし %d・違い %d）" % (ec["date"], len(ec["missing"]), len(ec["diff"])))
+    except Exception as e:      # noqa: BLE001
+        print("::warning::夜の答え合わせの突き合わせができませんでした: %s" % e)
+        sb["evening_check"] = None
     if sb["races"] < 500:
         raise SystemExit("突き合わせできたレースが %d しかありません。壊れている可能性があるので中止" % sb["races"])
     txt = to_text(sb)
@@ -398,7 +463,8 @@ def main():
         return
     for name, data in (("scoreboard.json", json.dumps(sb, ensure_ascii=False, separators=(",", ":"))), ("scoreboard.txt", txt),
                        ("monthly.json", json.dumps({"built": sb["built"], "months": sb["monthly"]}, ensure_ascii=False, separators=(",", ":"))),
-                       ("weekly.json", json.dumps({"built": sb["built"], "weeks": sb["weekly"]}, ensure_ascii=False, separators=(",", ":")))):
+                       ("weekly.json", json.dumps({"built": sb["built"], "weeks": sb["weekly"]}, ensure_ascii=False, separators=(",", ":"))),
+                       ("evening_check.json", json.dumps(sb.get("evening_check") or {}, ensure_ascii=False, separators=(",", ":")))):
         tmp = os.path.join(a.out, name + ".tmp")
         with open(tmp, "w", encoding="utf-8") as fh:
             fh.write(data)
