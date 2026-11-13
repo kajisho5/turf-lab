@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1226" viewBox="0 0 1080 1226" font-family="'Noto Sans JP',sans-serif"><defs></defs>
+<rect x="0" y="0" width="1080" height="1226" rx="0" fill="#0e1014" />
+<text x="48" y="124" font-size="80" font-weight="900" fill="#f5f6f8" text-anchor="start" >買い方別 回収率</text>
+<text x="1032" y="92" font-size="30" font-weight="700" fill="#f5f6f8" text-anchor="end" >2026/11/14</text>
+<text x="1032" y="130" font-size="24" font-weight="500" fill="#9aa3b2" text-anchor="end" >対象 40レース</text>
+<text x="48" y="176" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >1レースあたりの点数・1点100円。相手＝印のついた残りの馬　／　緑＝100%以上　赤＝未満</text>
+<text x="48" y="236" font-size="28" font-weight="900" fill="#f5f6f8" text-anchor="start" >◎を軸にした買い方</text>
+<rect x="48" y="256" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="293" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 ◎1着固定</text>
+<text x="560" y="292" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >12点</text>
+<text x="690" y="295" font-size="34" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >142%</text>
+<text x="880" y="292" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 9/40</text>
+<text x="1008" y="293" font-size="26" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+20,160</text>
+<text x="72" y="351" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 ◎マルチ（今の表と同じ）</text>
+<text x="560" y="350" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >36点</text>
+<text x="690" y="353" font-size="34" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >168%</text>
+<text x="880" y="350" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 17/40</text>
+<text x="1008" y="351" font-size="26" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+97,920</text>
+<rect x="48" y="372" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="409" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連複 ◎ー相手2頭（今の表と同じ）</text>
+<text x="560" y="408" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >6点</text>
+<text x="690" y="411" font-size="34" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >167%</text>
+<text x="880" y="408" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 17/40</text>
+<text x="1008" y="409" font-size="26" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+16,080</text>
+<text x="48" y="484" font-size="28" font-weight="900" fill="#f5f6f8" text-anchor="start" >◎と○の2頭を軸にした買い方</text>
+<rect x="48" y="504" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="541" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連複 ◎ー○ー相手</text>
+<text x="560" y="540" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >3点</text>
+<text x="690" y="543" font-size="34" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >121%</text>
+<text x="880" y="540" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 11/40</text>
+<text x="1008" y="541" font-size="26" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+2,520</text>
+<text x="72" y="599" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 ◎→○→相手</text>
+<text x="560" y="598" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >3点</text>
+<text x="690" y="601" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >86%</text>
+<text x="880" y="598" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 4/40</text>
+<text x="1008" y="599" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−1,680</text>
+<rect x="48" y="620" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="657" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 ○→◎→相手</text>
+<text x="560" y="656" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >3点</text>
+<text x="690" y="659" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >54%</text>
+<text x="880" y="656" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 2/40</text>
+<text x="1008" y="657" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−5,520</text>
+<text x="72" y="715" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 1着が◎か○</text>
+<text x="560" y="714" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >24点</text>
+<text x="690" y="717" font-size="34" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >118%</text>
+<text x="880" y="714" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 13/40</text>
+<text x="1008" y="715" font-size="26" font-weight="700" fill="#4cc38a" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >+17,280</text>
+<text x="48" y="790" font-size="28" font-weight="900" fill="#f5f6f8" text-anchor="start" >○を軸にした買い方</text>
+<rect x="48" y="810" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="847" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >馬連 ○ー相手</text>
+<text x="560" y="846" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >4点</text>
+<text x="690" y="849" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >71%</text>
+<text x="880" y="846" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 9/40</text>
+<text x="1008" y="847" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−4,640</text>
+<text x="72" y="905" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >馬単 ○→相手</text>
+<text x="560" y="904" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >4点</text>
+<text x="690" y="907" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >48%</text>
+<text x="880" y="904" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 4/40</text>
+<text x="1008" y="905" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−8,320</text>
+<rect x="48" y="926" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="963" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >ワイド ○ー相手</text>
+<text x="560" y="962" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >4点</text>
+<text x="690" y="965" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >93%</text>
+<text x="880" y="962" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 21/40</text>
+<text x="1008" y="963" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−1,120</text>
+<text x="72" y="1021" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連複 ○ー相手2頭</text>
+<text x="560" y="1020" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >6点</text>
+<text x="690" y="1023" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >62%</text>
+<text x="880" y="1020" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 10/40</text>
+<text x="1008" y="1021" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−9,120</text>
+<rect x="48" y="1042" width="984" height="56" rx="12" fill="#181b22" />
+<text x="72" y="1079" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 ○1着固定</text>
+<text x="560" y="1078" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >12点</text>
+<text x="690" y="1081" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >57%</text>
+<text x="880" y="1078" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 4/40</text>
+<text x="1008" y="1079" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−20,640</text>
+<text x="72" y="1137" font-size="25" font-weight="700" fill="#f5f6f8" text-anchor="start" >3連単 ○マルチ</text>
+<text x="560" y="1136" font-size="22" font-weight="500" fill="#9aa3b2" text-anchor="end" >36点</text>
+<text x="690" y="1139" font-size="34" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >64%</text>
+<text x="880" y="1136" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >的中 10/40</text>
+<text x="1008" y="1137" font-size="26" font-weight="700" fill="#ff6b6b" text-anchor="end" font-family="'Barlow Condensed','Noto Sans JP',sans-serif" >−51,840</text>
+<text x="48" y="1190" font-size="22" font-weight="400" fill="#9aa3b2" text-anchor="start" >この表は「回収率」の総合計には入れていません（買い方の見くらべ用）　／　馬券は20歳から</text>
+</svg>
