@@ -21,9 +21,9 @@ jobs:
       - uses: actions/setup-node@v6
         with: { node-version: "22" }
       - name: 書き間違い確認
-        run: node --check tools/x-autopost/src/worker.js
+        run: node --check tools/x-autopost/src/worker.js && node --check tools/x-autopost/src/hits.js
       - name: 投稿の組み立ての試験
-        run: node tools/x-autopost/test/posts.test.mjs
+        run: node tools/x-autopost/test/posts.test.mjs && node tools/x-autopost/test/hits.test.mjs
   deploy:
     needs: check
     uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main

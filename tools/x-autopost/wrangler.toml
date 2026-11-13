@@ -14,13 +14,15 @@ browser = { binding = "BROWSER" }
 
 # ★cron（時刻はUTC）★ 8:30 JST=前日23:30 UTC / 22:30 JST=13:30 UTC（2026-11-13: 朝を8:30に、夜を22:30に）
 [triggers]
-crons = ["30 23 * * *", "30 13 * * *"]
+crons = ["30 23 * * *", "30 13 * * *", "*/10 1-13 * * *"]   # 3つ目＝★勝負の的中速報（10分おき・10:00〜22:50 JST）
 
 [vars]
 # 生成元（legacyのtweet.html）。?auto=morning|evening&mode=nar|jra を付けて開く。
 TWEET_URL = "https://seventh-well.com/odds/tweet.html"
 # "1"=ドライラン（Xへ投稿しない・内容の確認のみ）。本番投稿にするときだけ "0"。
 DRYRUN = "0"
+# "1"=★勝負の的中速報を出す。止める時は "0"（朝・夜の投稿には影響しない）
+HITS = "1"
 
 # --- secrets（wrangler secret put で登録。ここには書かない・私は値を見ない）---
 #   X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET  … Xの4鍵(OAuth1.0a)
@@ -34,3 +36,9 @@ enabled = true
 [[send_email]]
 name = "MAIL"
 destination_address = "kajiyama@seventh-well.com"
+
+# 的中速報の記録（朝の投稿のID・速報済みのレース）。予想ページと同じデータベースに表 xpost_log を1つ使う
+[[d1_databases]]
+binding = "DB"
+database_name = "kajikeiba"
+database_id = "4a865324-8f24-42da-9ffa-e0f851453a62"

@@ -8,6 +8,11 @@ eq("朝4場は1件",t.length,1); eq("朝4場まとめ不要",mergePosts(t),null)
 t=toThread("morning","nar",{date:"20261114",cards:img(6).map(image=>({image}))});
 eq("朝6場は分けると2件",t.map(p=>p.images.length),[4,2]); let m=mergePosts(t); eq("朝6場まとめ",[m.text,m.images.length],["11/14\n地方競馬の予想です",6]);
 eq("画像の順番",m.images,img(6));
+// 朝: 「今日の★勝負」が1枚目に入る（4場＋1枚＝5枚 → 分けると 4+1、まとめると5枚）
+t=toThread("morning","nar",{date:"20261114",summary:{image:"data:image/png;base64,summary"},cards:img(4).map(image=>({image}))});
+eq("まとめの1枚が先頭",t[0].images[0],"data:image/png;base64,summary"); eq("5枚は分けると2件",t.map(p=>p.images.length),[4,1]);
+eq("5枚をまとめる",mergePosts(t).images.length,5);
+eq("★勝負0の日は足さない",toThread("morning","nar",{date:"20261114",summary:null,cards:img(2).map(image=>({image}))})[0].images.length,2);
 // 夜: 文・画像3・文・画像4+2
 const ev={posts:[{text:"的中まとめ",images:[]},{text:"回収率です",images:img(3)},{text:"段階別",images:[]},{text:"答え合わせです",images:img(4)},{text:"答え合わせです（2）",images:img(2)}]};
 t=toThread("evening","nar",ev); eq("夜は分けると5件",t.length,5); m=mergePosts(t);

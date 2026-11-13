@@ -2196,7 +2196,13 @@ function init(){
             cards.push({tc, trackName:g.trackName, text:trackTweetText(g,date),
                         image:cv.toDataURL("image/png")});
           }
-          window.__autoOut={ok:true, kind:"morning", mode:MODE, date, count:cards.length, cards};
+          /* ★朝の1枚目「今日の★勝負」★ ★勝負が0レースなら付けない（summary=null）。失敗しても全場予想は出す */
+          let summary=null;
+          try{
+            const _bs=battleSummaryRows(allResults);
+            if(_bs.rows.length){ const _sc=drawBattleSummaryCanvas(_bs,date); if(_sc) summary={image:_sc.toDataURL("image/png"), count:_bs.battle, shown:_bs.rows.length}; }
+          }catch(_){ summary=null; }
+          window.__autoOut={ok:true, kind:"morning", mode:MODE, date, count:cards.length, cards, summary};
         }catch(e){ window.__autoOut={ok:false, error:String((e&&e.message)||e)}; }
       })();
     }
@@ -5961,6 +5967,105 @@ function drawTrackCanvas(trackName, races, date, noSave, tweetText){
   const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,C.aim1); fgb.addColorStop(1,C.aim2);
   x.fillStyle=fgb; x.fillRect(0,H-6,W,6);   // ブランドバー
   if(!noSave){ const dl=`${trackName}_推奨馬_${date}.png`; if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); } }
+  return cv;
+}
+/* ===== 朝の1枚目「今日の★勝負」（2026-11-13・docs/design/X_BATTLE_SUMMARY_DESIGN.md）=====
+   全場予想の中から、朝に★勝負と判定したレースだけを発走の早い順に並べる。別の予想は作らない。
+   12レースを超える日は信頼度の高い12レースまで（並びは発走順のまま）。 */
+function battleSummaryRows(groups){
+  const rows=[]; let total=0;
+  Object.keys(groups||{}).forEach(function(tc){
+    const g=groups[tc]; if(!g) return;
+    (g.races||[]).forEach(function(r){
+      if(!r||r.skip||!(r.marks||[]).length) return;
+      total++;
+      if(!isBattle(r)) return;
+      rows.push({ tc:String(tc), track:(g.trackName||r.track||""), no:+r.no, post:String(r.post||""), name:String(r.name||""),
+                  dist:(r.dist!=null?+r.dist:null), o:r.marks[0]||null, t:r.marks[1]||null,
+                  firm:(typeof r.firmO==="number"&&isFinite(r.firmO))?r.firmO:0 });
+    });
+  });
+  const battle=rows.length;
+  let pick=rows;
+  if(rows.length>12) pick=rows.slice().sort(function(a,b){ return b.firm-a.firm; }).slice(0,12);
+  pick=pick.slice().sort(function(a,b){
+    const pa=a.post||"99:99", pb=b.post||"99:99";
+    return pa<pb?-1:pa>pb?1:(a.tc<b.tc?-1:a.tc>b.tc?1:a.no-b.no);
+  });
+  return { rows:pick, battle:battle, total:total, more:battle-pick.length };
+}
+function drawBattleSummaryCanvas(bs, date){
+  if(!bs||!bs.rows||!bs.rows.length) return null;
+  const C={ bg1:"#121826", bg2:"#0a0e16", panel:"#1b1f2b", line:"#333333", txt:"#ffffff", sub:"#cccccc",
+            mkO:"#ff7171", mk1:"#ffc700", aim1:"#ffd43d", aim2:"#ff7171", chipTxt:"#1a1400" };
+  const W=1240, pad=48, gutter=24, cardW=(W-pad*2-gutter)/2, cardH=150, rowGap=18, top=204;
+  const nRows=Math.ceil(bs.rows.length/2);
+  const H=top + nRows*(cardH+rowGap) - rowGap + 28 + 124;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d"); x.textBaseline="alphabetic";
+  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
+  x.fillStyle=bg; x.fillRect(0,0,W,H);
+  const JP="'Noto Sans JP',sans-serif", NUM="'Saira Condensed','Noto Sans JP',sans-serif";
+  /* 幅に収まらない文字は末尾を「…」にする */
+  const fit=function(t,maxW){ t=String(t||""); if(x.measureText(t).width<=maxW) return t;
+    while(t.length>1 && x.measureText(t+"…").width>maxW) t=t.slice(0,-1); return t+"…"; };
+  const grad=function(x0,x1){ const g=x.createLinearGradient(x0,0,x1,0); g.addColorStop(0,C.aim1); g.addColorStop(1,C.aim2); return g; };
+  // 見出し
+  const hb=x.createLinearGradient(0,56,0,122); hb.addColorStop(0,"#ffd43d"); hb.addColorStop(1,"#ffb400");
+  roundRect(x,pad,56,10,66,5); x.fillStyle=hb; x.fill();
+  x.font="700 64px "+JP; x.fillStyle=C.txt; x.fillText("今日の★勝負", pad+30, 112);
+  // 右の札（右から: 日付／全Mレース中／★勝負 N）
+  const d=(date&&date.length===8)?(date.slice(0,4)+"."+date.slice(4,6)+"."+date.slice(6,8)):String(date||"");
+  x.font="700 24px "+JP;
+  const chips=[["★勝負 "+bs.battle,"#2a2410",C.aim1,C.aim1],["全"+bs.total+"レース中",C.panel,"#555b66",C.sub],[d+"　朝",C.panel,"#555b66",C.txt]];
+  let cxr=W-pad;
+  for(let i=chips.length-1;i>=0;i--){
+    const t=chips[i][0], w2=x.measureText(t).width+44, x2=cxr-w2;
+    roundRect(x,x2,66,w2,48,24); x.fillStyle=chips[i][1]; x.fill(); x.strokeStyle=chips[i][2]; x.lineWidth=2; x.stroke();
+    x.fillStyle=chips[i][3]; x.textAlign="center"; x.fillText(t,x2+w2/2,99); x.textAlign="left";
+    cxr=x2-16;
+  }
+  // 説明の1行
+  x.font="400 24px "+JP; let lx=pad;
+  const seg=function(t,col,bold){ x.font=(bold?"700":"400")+" 24px "+JP; x.fillStyle=col; x.fillText(t,lx,156); lx+=x.measureText(t).width; };
+  seg("発走の早い順　／　",C.sub); seg("◎",C.mkO,true); seg("本命　",C.sub); seg("○",C.mk1,true);
+  seg("対抗　／　オッズ前の予想です。このあと変えません",C.sub);
+  x.fillStyle=grad(pad,W-pad); x.fillRect(pad,176,W-pad*2,2);
+  // レースの枠
+  bs.rows.forEach(function(r,i){
+    const cx=pad+(i%2)*(cardW+gutter), cy=top+Math.floor(i/2)*(cardH+rowGap);
+    roundRect(x,cx,cy,cardW,cardH,16); x.fillStyle=C.panel; x.fill(); x.strokeStyle=grad(cx,cx+cardW); x.lineWidth=3; x.stroke();
+    // 1段目: 発走時刻／場とレース番号の札／条件と距離
+    x.font="700 32px "+NUM; x.fillStyle=C.txt; const pt=r.post||"--:--"; x.fillText(pt,cx+24,cy+50);
+    let nx=cx+24+Math.max(x.measureText(pt).width,84)+20;
+    x.font="700 24px "+JP; const lab=r.track+" "+r.no+"R", lw=x.measureText(lab).width+36;
+    roundRect(x,nx,cy+20,lw,40,8); x.fillStyle=C.aim1; x.fill();
+    x.fillStyle=C.chipTxt; x.textAlign="center"; x.fillText(lab,nx+lw/2,cy+49); x.textAlign="left";
+    nx+=lw+18;
+    x.font="400 22px "+JP; x.fillStyle=C.sub;
+    const cond=(r.name||"")+(r.dist?("　"+r.dist+"m"):"");
+    x.fillText(fit(cond, cx+cardW-24-nx), nx, cy+49);
+    // 2段目: ◎
+    if(r.o){
+      x.font="700 36px "+NUM; x.fillStyle=C.mkO; const m="◎"+r.o.num; x.fillText(m,cx+24,cy+104);
+      const mx=cx+24+x.measureText(m).width+18;
+      x.font="700 36px "+JP; x.fillStyle=C.txt; x.fillText(fit(r.o.name||"", cx+cardW-24-mx), mx, cy+104);
+    }
+    // 3段目: ○
+    if(r.t){
+      x.font="700 24px "+NUM; x.fillStyle=C.mk1; const m2="○"+r.t.num; x.fillText(m2,cx+24,cy+136);
+      const mx2=cx+24+x.measureText(m2).width+14;
+      x.font="400 24px "+JP; x.fillStyle=C.sub; x.fillText(fit(r.t.name||"", cx+cardW-24-mx2), mx2, cy+136);
+    }
+  });
+  // 下の帯
+  const fy=top + nRows*(cardH+rowGap) - rowGap + 28;
+  x.fillStyle=C.line; x.fillRect(pad,fy,W-pad*2,2);
+  x.font="700 24px "+JP; x.fillStyle=C.txt;
+  x.fillText("◎が1着なら、この投稿の返信でお知らせします"+(bs.more>0?("　／　ほか"+bs.more+"レース（2枚目から）"):""), pad, fy+44);
+  x.font="400 22px "+JP; x.fillStyle=C.sub;
+  x.fillText("全レースの予想は2枚目から　／　近走・騎手・血統・時計から自動算出（オッズ非依存）　／　馬券は20歳から", pad, fy+82);
+  x.fillStyle=grad(0,W); x.fillRect(0,H-8,W,8);
   return cv;
 }
 function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
