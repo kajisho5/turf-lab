@@ -2,12 +2,12 @@
 """時計つきモデルの JS（core/ltr_model_t.js）と Python（LightGBM）が同じ値を出すか。
 2026年のレースから約3,000頭を取り、両方で採点して最大の差を出す。差が 1e-6 を超えたら失敗。"""
 import json, os, subprocess, sys
-os.environ.update(LTR_NEWFEATS="pre", LTR_NODMS="1", LTR_TC="1", LTR_TIME="1")
+os.environ.update(LTR_NEWFEATS="pre", LTR_NODMS="1", LTR_TC="1", LTR_TIME="2")
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.argv = ["x"]; sys.path.insert(0, HERE)
 import numpy as np, lightgbm as lgb
 import bt_train_ltr as T
-L = lgb.Booster(model_file=os.path.join(HERE, "ltr_model_t40.txt")); R = lgb.Booster(model_file=os.path.join(HERE, "ltr_res_model_t40.txt"))
+L = lgb.Booster(model_file=os.path.join(HERE, "ltr_model_t.txt")); R = lgb.Booster(model_file=os.path.join(HERE, "ltr_res_model_t.txt"))
 F = L.feature_name(); rows = []
 with open(T.DATA, encoding="utf-8") as f:
     for i, line in enumerate(f):
