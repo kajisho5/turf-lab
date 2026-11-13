@@ -27,7 +27,7 @@ import puppeteer from "@cloudflare/puppeteer";
 
 import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
-import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, runRetry, rehearsal } from "./guard.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -39,6 +39,7 @@ const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じ
 /** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
 const MONTHLY_CRON = "0 0 1 * *";       // 月間まとめ（毎月1日 9:00 日本時間）。wrangler.toml の crons と同じ文字列
 const HITS_CRON = "*/10 0-14 * * *";    // ★勝負の的中速報＋失敗した回のやり直し（日本時間 9:00〜23:50 の10分おき）。wrangler.toml の crons と同じ文字列
+const MAIN_CRONS = ["30 21,23 * * *", "30 13 * * *"];   // 朝の前の点検＋朝の予想／夜の結果。wrangler.toml の crons と同じ文字列
 const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
 
 /** 動いた時刻（ミリ秒）の、日本時間で見た「前の月」を YYYYMM で返す */
@@ -79,7 +80,10 @@ export default {
       return;
     }
     // ★勝負の的中速報（10分おき）。朝・夜の回とは別の時刻の指定で動く
-    if (event.cron === HITS_CRON) {
+    // ★10分おきの回は「*/10 」で始まるかで見分ける（完全一致にしない）★
+    //   2026-11-13 19:20 の事故: 時刻の指定を "*/10 1-13" → "*/10 0-14" に替えて公開した直後、古い指定のまま回が1つ動き、
+    //   文字列が一致しないので下の「朝/夜」に落ちて、夜の答え合わせが 19:20 に投稿された。
+    if (String(event.cron || "").startsWith("*/10 ")) {
       ctx.waitUntil((async () => {
         // 失敗した回のやり直し（朝 9:00・9:20／夜 22:50・23:10 の回だけ見る。src/guard.js）
         try {
@@ -109,7 +113,7 @@ export default {
       return;
     }
     // 朝の前の点検（6:30）。投稿も予想の保存もしない。問題がある時だけメールする（src/guard.js）
-    if (isRehearsalTime(event.scheduledTime)) {
+    if (isRehearsalTime(event.scheduledTime) && MAIN_CRONS.includes(String(event.cron || ""))) {
       ctx.waitUntil((async () => {
         const bad = await rehearsal(env, event.scheduledTime, async () => {
           const url = "https://api.twitter.com/2/users/me";
@@ -128,10 +132,19 @@ export default {
       })().catch(e => console.error("rehearsal", e)));
       return;
     }
-    const kind = kindForTime(event.scheduledTime);
+    // ★朝・夜の投稿は、決まった時刻の回からしか出さない★（知らない指定・ずれた時刻の回は何もしない）
+    const hm = jst(event.scheduledTime);
+    const kind = (hm.h === 8 && hm.m === 30) ? "morning" : (hm.h === 22 && hm.m === 30) ? "evening" : null;
+    if (!kind || !MAIN_CRONS.includes(String(event.cron || ""))) {
+      console.error("autopost: 想定外の回なので何もしません", JSON.stringify({ cron: event.cron, jst: hm }));
+      return;
+    }
     ctx.waitUntil((async () => {
       let r = null, err = null;
-      const day = jst(event.scheduledTime).date;
+      const day = hm.date;
+      // 同じ日の同じ回がもう動いていたら出さない（二重投稿の防止）
+      try { const st = await loadState(env, day, kind); if (st) { console.error("autopost: この回はもう動いています", day, kind, JSON.stringify(st)); return; } }
+      catch (e) { console.error("loadState", String(e && e.message || e)); }
       try { await markStart(env, day, kind); } catch (e) { console.error("markStart", String(e && e.message || e)); }
       try { r = await runAll(env, kind, { dry: env.DRYRUN === "1" }); console.log("autopost result", JSON.stringify(r)); }
       catch (e) { err = e; console.error("scheduled", kind, e); }

@@ -102,4 +102,15 @@ const state = async (env, kind) => JSON.parse((await env.DB.prepare("SELECT body
   outs = { nar: { ok: true, date: "20261114", posts: [{ text: "まとめ", images: [] }, { text: "答え合わせです", images: [PNG, PNG] }] }, jra: noRace };
   await run(env, EVENING, "2026-11-14T22:30:00");
   eq("夜: 1件・文は画像なしの投稿の文", [tweets.length, tweets[0].text, tweets[0].media.media_ids.length, (await state(env, "evening")).modes], [1, "まとめ", 2, { nar: "ok", jra: "none" }]); }
+// 7) 11/13 19:20 の事故の再現: 古い指定の回・知らない指定の回・ずれた時刻の回からは投稿しない。同じ回は2度出さない
+{ reset(); const env = mkEnv();
+  outs = { nar: { ok: true, date: "20261114", posts: [{ text: "まとめ", images: [] }, { text: "答え合わせです", images: [PNG] }] }, jra: noRace };
+  await run(env, "*/10 1-13 * * *", "2026-11-14T19:20:00");
+  await run(env, "*/10 3-9 * * *", "2026-11-14T19:30:00");
+  await run(env, "0 5 * * *", "2026-11-14T14:00:00");
+  await run(env, EVENING, "2026-11-14T19:20:00");
+  await run(env, "30 23 * * *", "2026-11-14T08:30:00");
+  eq("想定外の回は投稿しない", [tweets.length, opened.length], [0, 0]);
+  await run(env, EVENING, "2026-11-14T22:30:00"); await run(env, EVENING, "2026-11-14T22:30:00");
+  eq("同じ回は1度だけ", tweets.length, 1); }
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);
