@@ -2104,6 +2104,7 @@ function setAppDate(ymd8){
   if(p && /^\d{8}$/.test(String(ymd8))) p.value=`${ymd8.slice(0,4)}-${ymd8.slice(4,6)}-${ymd8.slice(6,8)}`;
 }
 function init(){
+  try{ ensureFFonts(); }catch(_){}   // 投稿画像（F案）の書体を先に読み始める（待たない）
   setAppDate(jstTodayStr());
   { const p=$("#datePick");
     if(p) p.onchange=()=>{ const v=(p.value||"").replace(/-/g,"");
@@ -2381,6 +2382,7 @@ async function ensureAutoFonts(){
     const f=new FontFace(fam,`url(${url})`,{weight:w, display:"block"});
     await f.load(); document.fonts.add(f); return fam+" "+w;
   }));
+  try{ await ensureFFonts(); }catch(_){}   // F案の書体（明朝の見出し・数字）
   window.__autoFontsDone=true;
   window.__autoFonts=res.map(r=>r.status==="fulfilled"?r.value:("NG "+String(r.reason&&r.reason.message||r.reason)));
 }
@@ -5747,283 +5749,230 @@ function saveTrackImage(tc, tweet){
   const date=($("#date").value||"").trim()||jstTodayStr();
   drawTrackCanvas(g.trackName, g.races, date, false, tweet? trackTweetText(g, date) : null);
 }
+/* ===== 投稿画像の見た目（F案「新聞・夜」2026-11-13・docs/design/X_REDESIGN_F_DESIGN.md）=====
+   色の意味は2つ: acc＝こちらの推し（◎・★勝負・狙い目）／gold＝結果が良かった（1着・的中・100%以上）。
+   地方は赤、中央は緑（本人「中央はかえてもいいかも」）。字と地の組み合わせは全部 4.5:1 以上（計算で確認）。
+   書体: 見出し＝Noto Serif JP 900／本文＝Noto Sans JP／数字＝Roboto Condensed（/odds/fonts/ に自前で置いてある）。 */
+function themeF(){
+  const jra=(typeof MODE!=="undefined" && MODE==="jra");
+  return { bg:"#171614", card:"#211f1c", row:"#322b27", ink:"#efe7d6", sub:"#b8b0a0", weak:"#6b665c", gold:"#e8c268",
+           acc: jra?"#7fd3a4":"#ff7a6b", accFill: jra?"#1f5a3c":"#a3271c", accBand: jra?"緑の帯":"赤い帯", accFrame: jra?"緑枠":"赤枠",
+           JP:"'Noto Sans JP',sans-serif", SERIF:"'Noto Serif JP','Noto Sans JP',serif", NUM:"'Roboto Condensed','Noto Sans JP',sans-serif" };
+}
+/* F案の書体を読み込む（失敗しても描ける。その時はゴシックになる） */
+function ensureFFonts(){
+  if(window.__fFontsP) return window.__fFontsP;
+  const B="/odds/fonts/";
+  const list=[ ["Noto Serif JP", B+"NotoSerifJP-900-jp.woff2", {weight:"900", unicodeRange:"U+2E80-FFFF"}],
+               ["Noto Serif JP", B+"NotoSerifJP-900-latin.woff2", {weight:"900", unicodeRange:"U+0000-00FF"}],
+               ["Roboto Condensed", B+"RobotoCondensed-400.woff2", {weight:"400"}],
+               ["Roboto Condensed", B+"RobotoCondensed-700.woff2", {weight:"700"}] ];
+  window.__fFontsP=Promise.allSettled(list.map(async function(a){
+    const f=new FontFace(a[0],"url("+a[1]+")",Object.assign({display:"block"},a[2])); await f.load(); document.fonts.add(f); return a[0]+" "+a[2].weight; }))
+    .then(function(res){ window.__fFonts=res.map(function(r){ return r.status==="fulfilled"?r.value:("NG "+String(r.reason&&r.reason.message||r.reason)); }); return window.__fFonts; });
+  return window.__fFontsP;
+}
+/* 日付 YYYYMMDD → 「11月14日（土）」 */
+function fDate(d){ d=String(d||""); if(!/^\d{8}$/.test(d)) return d;
+  const w="日月火水木金土"[new Date(Date.UTC(+d.slice(0,4),+d.slice(4,6)-1,+d.slice(6,8))).getUTCDay()];
+  return (+d.slice(4,6))+"月"+(+d.slice(6,8))+"日（"+w+"）"; }
+/* 地を塗り、上の二重線・見出し・細線を描く。見出しの右端のxを返す */
+function fHead(x,T,W,pad,title,size){
+  x.setLineDash([]); x.globalAlpha=1; x.shadowBlur=0; x.textBaseline="alphabetic"; x.textAlign="left";
+  x.fillStyle=T.bg; x.fillRect(0,0,W,x.canvas.height);
+  x.fillStyle=T.ink; x.fillRect(pad,44,W-pad*2,6); x.fillRect(pad,54,W-pad*2,2);
+  x.font="900 "+size+"px "+T.SERIF; x.fillText(title,pad,150);
+  const r=pad+x.measureText(title).width;
+  x.fillRect(pad,176,W-pad*2,2);
+  return r;
+}
+/* 見出しの右上の2行（右寄せ） */
+function fHeadRight(x,T,W,pad,l1,l2){
+  x.font="700 26px "+T.JP; x.fillStyle=T.ink; x.textAlign="right";
+  if(l1) x.fillText(l1,W-pad,116); if(l2) x.fillText(l2,W-pad,152); x.textAlign="left";
+  return W-pad-Math.max(l1?x.measureText(l1).width:0, l2?x.measureText(l2).width:0);
+}
+/* 下の細線と注記。lines=[[文,色,太字か]] */
+function fFoot(x,T,W,pad,y,lines){
+  x.fillStyle=T.ink; x.fillRect(pad,y,W-pad*2,2);
+  lines.forEach(function(l,i){ x.font=(l[2]?"700 24px ":"400 22px ")+T.JP; x.fillStyle=l[1]||T.sub; x.fillText(l[0],pad,y+42+i*36); });
+}
+/* 札。kind: fill（推しの色で塗る・白字）／ink（生成りで塗る・墨字）／gold（金で塗る・墨字）／acc・goldline（枠だけ）／dash（点線）。
+   右端を xr に合わせて描き、左端のxを返す */
+function fTag(x,T,xr,y,label,kind,h,fs){
+  h=h||40; fs=fs||24; x.font="700 "+fs+"px "+T.JP;
+  const w=Math.ceil(x.measureText(label).width)+28, x0=xr-w;
+  if(kind==="fill"){ x.fillStyle=T.accFill; x.fillRect(x0,y,w,h); x.fillStyle="#ffffff"; }
+  else if(kind==="ink"){ x.fillStyle=T.ink; x.fillRect(x0,y,w,h); x.fillStyle=T.bg; }
+  else if(kind==="gold"){ x.fillStyle=T.gold; x.fillRect(x0,y,w,h); x.fillStyle=T.bg; }
+  else { const col=kind==="acc"?T.acc:kind==="goldline"?T.gold:T.sub;
+    x.fillStyle=T.card; x.fillRect(x0,y,w,h); x.strokeStyle=col; x.lineWidth=kind==="dash"?2:3;
+    if(kind==="dash") x.setLineDash([6,5]); x.strokeRect(x0+1.5,y+1.5,w-3,h-3); x.setLineDash([]); x.fillStyle=col; }
+  x.textAlign="center"; x.fillText(label,x0+w/2,y+h/2+fs*0.36); x.textAlign="left";
+  return x0;
+}
+/* レースの枠。kind: battle（生成りの太枠＋上に推しの色の帯）／acc／gold／dash（点線）／それ以外（弱い線） */
+function fBox(x,T,cx,cy,w,h,kind){
+  x.fillStyle=T.card; x.fillRect(cx,cy,w,h);
+  if(kind==="battle"){ x.strokeStyle=T.ink; x.lineWidth=4; x.strokeRect(cx,cy,w,h); x.fillStyle=T.accFill; x.fillRect(cx+2,cy+2,w-4,10); }
+  else if(kind==="acc"||kind==="gold"){ x.strokeStyle=(kind==="acc")?T.acc:T.gold; x.lineWidth=3; x.strokeRect(cx,cy,w,h); }
+  else if(kind==="dash"){ x.strokeStyle=T.sub; x.lineWidth=3; x.setLineDash([10,8]); x.strokeRect(cx,cy,w,h); x.setLineDash([]); }
+  else { x.strokeStyle=T.weak; x.lineWidth=2; x.strokeRect(cx,cy,w,h); }
+}
+/* レース番号の札（四角）。kind: fill／gold／ink */
+function fRno(x,T,cx,cy,no,kind){
+  x.fillStyle=kind==="fill"?T.accFill:kind==="gold"?T.gold:T.ink; x.fillRect(cx,cy,70,46);
+  x.font="700 28px "+T.NUM; x.fillStyle=kind==="fill"?"#ffffff":T.bg; x.textAlign="center"; x.fillText(no+"R",cx+35,cy+34); x.textAlign="left";
+}
 function drawTrackCanvas(trackName, races, date, noSave, tweetText){
-  /* Twitter向け予想画像 v2: 信頼度バー・狙い目グロー・被りなしレイアウト */
-  const C={ bg1:"#0a0e16", bg2:"#121826", panel:"#171c27", panelAim:"#1b1f2b", line:"#333333",
-            txt:"#ffffff", muted:"#b3b3b3", sub:"#cccccc",
-            mkO:"#ff7171", mk1:"#ffc700", mk2:"#57b8ff", mk3:"#51b883",
-            aim1:"#ffd43d", aim2:"#ff7171", passC:"#999999" };
-  const W=1240, pad=48, headH=190, rowGap=24;
-  const cols=2, gutter=24;
+  /* 場ごとの予想（F案）。載せる中身は前と同じ。変えたのは見た目だけ */
+  const T=themeF();
+  const W=1240, pad=48, headH=250, rowGap=28, cols=2, gutter=36;
   const cardW=(W-pad*2-gutter)/cols;
-  const cardPad=22, lineH=45, cardHeadH=56;
-  const cardH = cardPad*2 + cardHeadH + 10 + 5*lineH - 6;
+  const cardPad=22, lineH=45, cardHeadH=96;
+  const cardH = cardPad*2 + cardHeadH + 5*lineH + 6;
   const rowsNeeded=Math.ceil(races.length/cols);
-  const H = headH + rowsNeeded*(cardH+rowGap) + 66;
+  const bodyEnd=headH + rowsNeeded*(cardH+rowGap) - rowGap;
+  const H = bodyEnd + 34 + 76;
   const cv=document.createElement("canvas");
   cv.width=W; cv.height=H;
   const x=cv.getContext("2d");
-  // 背景グラデ
-  const bg=x.createLinearGradient(0,0,0,H);
-  bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
-  x.fillStyle=bg; x.fillRect(0,0,W,H);
-  x.textBaseline="alphabetic";
-  // ヘッダ演出: 放射グロー＋斜めスピードライン
-  const rgl=x.createRadialGradient(pad+150,80,20,pad+150,80,560);
-  rgl.addColorStop(0,"rgba(245,185,66,0.09)"); rgl.addColorStop(1,"rgba(245,185,66,0)");
-  x.fillStyle=rgl; x.fillRect(0,0,W,260);
-  x.save(); x.globalAlpha=0.045; x.strokeStyle="#cccccc"; x.lineWidth=1;
-  for(let _sx=-160;_sx<W+160;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+80,168); x.stroke(); }
-  x.restore();
-  // ヘッダ
-  const hg=x.createLinearGradient(pad,0,pad+220,0);
-  hg.addColorStop(0,C.aim1); hg.addColorStop(1,C.aim2);
-  roundRect(x,pad,56,10,66,5); x.fillStyle=hg; x.fill();
-  x.font="700 64px 'Saira Condensed','Noto Sans JP',sans-serif";
-  const tgd=x.createLinearGradient(0,58,0,116); tgd.addColorStop(0,"#ffffff"); tgd.addColorStop(1,"#cccccc");
-  x.save(); x.shadowColor="rgba(245,185,66,0.35)"; x.shadowBlur=18;
-  x.fillStyle=tgd; x.fillText(trackName, pad+30, 112); x.restore();
-  // ヘッダ下ヘアライン
-  const hlg=x.createLinearGradient(pad,0,W-pad,0);
-  hlg.addColorStop(0,C.aim1); hlg.addColorStop(0.45,"rgba(245,185,66,0.12)"); hlg.addColorStop(1,"rgba(245,185,66,0)");
-  x.fillStyle=hlg; x.fillRect(pad,172,W-pad*2,2);
-  // 日付チップ（右上）＋予想時刻
-  const d=date.length===8?`${date.slice(0,4)}.${date.slice(4,6)}.${date.slice(6,8)}`:date;
+  const tr=fHead(x,T,W,pad,trackName,96);
+  // 見出しの横: カジ競馬／AI予想 日付 時刻
   const nowJ=new Date(Date.now()+9*3600e3);
   const z2=n=>String(n).padStart(2,"0");
   const tstr=z2(nowJ.getUTCHours())+":"+z2(nowJ.getUTCMinutes());
-  const dt=`${d}  ${tstr}時点`;
-  x.font="700 24px 'Space Mono',monospace";
-  const dW=x.measureText(dt).width+36;
-  roundRect(x,W-pad-dW,62,dW,42,21); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
-  x.fillStyle=C.sub; x.textAlign="center"; x.fillText(dt, W-pad-dW/2, 91); x.textAlign="left";
-  // 戦況サマリーチップ（★勝負/狙い目/見送りの数が一目で分かる）
+  x.font="700 26px "+T.JP; x.fillStyle=T.ink; x.fillText("カジ競馬", tr+24, 112);
+  x.font="700 30px "+T.JP; const dl1="AI予想　"+fDate(date); x.fillText(dl1, tr+24, 150);
+  const dlx=tr+24+x.measureText(dl1).width;
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub;
+  let nP=0;
+  // ★勝負・狙い目の数（右上の札）／見送りの数（日付の横）
   try{
     const nB=races.filter(m=>!m.skip&&isBattle(m)).length;
     const nA=races.filter(m=>!m.skip&&!isBattle(m)&&isAim(m)).length;
-    const nP=races.filter(m=>m.skip||isPass(m)).length;
-    const chips=[];
-    if(nB) chips.push(["★勝負 "+nB, C.aim1, true]);
-    if(nA) chips.push(["狙い目 "+nA, "#ff8d44", true]);
-    if(nP) chips.push(["見送り "+nP, C.muted, false]);
-    x.font="700 22px 'Noto Sans JP',sans-serif";
-    let cxr=W-pad-dW-18;
-    for(let i=chips.length-1;i>=0;i--){
-      const t=chips[i][0], col=chips[i][1], fillMode=chips[i][2];
-      const w2=x.measureText(t).width+30, h2=38, x2=cxr-w2, y2=64;
-      roundRect(x,x2,y2,w2,h2,19);
-      if(fillMode){ x.fillStyle=col; x.globalAlpha=.16; x.fill(); x.globalAlpha=1; x.strokeStyle=col; x.lineWidth=1.6; x.stroke(); x.fillStyle=col; }
-      else { x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke(); x.fillStyle=C.muted; }
-      x.textAlign="center"; x.fillText(t, x2+w2/2, y2+27); x.textAlign="left";
-      cxr=x2-12;
-    }
+    nP=races.filter(m=>m.skip||isPass(m)).length;
+    const lab=[]; if(nB) lab.push("★勝負 "+nB); if(nA) lab.push("狙い目 "+nA);
+    if(lab.length) fTag(x,T,W-pad,84,lab.join("　"),"fill",72,30);
   }catch(_){}
-  x.font="600 20px 'Saira Condensed',sans-serif"; x.fillStyle=C.muted; x.textAlign="right";
-  x.fillText("", W-pad, 130); x.textAlign="left";
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub;
+  x.fillText(tstr+"時点"+(nP?("　見送り "+nP):""), dlx+18, 150);
   // 凡例
-  x.font="600 24px 'Noto Sans JP',sans-serif";
-  let lx=pad+30;
-  const legend=[["◎",C.mkO,"本命"],["○",C.mk1,"対抗"],["▲",C.mk2,"単穴"],["△",C.mk3,"押さえ"]];
-  legend.forEach(([sym,col,label])=>{
-    x.fillStyle=col; x.fillText(sym, lx, 158); lx+=x.measureText(sym).width+4;
-    x.fillStyle=C.sub; x.fillText(label, lx, 158); lx+=x.measureText(label).width+22;
+  x.font="400 22px "+T.JP; let lx=pad;
+  [["◎",T.acc,"本命"],["○",T.ink,"対抗"],["▲",T.ink,"単穴"],["△",T.sub,"押さえ"]].forEach(([sym,col,label])=>{
+    x.fillStyle=col; x.fillText(sym, lx, 216); lx+=x.measureText(sym).width+2;
+    x.fillStyle=T.sub; x.fillText(label, lx, 216); lx+=x.measureText(label).width+20;
   });
-  x.fillStyle=C.muted; x.fillText("金枠＝★勝負／赤枠＝狙い目／紫枠＝先行推奨（オッズ前）", lx+8, 158);
-  // 信頼度バー
-  function fbar(bx,by,w,h,val){
-    roundRect(x,bx,by,w,h,h/2); x.fillStyle="#171c27"; x.fill();
-    const v=Math.max(0,Math.min(100,val));
-    const fw=Math.max(h, w*v/100);
-    roundRect(x,bx,by,fw,h,h/2);
-    x.fillStyle= v>=60?C.mk3 : v>=45?C.mk1 : "#999999";
-    const _lite= v>=60?"#71c598" : v>=45?"#ffd43d" : "#b3b3b3";
-    const _g=x.createLinearGradient(bx,0,bx+fw,0); _g.addColorStop(0,x.fillStyle); _g.addColorStop(1,_lite);
-    x.fillStyle=_g; x.fill();
-  }
-  const sym2cls={ "◎":C.mkO,"○":C.mk1,"▲":C.mk2,"△":C.mk3 };
+  x.fillStyle=T.sub; x.fillText("／　"+T.accBand+"＝★勝負　"+T.accFrame+"＝狙い目　点線＝先行推奨　斜線＝見送り", lx, 216);
+  const sym2cls={ "◎":T.acc,"○":T.ink,"▲":T.ink,"△":T.sub };
   races.forEach((m,i)=>{
     const cx=pad+(i%cols)*(cardW+gutter);
     const cy=headH+Math.floor(i/cols)*(cardH+rowGap);
     const battle=isBattle(m), aim=isAim(m), preAim=isPreAim(m), pass=isPass(m);
-    const hi=aim||preAim;  // ハイライト対象（狙い目 or 先行推奨）
-    // 勝負＝金赤の強グロー、狙い目＝珊瑚、先行推奨＝紫
-    const hc1=battle?"#ffd43d":aim?C.aim1:"#bb87ff", hc2=battle?"#ff7171":aim?C.aim2:"#97d3ff";
-    // カード（ハイライトはグロー、勝負は最強グロー）
-    if(hi){ x.save(); x.shadowColor=battle?"rgba(245,185,66,.5)":aim?"rgba(240,101,74,.38)":"rgba(140,108,240,.36)"; x.shadowBlur=battle?30:22; }
-    roundRect(x,cx,cy,cardW,cardH,18);
-    x.fillStyle=hi?(battle?"#221a13":aim?C.panelAim:"#1a1b2e"):C.panel;
-    if(pass) x.globalAlpha=.62;
-    x.fill();
-    if(hi){ x.restore(); roundRect(x,cx,cy,cardW,cardH,18); const ag=x.createLinearGradient(cx,cy,cx+cardW,cy); ag.addColorStop(0,hc1); ag.addColorStop(1,hc2); x.strokeStyle=ag; x.lineWidth=battle?4:3; x.stroke(); }
-    else { roundRect(x,cx,cy,cardW,cardH,18); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
-      if(!pass){ const _tg=x.createLinearGradient(cx+16,0,cx+cardW*0.6,0); _tg.addColorStop(0,"#999999"); _tg.addColorStop(1,"rgba(74,90,120,0)"); x.fillStyle=_tg; x.fillRect(cx+16, cy+1.5, cardW*0.55, 2.5); }   // 上端アクセント
-    }
-    // 見送りは斜めストライプを重ねて「買わない」を明示
+    const hi=aim||preAim;  // 目立たせる対象（狙い目 or 先行推奨）
+    if(pass) x.globalAlpha=.8;
+    fBox(x,T,cx,cy,cardW,cardH, battle?"battle":aim?"acc":preAim?"dash":"plain");
+    // 見送りは斜めの線を重ねて「買わない」を明示
     if(pass){
       x.save();
-      roundRect(x,cx,cy,cardW,cardH,18); x.clip();
-      x.globalAlpha=1; x.strokeStyle="rgba(120,128,140,.16)"; x.lineWidth=2;
-      const step=22;
-      for(let sx=cx-cardH; sx<cx+cardW; sx+=step){
-        x.beginPath(); x.moveTo(sx, cy+cardH); x.lineTo(sx+cardH, cy); x.stroke();
-      }
+      x.beginPath(); x.rect(cx,cy,cardW,cardH); x.clip();
+      x.globalAlpha=1; x.strokeStyle="rgba(184,176,160,.14)"; x.lineWidth=2;
+      for(let sx=cx-cardH; sx<cx+cardW; sx+=22){ x.beginPath(); x.moveTo(sx, cy+cardH); x.lineTo(sx+cardH, cy); x.stroke(); }
       x.restore();
-      x.globalAlpha=.62;   // 以降の中身も薄く保つ
+      x.globalAlpha=.8;   // 以降の中身も薄く保つ
     }
-    // ヘッダ行: Rチップ + レース名 + バッジ（固定枠・被りなし）
+    // 1行目: レース番号の札＋レース名＋札（右端）
     const hy=cy+cardPad;
-    const chipW=66, chipH=38;
-    roundRect(x,cx+cardPad,hy,chipW,chipH,10);
-    if(hi){ const cg=x.createLinearGradient(cx+cardPad,0,cx+cardPad+chipW,0); cg.addColorStop(0,hc1); cg.addColorStop(1,hc2); x.fillStyle=cg; }
-    else x.fillStyle="#333333";
-    x.fill();
-    x.font="700 26px 'Saira Condensed',sans-serif"; x.fillStyle=hi?((aim||battle)?"#1a1408":"#fff"):C.txt;
-    x.textAlign="center"; x.fillText(m.no+"R", cx+cardPad+chipW/2, hy+28); x.textAlign="left";
-    // 荒れ度（NAR・人気キャリブ実データ）R番号の下に
-    try{ if(m.race_id){ var _rtc=String(m.race_id).slice(4,6); var _rel=(typeof NAR_TRACK_REL!=="undefined")?NAR_TRACK_REL[_rtc]:null;
-      if(_rel){ x.font="700 16px 'Noto Sans JP',sans-serif"; x.fillStyle=_rel.w>=50?"#51b883":(_rel.w<=40?"#ff9696":C.muted); x.textAlign="center"; x.fillText(_rel.lab, cx+cardPad+chipW/2, hy+50); x.textAlign="left"; x.fillStyle=C.txt; } } }catch(_){}
-    // バッジ（右端固定）
-    let badgeLeft=cx+cardW-cardPad;     // バッジ無し時の名前上限
-    // 鉄板/◎複勝推奨。通常バッジの左にピルで併記（鉄板が優先）
-    try{ if(typeof isIronRec==="function" && isIronRec(m)){
-      let shift=0;
-      if(hi||pass){ x.save(); x.font="700 22px 'Noto Sans JP',sans-serif";
-        shift=Math.max(96, x.measureText(battle?"★勝負":aim?"狙い目":preAim?"先行推奨":"見送り").width+30)+10; x.restore(); }
-      const fl="鉄板 複勝87%";   // 時計つきモデルの実測87.2%（1,741R）。HTMLバッジ・claims_registry(iron-p3-round)と揃える
-      x.save(); x.font="800 18px 'Noto Sans JP',sans-serif";
-      const fw2=x.measureText(fl).width+26, fh=30, fbx=badgeLeft-shift-fw2, fby=hy+4;
-      roundRect(x,fbx,fby,fw2,fh,15);
-      const ig=x.createLinearGradient(fbx,0,fbx+fw2,0); ig.addColorStop(0,"#ffd43d"); ig.addColorStop(1,"#ff7171");
-      x.fillStyle=ig; x.fill();
-      x.fillStyle="#1a1408"; x.textAlign="center"; x.fillText(fl, fbx+fw2/2, fby+21);
-      x.restore();
-      badgeLeft=fbx-10;
-    } else if(typeof isFukuRec==="function" && isFukuRec(m)){
-      let shift=0;
-      if(hi||pass){ x.save(); x.font="700 22px 'Noto Sans JP',sans-serif";
-        shift=Math.max(96, x.measureText(battle?"★勝負":aim?"狙い目":preAim?"先行推奨":"見送り").width+30)+10; x.restore(); }
-      const fl="◎複勝"+fukuStats().p3+"%";
-      x.save(); x.font="700 18px 'Noto Sans JP',sans-serif";
-      const fw2=x.measureText(fl).width+24, fh=30, fbx=badgeLeft-shift-fw2, fby=hy+4;
-      roundRect(x,fbx,fby,fw2,fh,15);
-      x.fillStyle="rgba(44,122,75,0.22)"; x.fill();
-      x.strokeStyle="#51b883"; x.lineWidth=1.6; x.stroke();
-      x.fillStyle="#51b883"; x.textAlign="center"; x.fillText(fl, fbx+fw2/2, fby+21);
-      x.restore();
-      badgeLeft=fbx-10;
-    } }catch(_){}
+    fRno(x,T,cx+cardPad,hy,m.no, battle?"fill":"ink");
+    let badgeLeft=cx+cardW-cardPad;
     if(hi||pass){
       const blabel=battle?"★勝負":aim?"狙い目":preAim?"先行推奨":"見送り";
-      x.font="700 22px 'Noto Sans JP',sans-serif";
-      const bw=Math.max(96, x.measureText(blabel).width+30), bh=32, bx=cx+cardW-cardPad-bw, by=hy+3;
-      roundRect(x,bx,by,bw,bh,16);
-      if(hi){ const bgr=x.createLinearGradient(bx,0,bx+bw,0); bgr.addColorStop(0,hc1); bgr.addColorStop(1,hc2); x.fillStyle=bgr; }
-      else x.fillStyle=C.passC;
-      x.fill();
-      x.fillStyle=hi?((aim||battle)?"#221606":"#fff"):"#ffffff"; x.textAlign="center";
-      x.fillText(blabel, bx+bw/2, by+23); x.textAlign="left";
-      /* ★min必須★ 直前で複勝/鉄板ピルが badgeLeft=fbx-10（バッジより左）に
-         詰めている。ここで単純代入すると複勝ピルのぶんの余白が消え、
-         名前・発走時刻・天気がピルに重なる（2026-08-01に天気追加で顕在化）。 */
-      badgeLeft=Math.min(badgeLeft, bx-14);   // 名前・時刻・天気はピル/バッジ手前まで
+      badgeLeft=fTag(x,T,cx+cardW-cardPad,hy+3,blabel, battle?"fill":aim?"acc":"dash",40,24)-14;
     }
-    // レース名（バッジに被らない幅でクリップ）＋発走時刻＋その時刻の天気予報
-    x.font="600 26px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt;
-    const nameStart=cx+cardPad+chipW+16;
+    x.font="700 28px "+T.JP; x.fillStyle=T.ink;
+    const nameStart=cx+cardPad+70+16;
+    x.fillText(clip(x, m.name||"", badgeLeft-nameStart), nameStart, hy+35);
+    // 2行目: 発走時刻・その時刻の天気予報・場の荒れやすさ／右に 鉄板・◎複勝 の札
+    const y2=hy+78;
+    let right2=cx+cardW-cardPad;
+    try{ if(typeof isIronRec==="function" && isIronRec(m)){
+      right2=fTag(x,T,right2,y2-25,"鉄板 複勝87%","goldline",32,22)-12;   // 時計つきモデルの実測87.2%（1,741R）。HTMLバッジ・claims_registry(iron-p3-round)と揃える
+    } else if(typeof isFukuRec==="function" && isFukuRec(m)){
+      right2=fTag(x,T,right2,y2-25,"◎複勝"+fukuStats().p3+"%","dash",32,22)-12;
+    } }catch(_){}
+    let _cur=cx+cardPad;
+    if(m.post){ x.font="400 24px "+T.NUM; x.fillStyle=T.sub; x.fillText(m.post, _cur, y2); _cur+=x.measureText(m.post).width+16; }
     let _wx=null; try{ _wx=wxAtPost(String(m.race_id||"").slice(4,6), m.post); }catch(_){}
-    const _wxRes=_wx?108:0;   // 天気(絵文字+気温)ぶんの右余白を名前から確保
-    const nm=clip(x, m.name||"", badgeLeft-nameStart-(m.post?92:0)-_wxRes);
-    x.fillText(nm, nameStart, hy+28);
-    let _cur=nameStart+x.measureText(nm).width;
-    if(m.post){
-      x.font="600 20px 'Space Mono',monospace"; x.fillStyle=C.muted;
-      x.fillText(m.post, _cur+14, hy+27); _cur+=14+x.measureText(m.post).width; x.fillStyle=C.txt;
-    }
     if(_wx){   // 例: ☀️28℃ / ☔25℃（発走時刻の予報・オッズ前の材料）
-      x.font="600 22px 'Noto Sans JP',sans-serif";
-      const _wt=`${_wx.e}${_wx.t}℃`;
-      x.fillStyle=C.sub; x.fillText(_wt, _cur+12, hy+27); x.fillStyle=C.txt;
+      x.font="400 22px "+T.JP; const _wt=`${_wx.e}${_wx.t}℃`;
+      if(_cur+x.measureText(_wt).width<=right2){ x.fillStyle=T.sub; x.fillText(_wt, _cur, y2); _cur+=x.measureText(_wt).width+16; }
     }
+    // 場の荒れやすさ（NAR・人気キャリブ実データ）
+    try{ if(m.race_id){ var _rtc=String(m.race_id).slice(4,6); var _rel=(typeof NAR_TRACK_REL!=="undefined")?NAR_TRACK_REL[_rtc]:null;
+      if(_rel){ x.font="400 22px "+T.JP; if(_cur+x.measureText(_rel.lab).width<=right2){ x.fillStyle=T.sub; x.fillText(_rel.lab, _cur, y2); } } } }catch(_){}
     // 区切り線
-    x.strokeStyle=C.line; x.lineWidth=1;
-    x.beginPath(); x.moveTo(cx+cardPad, hy+cardHeadH-4); x.lineTo(cx+cardW-cardPad, hy+cardHeadH-4); x.stroke();
+    x.fillStyle=T.weak; x.fillRect(cx+cardPad, hy+cardHeadH-6, cardW-cardPad*2, 2);
     // 馬リスト
     if(m.marks && m.marks.length){
       m.marks.forEach((mk,j)=>{
-        const ly=hy+cardHeadH+18+j*lineH+14;
+        const ly=hy+cardHeadH+j*lineH+38;
         const big=(j===0);
-        if(big && !pass){ x.save(); x.fillStyle="rgba(255,90,78,0.10)"; roundRect(x, cx+cardPad-8, ly-30, cardW-cardPad*2+16, 40, 8); x.fill(); x.fillStyle=C.mkO; roundRect(x, cx+cardPad-8, ly-30, 4, 40, 2); x.fill(); x.restore(); }
-        else if(!pass && j%2===1){ x.save(); x.fillStyle="rgba(255,255,255,0.028)"; roundRect(x, cx+cardPad-8, ly-30, cardW-cardPad*2+16, 40, 8); x.fill(); x.restore(); }   // ゼブラで行を追いやすく
-        x.font=(big?"700 33px":"700 28px")+" 'Saira Condensed','Noto Sans JP',sans-serif";
-        x.fillStyle=sym2cls[mk.mk]||C.txt;
-        x.fillText(`${mk.mk}${mk.num}`, cx+cardPad, ly);
-        // 信頼度バー（◎○のみ・右端固定ゾーン）
+        if(big && !pass){ x.fillStyle=T.row; x.fillRect(cx+12, ly-33, cardW-24, 46); x.fillStyle=T.acc; x.fillRect(cx+12, ly-33, 6, 46); }
+        x.font=(big?"700 32px ":"700 27px ")+T.JP; x.fillStyle=sym2cls[mk.mk]||T.ink;
+        x.fillText(mk.mk, cx+cardPad+4, ly);
+        x.font=(big?"700 32px ":"700 27px ")+T.NUM; x.fillStyle=T.ink; x.textAlign="right";
+        x.fillText(String(mk.num), cx+cardPad+86, ly); x.textAlign="left";
+        const nameX=cx+cardPad+104;
+        // 点数（◎○のみ・右端）。横棒はやめて数字だけ
         const fv = j===0?m.firmO : j===1?m.firm1 : null;
         let nameMax;
         const rightEdge=cx+cardW-cardPad;
         if(fv!=null){
-          const barW=92, valW=44;
-          fbar(rightEdge-barW, ly-14, barW, 10, fv);
-          x.font="700 22px 'Space Mono',monospace";
-          x.fillStyle= fv>=60?C.mk3 : fv>=45?C.mk1 : C.muted;
-          x.textAlign="right"; x.fillText(String(fv), rightEdge-barW-10, ly); x.textAlign="left";
-          nameMax = rightEdge-barW-valW-18 - (cx+cardPad+100);
+          x.font=(big?"700 30px ":"700 26px ")+T.NUM; x.fillStyle=big?T.ink:T.sub;
+          x.textAlign="right"; x.fillText(String(fv), rightEdge, ly); x.textAlign="left";
+          nameMax = rightEdge-58 - nameX;
         } else {
           let popTxt = mk.pop? `${mk.pop}人気` : "";
           if(popTxt){
-            x.font="600 20px 'Space Mono','Noto Sans JP',monospace"; x.fillStyle=C.muted;
+            x.font="400 22px "+T.JP; x.fillStyle=T.sub;
             x.textAlign="right"; x.fillText(popTxt, rightEdge, ly); x.textAlign="left";
-            nameMax = rightEdge - x.measureText(popTxt).width - 14 - (cx+cardPad+100);
-          } else nameMax = rightEdge - (cx+cardPad+100);
+            nameMax = rightEdge - x.measureText(popTxt).width - 14 - nameX;
+          } else nameMax = rightEdge - nameX;
         }
-        x.font=(big?"600 28px":"500 26px")+" 'Noto Sans JP',sans-serif";
-        x.fillStyle= pass? C.sub : C.txt;
-        x.fillText(clip(x, mk.name||"", nameMax), cx+cardPad+100, ly);
-    // ◎の当地/騎手エッジ（独自の検証済みデータを画像に。次行まで余白があるので下段に小さく）
-    if(j===0){
-      const _ep=[];
-      if(mk.local && mk.local.n>=3) _ep.push(`当地${mk.local.n}走 複${Math.round(100*mk.local.p3/mk.local.n)}%`);
-      if(mk.jkloc && mk.jkloc.p3R!=null) _ep.push(`騎${mk.jkloc.tk||""}複${mk.jkloc.p3R}%`);
-      if(_ep.length){ x.save(); x.font="600 14px 'Noto Sans JP',sans-serif"; x.fillStyle=C.mk1||"#ffc700"; x.fillText(_ep.join("  "), cx+cardPad+100, ly+20); x.restore(); }
-    }
-          if(mk.odds){ const _nw=Math.min(x.measureText(clip(x,mk.name||"",nameMax)).width, nameMax); const _mx=cx+cardPad+100+_nw+14; const _oddsTxt=`${mk.odds}倍`; const _lim=cx+cardPad+100+nameMax; x.save(); x.font="500 18px 'Space Mono',monospace"; x.fillStyle=C.muted; if(_mx + x.measureText(_oddsTxt).width <= _lim){ x.fillText(_oddsTxt, _mx, ly); } x.restore(); }
-          /* 脚質バッジ（全馬・馬名＋オッズの右）。
-             ※スコアには使わない。170RのA/Bテストで加点すると◎成績が悪化したため（近走実績と二重計上）。
-               「この馬は普段どう走るか」を見る人が自分で判断するための表示。 */
-          if(mk.kyaku){
-            x.save();
-            const _kc={ "逃げ":"#ff7171","先行":"#ffc700","差し":"#57b8ff","追い込み":"#b3b3b3","自在":"#71c598" }[mk.kyaku] || C.muted;
-            const _kt={ "逃げ":"逃","先行":"先","差し":"差","追い込み":"追","自在":"自在" }[mk.kyaku] || mk.kyaku;
-            x.font="500 26px 'Noto Sans JP',sans-serif";
-            const _nw=Math.min(x.measureText(clip(x, mk.name||"", nameMax)).width, nameMax);
-            let _kx=cx+cardPad+100+_nw+14;
-            if(mk.odds){ x.font="500 18px 'Space Mono',monospace"; _kx += x.measureText(`${mk.odds}倍`).width + 10; }
-            x.font="700 16px 'Noto Sans JP',sans-serif";
-            const _kw=x.measureText(_kt).width+14;
-            if(_kx+_kw <= cx+cardPad+100+nameMax+4){
-              roundRect(x, _kx, ly-15, _kw, 20, 6);
-              x.fillStyle="rgba(255,255,255,0.05)"; x.fill();
-              x.strokeStyle=_kc; x.lineWidth=1; x.stroke();
-              x.fillStyle=_kc; x.textAlign="center";
-              x.fillText(_kt, _kx+_kw/2, ly-1);
-              x.textAlign="left";
-            }
-            x.restore();
+        const nameFont=(big?"700 30px ":"500 27px ")+T.JP;
+        x.font=nameFont; x.fillStyle= pass? T.sub : T.ink;
+        const nmTxt=clip(x, mk.name||"", nameMax);
+        x.fillText(nmTxt, nameX, ly);
+        let _kx=nameX+Math.min(x.measureText(nmTxt).width, nameMax)+12;
+        const _lim=nameX+nameMax;
+        // ◎の当地/騎手（独自の検証済みデータ。出るのは材料が取れた時だけ）
+        if(j===0){
+          const _ep=[];
+          if(mk.local && mk.local.n>=3) _ep.push(`当地${mk.local.n}走 複${Math.round(100*mk.local.p3/mk.local.n)}%`);
+          if(mk.jkloc && mk.jkloc.p3R!=null) _ep.push(`騎${mk.jkloc.tk||""}複${mk.jkloc.p3R}%`);
+          if(_ep.length){ x.font="400 16px "+T.JP; x.fillStyle=T.sub; x.fillText(_ep.join("  "), nameX, ly+13); }
+        }
+        if(mk.odds){ const _oddsTxt=`${mk.odds}倍`; x.font="400 22px "+T.NUM; if(_kx + x.measureText(_oddsTxt).width <= _lim){ x.fillStyle=T.sub; x.fillText(_oddsTxt, _kx, ly); _kx+=x.measureText(_oddsTxt).width+10; } }
+        /* 脚質の札（全馬・馬名＋オッズの右）。色分けはやめた。
+           ※スコアには使わない。170RのA/Bテストで加点すると◎成績が悪化したため（近走実績と二重計上）。
+             「この馬は普段どう走るか」を見る人が自分で判断するための表示。 */
+        if(mk.kyaku){
+          const _kt={ "逃げ":"逃","先行":"先","差し":"差","追い込み":"追","自在":"自在" }[mk.kyaku] || mk.kyaku;
+          x.font="700 22px "+T.JP;
+          const _kw=x.measureText(_kt).width+14;
+          if(_kx+_kw <= _lim+4){
+            x.strokeStyle=T.sub; x.lineWidth=2; x.strokeRect(_kx, ly-25, _kw, 31);
+            x.fillStyle=T.sub; x.textAlign="center"; x.fillText(_kt, _kx+_kw/2, ly-1); x.textAlign="left";
           }
+        }
       });
     } else {
-      x.font="500 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-      x.fillText(m.skip?((m.skipReason||"予想対象外")+"・予想対象外"):(m.err?"取得失敗":"データ不足"), cx+cardPad, hy+cardHeadH+40);
+      x.font="500 24px "+T.JP; x.fillStyle=T.sub;
+      x.fillText(m.skip?((m.skipReason||"予想対象外")+"・予想対象外"):(m.err?"取得失敗":"データ不足"), cx+cardPad, hy+cardHeadH+44);
     }
     x.globalAlpha=1;
   });
-  // フッタ
-  x.font="500 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText("近走実績×騎手×血統×厩舎×クラス 自動算出（オッズ非依存）／馬券は20歳から", pad, H-28);
-  x.font="700 22px 'Space Mono',monospace"; x.fillStyle=C.sub; x.textAlign="right";
-  x.fillText("", W-pad, H-26); x.textAlign="left";
-  const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,C.aim1); fgb.addColorStop(1,C.aim2);
-  x.fillStyle=fgb; x.fillRect(0,H-6,W,6);   // ブランドバー
+  fFoot(x,T,W,pad,bodyEnd+34,[["近走実績×騎手×血統×厩舎×クラス 自動算出（オッズ非依存）／馬券は20歳から",T.sub,false]]);
   if(!noSave){ const dl=`${trackName}_推奨馬_${date}.png`; if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); } }
   return cv;
 }
@@ -6042,14 +5991,17 @@ function weeklyWhyNot(w){
 }
 function drawMonthlyCanvas(mon, ym, weekly){
   if(weekly ? !!weeklyWhyNot(mon) : !monthlyUsable(mon)) return null;
-  const C={ bg1:"#121826", bg2:"#0a0e16", panel:"#1b1f2b", row:"#171c27", line:"#333333", edge:"#555b66", txt:"#ffffff", sub:"#cccccc",
-            mkO:"#ff7171", aim1:"#ffd43d", aim2:"#ff7171", aimT:"#ff8d44" };
+  /* F案（2026-11-13）: 色・書体・見出しだけ替えた。段の並びと数字の出し方は前と同じ。角は丸めない */
+  const T=themeF();
+  const C={ bg1:T.bg, bg2:T.bg, panel:T.card, row:T.card, line:T.weak, edge:T.weak, txt:T.ink, sub:T.sub,
+            mkO:T.acc, aim1:T.acc, aim2:T.acc, aimT:T.ink };
+  const roundRect=function(c,x0,y0,w,h){ c.beginPath(); c.rect(x0,y0,w,h); c.closePath(); };
   const A=mon.all, mo=weekly?0:+String(ym).slice(4,6);
   const showTier = !!(mon.tiers && mon.tier_races>=A.n*0.9);
   const showNO = !weekly && !!(mon.new_old && mon.new_old.n>=300);
   const showDays = !!(weekly && mon.days && mon.days.length===7);
   const W=1240, pad=48;
-  let H=204+200+34;                                  // 見出し＋大きい数字
+  let H=244+200+34;                                  // 見出し＋大きい数字
   if(showTier) H+=58+50+3*64+26;
   if(showNO) H+=58+120+40;
   if(showDays) H+=58+120+40;
@@ -6057,30 +6009,22 @@ function drawMonthlyCanvas(mon, ym, weekly){
   H+=92;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
   const x=cv.getContext("2d"); x.textBaseline="alphabetic";
-  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2); x.fillStyle=bg; x.fillRect(0,0,W,H);
-  const JP="'Noto Sans JP',sans-serif", NUM="'Saira Condensed','Noto Sans JP',sans-serif";
-  const grad=function(x0,x1){ const g=x.createLinearGradient(x0,0,x1,0); g.addColorStop(0,C.aim1); g.addColorStop(1,C.aim2); return g; };
+  const JP=T.JP, NUM=T.NUM;
+  const grad=function(x0,x1){ return T.acc; };
   const md=function(d){ return (+String(d).slice(4,6))+"/"+(+String(d).slice(6,8)); };
   const pc=function(v){ return (v==null?"-":(+v).toFixed(1))+"%"; };
   // 見出し
-  const hb=x.createLinearGradient(0,56,0,122); hb.addColorStop(0,"#ffd43d"); hb.addColorStop(1,"#ffb400");
-  roundRect(x,pad,56,10,66,5); x.fillStyle=hb; x.fill();
-  x.font="700 64px "+JP; x.fillStyle=C.txt; x.fillText(weekly?"先週の成績":(mo+"月の成績"), pad+30, 112);
-  x.font="700 24px "+JP;
-  const chips=[["地方　全"+A.n+"レース",C.sub],[weekly?(md(mon.from)+"（月）〜"+md(mon.to)+"（日）"):(md(mon.from)+"〜"+md(mon.to)+(mon.t_from&&mon.t_from>mon.from?("　"+md(mon.t_from)+"から新モデル"):"")),C.txt]];
-  let cxr=W-pad;
-  for(let i=chips.length-1;i>=0;i--){ const t=chips[i][0], w2=x.measureText(t).width+44, x2=cxr-w2;
-    roundRect(x,x2,66,w2,48,24); x.fillStyle=C.row; x.fill(); x.strokeStyle=C.edge; x.lineWidth=2; x.stroke();
-    x.fillStyle=chips[i][1]; x.textAlign="center"; x.fillText(t,x2+w2/2,99); x.textAlign="left"; cxr=x2-16; }
-  x.font="400 24px "+JP; x.fillStyle=C.sub;
-  x.fillText("朝に出した予想を、公式の着順と払戻で採点した結果です（外れも全部入っています）", pad, 156);
-  x.fillStyle=grad(pad,W-pad); x.fillRect(pad,176,W-pad*2,2);
+  fHead(x,T,W,pad,weekly?"先週の成績":(mo+"月の成績"),80);
+  fHeadRight(x,T,W,pad,"地方　全"+A.n+"レース",
+    weekly?(md(mon.from)+"（月）〜"+md(mon.to)+"（日）"):(md(mon.from)+"〜"+md(mon.to)+(mon.t_from&&mon.t_from>mon.from?("　"+md(mon.t_from)+"から新モデル"):"")));
+  x.font="400 22px "+JP; x.fillStyle=C.sub;
+  x.fillText("朝に出した予想を、公式の着順と払戻で採点した結果です（外れも全部入っています）", pad, 216);
   // 大きい数字3つ
   const bw=(W-pad*2-48)/3;
   const big=[["◎が3着以内",A.hit3, A.n+"レース中 "+Math.round(A.n*A.hit3/100)+"回"],
              ["◎の複勝を全部買うと",A.fuku,"100円が"+Math.round(A.fuku)+"円（回収率）"],
              ["◎の単勝を全部買うと",A.tan,"100円が"+Math.round(A.tan)+"円（回収率）"]];
-  big.forEach(function(b,i){ const bx=pad+i*(bw+24), by=204;
+  big.forEach(function(b,i){ const bx=pad+i*(bw+24), by=244;
     roundRect(x,bx,by,bw,200,16); x.fillStyle=C.panel; x.fill(); x.strokeStyle=C.edge; x.lineWidth=2; x.stroke();
     x.textAlign="center";
     x.font="700 26px "+JP; x.fillStyle=C.sub; x.fillText(b[0],bx+bw/2,by+52);
@@ -6089,10 +6033,10 @@ function drawMonthlyCanvas(mon, ym, weekly){
     x.font="700 84px "+NUM; x.textAlign="left"; x.fillText(nt,bx+bw/2-(nw+pw)/2,by+138);
     x.font="700 40px "+NUM; x.fillText("%",bx+bw/2-(nw+pw)/2+nw,by+138);
     x.textAlign="center"; x.font="400 22px "+JP; x.fillStyle=C.sub; x.fillText(b[2],bx+bw/2,by+178); x.textAlign="left"; });
-  let y=204+200+34;
+  let y=244+200+34;
   // 区分ごと
   if(showTier){
-    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText("区分ごと（朝に公開した区分）", pad, y+24); y+=58;
+    x.font="900 30px "+T.SERIF; x.fillStyle=C.txt; x.fillText("区分ごと（朝に公開した区分）", pad, y+26); y+=58;
     const cols=[560,760,960,1168];
     x.font="700 24px "+JP; x.fillStyle=C.sub; x.fillText("区分",pad+24,y+26);
     x.textAlign="right"; ["レース","◎3着内","複の回収率","単の回収率"].forEach(function(t,i){ x.fillText(t,cols[i],y+26); }); x.textAlign="left";
@@ -6108,7 +6052,7 @@ function drawMonthlyCanvas(mon, ym, weekly){
   }
   // 新モデルと前のモデル
   if(showNO){
-    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText("新モデルと前のモデル（同じ"+mon.new_old.n+"レースで比べたら）", pad, y+24); y+=58;
+    x.font="900 30px "+T.SERIF; x.fillStyle=C.txt; x.fillText("新モデルと前のモデル（同じ"+mon.new_old.n+"レースで比べたら）", pad, y+26); y+=58;
     const hw=(W-pad*2-24)/2;
     [["新モデル（本番）",mon.new_old["new"],true],["前のモデル（予想だけ記録）",mon.new_old.old,false]].forEach(function(t,i){
       const bx=pad+i*(hw+24);
@@ -6119,7 +6063,7 @@ function drawMonthlyCanvas(mon, ym, weekly){
   }
   // 日ごとの◎3着内（週間まとめだけ）
   if(showDays){
-    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText("日ごとの◎3着内", pad, y+24); y+=58;
+    x.font="900 30px "+T.SERIF; x.fillStyle=C.txt; x.fillText("日ごとの◎3着内", pad, y+26); y+=58;
     const dw=152, dg=(W-pad*2-dw*7)/6, YO=["月","火","水","木","金","土","日"];
     mon.days.forEach(function(d,i){ const bx=pad+i*(dw+dg);
       roundRect(x,bx,y,dw,120,12); x.fillStyle=C.panel; x.fill(); x.strokeStyle=C.edge; x.lineWidth=2; x.stroke();
@@ -6137,17 +6081,14 @@ function drawMonthlyCanvas(mon, ym, weekly){
   // 今月いちばんの的中
   if(mon.best){
     const b=mon.best;
-    x.font="700 28px "+JP; x.fillStyle=C.txt; x.fillText(weekly?"先週いちばんの的中":"今月いちばんの的中", pad, y+24); y+=58;
+    x.font="900 30px "+T.SERIF; x.fillStyle=C.txt; x.fillText(weekly?"先週いちばんの的中":"今月いちばんの的中", pad, y+26); y+=58;
     roundRect(x,pad,y,W-pad*2,64,12); x.fillStyle=C.row; x.fill();
     let lx=pad+24; const put=function(t,col,bold){ x.font=(bold?"700":"400")+" 26px "+JP; x.fillStyle=col; x.fillText(t,lx,y+42); lx+=x.measureText(t).width; };
     put(md(b.date)+" "+b.track+b.no+"R　",C.txt); put("◎"+b.num,C.mkO,true); put(" "+b.name+"　単勝 ",C.txt);
-    put((+b.tan).toLocaleString()+"円",C.txt,true); if(b.pop) put("（"+b.pop+"番人気）",C.txt);
+    put((+b.tan).toLocaleString()+"円",T.gold,true); if(b.pop) put("（"+b.pop+"番人気）",C.txt);
     y+=64+26;
   }
-  x.fillStyle=C.line; x.fillRect(pad,y,W-pad*2,2);
-  x.font="400 22px "+JP; x.fillStyle=C.sub;
-  x.fillText("回収率は買った全レースが分母。100%未満＝買えば増える予想ではありません　／　馬券は20歳から", pad, y+42);
-  x.fillStyle=grad(0,W); x.fillRect(0,H-8,W,8);
+  fFoot(x,T,W,pad,y,[["回収率は買った全レースが分母。100%未満＝買えば増える予想ではありません　／　馬券は20歳から",T.sub,false]]);
   return cv;
 }
 /* ===== ◎の「強み」1行（2026-11-13・docs/design/X_STRENGTH_AND_MONTHLY_DESIGN.md）=====
@@ -6196,88 +6137,70 @@ function battleSummaryRows(groups){
   return { rows:pick, battle:battle, total:total, more:battle-pick.length };
 }
 function drawBattleSummaryCanvas(bs, date){
+  /* 今日の★勝負（F案）。載せる中身は前と同じ */
   if(!bs||!bs.rows||!bs.rows.length) return null;
-  const C={ bg1:"#121826", bg2:"#0a0e16", panel:"#1b1f2b", line:"#333333", txt:"#ffffff", sub:"#cccccc",
-            mkO:"#ff7171", mk1:"#ffc700", aim1:"#ffd43d", aim2:"#ff7171", chipTxt:"#1a1400" };
-  const W=1240, pad=48, gutter=24, cardW=(W-pad*2-gutter)/2, rowGap=18, top=204;
+  const T=themeF();
+  const W=1240, pad=48, gutter=36, cardW=(W-pad*2-gutter)/2, rowGap=28, top=250;
   const nRows=Math.ceil(bs.rows.length/2);
-  /* 段ごとの高さ: 左右どちらかに「強み」の行があれば190、無ければ150 */
+  /* 段ごとの高さ: 左右どちらかに「強み」の行があれば250、無ければ208 */
   const rowH=[], rowY=[]; let _y=top;
-  for(let i=0;i<nRows;i++){ const a=bs.rows[i*2], b=bs.rows[i*2+1]; const h=((a&&a.strong)||(b&&b.strong))?190:150; rowH.push(h); rowY.push(_y); _y+=h+rowGap; }
+  for(let i=0;i<nRows;i++){ const a=bs.rows[i*2], b=bs.rows[i*2+1]; const h=((a&&a.strong)||(b&&b.strong))?250:208; rowH.push(h); rowY.push(_y); _y+=h+rowGap; }
   const bodyEnd=_y-rowGap;
-  const H=bodyEnd + 28 + 124;
+  const H=bodyEnd + 34 + 112;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
-  const x=cv.getContext("2d"); x.textBaseline="alphabetic";
-  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
-  x.fillStyle=bg; x.fillRect(0,0,W,H);
-  const JP="'Noto Sans JP',sans-serif", NUM="'Saira Condensed','Noto Sans JP',sans-serif";
+  const x=cv.getContext("2d");
   /* 幅に収まらない文字は末尾を「…」にする */
   const fit=function(t,maxW){ t=String(t||""); if(x.measureText(t).width<=maxW) return t;
     while(t.length>1 && x.measureText(t+"…").width>maxW) t=t.slice(0,-1); return t+"…"; };
-  const grad=function(x0,x1){ const g=x.createLinearGradient(x0,0,x1,0); g.addColorStop(0,C.aim1); g.addColorStop(1,C.aim2); return g; };
-  // 見出し
-  const hb=x.createLinearGradient(0,56,0,122); hb.addColorStop(0,"#ffd43d"); hb.addColorStop(1,"#ffb400");
-  roundRect(x,pad,56,10,66,5); x.fillStyle=hb; x.fill();
-  x.font="700 64px "+JP; x.fillStyle=C.txt; x.fillText("今日の★勝負", pad+30, 112);
-  // 右の札（右から: 日付／全Mレース中／★勝負 N）
-  const d=(date&&date.length===8)?(date.slice(0,4)+"."+date.slice(4,6)+"."+date.slice(6,8)):String(date||"");
-  x.font="700 24px "+JP;
-  const chips=[["★勝負 "+bs.battle,"#2a2410",C.aim1,C.aim1],["全"+bs.total+"レース中",C.panel,"#555b66",C.sub],[d+"　朝",C.panel,"#555b66",C.txt]];
-  let cxr=W-pad;
-  for(let i=chips.length-1;i>=0;i--){
-    const t=chips[i][0], w2=x.measureText(t).width+44, x2=cxr-w2;
-    roundRect(x,x2,66,w2,48,24); x.fillStyle=chips[i][1]; x.fill(); x.strokeStyle=chips[i][2]; x.lineWidth=2; x.stroke();
-    x.fillStyle=chips[i][3]; x.textAlign="center"; x.fillText(t,x2+w2/2,99); x.textAlign="left";
-    cxr=x2-16;
-  }
+  fHead(x,T,W,pad,"今日の★勝負",80);
+  // 右上: 全Mレース中／日付 朝、その左に ★勝負 N の札
+  const rx=fHeadRight(x,T,W,pad,"全"+bs.total+"レース中",fDate(date)+"　朝");
+  fTag(x,T,rx-24,84,"★勝負 "+bs.battle,"fill",72,30);
   // 説明の1行
-  x.font="400 24px "+JP; let lx=pad;
-  const seg=function(t,col,bold){ x.font=(bold?"700":"400")+" 24px "+JP; x.fillStyle=col; x.fillText(t,lx,156); lx+=x.measureText(t).width; };
-  seg("発走の早い順　／　",C.sub); seg("◎",C.mkO,true); seg("本命　",C.sub); seg("○",C.mk1,true);
-  seg("対抗　／　オッズ前の予想です。このあと変えません",C.sub);
-  x.fillStyle=grad(pad,W-pad); x.fillRect(pad,176,W-pad*2,2);
+  let lx=pad;
+  const seg=function(t,col){ x.font="400 22px "+T.JP; x.fillStyle=col; x.fillText(t,lx,216); lx+=x.measureText(t).width; };
+  seg("発走の早い順　／　",T.sub); seg("◎",T.acc); seg("本命　",T.sub); seg("○",T.ink);
+  seg("対抗　／　オッズ前の予想です。このあと変えません",T.sub);
   // レースの枠
   bs.rows.forEach(function(r,i){
     const cx=pad+(i%2)*(cardW+gutter), cy=rowY[Math.floor(i/2)], cardH=rowH[Math.floor(i/2)];
-    roundRect(x,cx,cy,cardW,cardH,16); x.fillStyle=C.panel; x.fill(); x.strokeStyle=grad(cx,cx+cardW); x.lineWidth=3; x.stroke();
+    fBox(x,T,cx,cy,cardW,cardH,"battle");
     // 1段目: 発走時刻／場とレース番号の札／条件と距離
-    x.font="700 32px "+NUM; x.fillStyle=C.txt; const pt=r.post||"--:--"; x.fillText(pt,cx+24,cy+50);
-    let nx=cx+24+Math.max(x.measureText(pt).width,84)+20;
-    x.font="700 24px "+JP; const lab=r.track+" "+r.no+"R", lw=x.measureText(lab).width+36;
-    roundRect(x,nx,cy+20,lw,40,8); x.fillStyle=C.aim1; x.fill();
-    x.fillStyle=C.chipTxt; x.textAlign="center"; x.fillText(lab,nx+lw/2,cy+49); x.textAlign="left";
+    x.font="700 36px "+T.NUM; x.fillStyle=T.ink; const pt=r.post||"--:--"; x.fillText(pt,cx+24,cy+62);
+    let nx=cx+24+Math.max(x.measureText(pt).width,90)+18;
+    x.font="700 26px "+T.JP; const lab=r.track+" "+r.no+"R", lw=x.measureText(lab).width+32;
+    x.fillStyle=T.ink; x.fillRect(nx,cy+28,lw,46);
+    x.fillStyle=T.bg; x.textAlign="center"; x.fillText(lab,nx+lw/2,cy+61); x.textAlign="left";
     nx+=lw+18;
-    x.font="400 22px "+JP; x.fillStyle=C.sub;
+    x.font="400 24px "+T.JP; x.fillStyle=T.sub;
     const cond=(r.name||"")+(r.dist?("　"+r.dist+"m"):"");
-    x.fillText(fit(cond, cx+cardW-24-nx), nx, cy+49);
+    x.fillText(fit(cond, cx+cardW-24-nx), nx, cy+61);
+    x.fillStyle=T.weak; x.fillRect(cx+20,cy+88,cardW-40,2);
     // 2段目: ◎
     if(r.o){
-      x.font="700 36px "+NUM; x.fillStyle=C.mkO; const m="◎"+r.o.num; x.fillText(m,cx+24,cy+104);
-      const mx=cx+24+x.measureText(m).width+18;
-      x.font="700 36px "+JP; x.fillStyle=C.txt; x.fillText(fit(r.o.name||"", cx+cardW-24-mx), mx, cy+104);
+      x.font="700 40px "+T.JP; x.fillStyle=T.acc; x.fillText("◎",cx+24,cy+142);
+      x.font="700 40px "+T.NUM; const nm=String(r.o.num); x.fillText(nm,cx+72,cy+142);
+      const mx=cx+72+Math.max(x.measureText(nm).width,40)+18;
+      x.font="900 40px "+T.JP; x.fillStyle=T.ink; x.fillText(fit(r.o.name||"", cx+cardW-24-mx), mx, cy+142);
     }
     // 強み（あれば）: 「強み」の札＋文
     if(r.strong){
-      roundRect(x,cx+24,cy+118,76,34,6); x.fillStyle="#12303f"; x.fill(); x.strokeStyle="#57b8ff"; x.lineWidth=1.5; x.stroke();
-      x.font="700 22px "+JP; x.fillStyle="#57b8ff"; x.textAlign="center"; x.fillText("強み",cx+62,cy+143); x.textAlign="left";
-      x.font="400 24px "+JP; x.fillStyle=C.txt; x.fillText(fit(r.strong, cardW-24-112), cx+112, cy+143);
+      x.fillStyle=T.ink; x.fillRect(cx+24,cy+158,76,36);
+      x.font="700 22px "+T.JP; x.fillStyle=T.bg; x.textAlign="center"; x.fillText("強み",cx+62,cy+184); x.textAlign="left";
+      x.font="500 24px "+T.JP; x.fillStyle=T.ink; x.fillText(fit(r.strong, cardW-24-114), cx+114, cy+184);
     }
-    // ○（強みの行がある枠は40下げる）
+    // ○（強みの行がある枠は42下げる）
     if(r.t){
-      const oy=cy+(r.strong?176:136);
-      x.font="700 24px "+NUM; x.fillStyle=C.mk1; const m2="○"+r.t.num; x.fillText(m2,cx+24,oy);
-      const mx2=cx+24+x.measureText(m2).width+14;
-      x.font="400 24px "+JP; x.fillStyle=C.sub; x.fillText(fit(r.t.name||"", cx+cardW-24-mx2), mx2, oy);
+      const oy=cy+(r.strong?228:186);
+      x.font="700 26px "+T.JP; x.fillStyle=T.ink; x.fillText("○",cx+24,oy);
+      x.font="700 26px "+T.NUM; const n2=String(r.t.num); x.fillText(n2,cx+58,oy);
+      const mx2=cx+58+Math.max(x.measureText(n2).width,28)+14;
+      x.font="500 26px "+T.JP; x.fillStyle=T.sub; x.fillText(fit(r.t.name||"", cx+cardW-24-mx2), mx2, oy);
     }
   });
-  // 下の帯
-  const fy=bodyEnd + 28;
-  x.fillStyle=C.line; x.fillRect(pad,fy,W-pad*2,2);
-  x.font="700 24px "+JP; x.fillStyle=C.txt;
-  x.fillText("◎が1着なら、この投稿の返信でお知らせします"+(bs.more>0?("　／　ほか"+bs.more+"レース（2枚目から）"):""), pad, fy+44);
-  x.font="400 22px "+JP; x.fillStyle=C.sub;
-  x.fillText("全レースの予想は2枚目から　／　近走・騎手・血統・時計から自動算出（オッズ非依存）　／　馬券は20歳から", pad, fy+82);
-  x.fillStyle=grad(0,W); x.fillRect(0,H-8,W,8);
+  fFoot(x,T,W,pad,bodyEnd+34,[
+    ["◎が1着なら、この投稿の返信でお知らせします"+(bs.more>0?("　／　ほか"+bs.more+"レース（2枚目から）"):""),T.ink,true],
+    ["全レースの予想は2枚目から　／　近走・騎手・血統・時計から自動算出（オッズ非依存）　／　馬券は20歳から",T.sub,false]]);
   return cv;
 }
 function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
@@ -6285,67 +6208,32 @@ function clip(ctx,s,maxW){ s=String(s); if(ctx.measureText(s).width<=maxW) retur
 
 /* 答え合わせ（結果）の画像出力。各レース: ◎○▲△△の着順 + 推奨的中（最高配当） */
 function drawCheckCanvas(trackName, races, date, tweetText, noSave){
-  /* 答え合わせ画像 v2: 予想画像と同テイスト（的中＝金グロー）。tweetText付きなら画像＋本文でXへ。
-     noSave=true なら保存/DLせず canvas を返す（自動投稿フック用）。 */
-  const C={ bg1:"#0a0e16", bg2:"#121826", panel:"#171c27", panelHit:"#171c27", line:"#333333",
-            txt:"#ffffff", muted:"#b3b3b3", sub:"#cccccc",
-            mkO:"#ff7171", mk1:"#ffc700", mk2:"#57b8ff", mk3:"#51b883",
-            win:"#51b883", inn:"#ffc700", out:"#999999",
-            gold1:"#ffd43d", gold2:"#ffc700", passC:"#999999", head1:"#57b8ff", head2:"#51b883" };
-  const W=1240, pad=48, headH=190, rowGap=24;
-  const cols=2, gutter=24; const cardW=(W-pad*2-gutter)/cols;
-  const cardPad=22, lineH=42, cardHeadH=56;
-  const cardH = cardPad*2 + cardHeadH + 10 + 5*lineH + 30;
+  /* 答え合わせ（F案）。tweetText付きなら画像＋本文でXへ。
+     noSave=true なら保存/DLせず canvas を返す（自動投稿フック用）。載せる中身は前と同じ */
+  const T=themeF();
+  const W=1240, pad=48, headH=250, rowGap=28;
+  const cols=2, gutter=36; const cardW=(W-pad*2-gutter)/cols;
+  const cardPad=22, lineH=44, cardHeadH=64;
+  const cardH = cardPad*2 + cardHeadH + 5*lineH + 54;
   const rowsNeeded=Math.ceil(races.length/cols);
-  const H = headH + rowsNeeded*(cardH+rowGap) + 66;
+  const bodyEnd=headH + rowsNeeded*(cardH+rowGap) - rowGap;
+  const H = bodyEnd + 34 + 76;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
   const x=cv.getContext("2d");
-  const bg=x.createLinearGradient(0,0,0,H); bg.addColorStop(0,C.bg1); bg.addColorStop(1,C.bg2);
-  x.fillStyle=bg; x.fillRect(0,0,W,H);
-  x.textBaseline="alphabetic";
-  // ヘッダ演出（結果＝寒色）: 放射グロー＋斜めスピードライン
-  const rgl=x.createRadialGradient(pad+150,80,20,pad+150,80,560);
-  rgl.addColorStop(0,"rgba(87,184,255,0.09)"); rgl.addColorStop(1,"rgba(87,184,255,0)");
-  x.fillStyle=rgl; x.fillRect(0,0,W,260);
-  x.save(); x.globalAlpha=0.045; x.strokeStyle="#cccccc"; x.lineWidth=1;
-  for(let _sx=-160;_sx<W+160;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+80,168); x.stroke(); }
-  x.restore();
-  // ヘッダ
-  const hg=x.createLinearGradient(pad,0,pad+220,0); hg.addColorStop(0,C.head1); hg.addColorStop(1,C.head2);
-  roundRect(x,pad,56,10,66,5); x.fillStyle=hg; x.fill();
-  x.font="700 64px 'Saira Condensed','Noto Sans JP',sans-serif";
-  const tgd=x.createLinearGradient(0,58,0,116); tgd.addColorStop(0,"#ffffff"); tgd.addColorStop(1,"#cccccc");
-  x.save(); x.shadowColor="rgba(87,184,255,0.35)"; x.shadowBlur=18;
-  x.fillStyle=tgd; x.fillText(trackName, pad+30, 112); x.restore();
-  // ヘッダ下ヘアライン（寒色）
-  const hlg=x.createLinearGradient(pad,0,W-pad,0);
-  hlg.addColorStop(0,C.head1); hlg.addColorStop(0.45,"rgba(87,184,255,0.12)"); hlg.addColorStop(1,"rgba(87,184,255,0)");
-  x.fillStyle=hlg; x.fillRect(pad,172,W-pad*2,2);
-  // 「答え合わせ」チップ（場名の右）
-  const tnW=x.measureText(trackName).width;
-  const lb="答え合わせ"; x.font="700 24px 'Noto Sans JP',sans-serif";
-  const lbW=x.measureText(lb).width+32;
-  roundRect(x,pad+30+tnW+22,76,lbW,40,20);
-  const cg0=x.createLinearGradient(pad+30+tnW+22,0,pad+30+tnW+22+lbW,0); cg0.addColorStop(0,C.head1); cg0.addColorStop(1,C.head2);
-  x.fillStyle=cg0; x.fill();
-  x.fillStyle="#08131a"; x.textAlign="center"; x.fillText(lb, pad+30+tnW+22+lbW/2, 104); x.textAlign="left";
-  // 日付チップ + ブランド
-  const d=date.length===8?`${date.slice(0,4)}.${date.slice(4,6)}.${date.slice(6,8)}`:date;
-  x.font="700 24px 'Space Mono',monospace";
-  const dW=x.measureText(d).width+36;
-  roundRect(x,W-pad-dW,62,dW,42,21); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke();
-  x.fillStyle=C.sub; x.textAlign="center"; x.fillText(d, W-pad-dW/2, 91); x.textAlign="left";
-  x.font="600 20px 'Saira Condensed',sans-serif"; x.fillStyle=C.muted; x.textAlign="right";
-  x.fillText("", W-pad, 130); x.textAlign="left";
+  const tr=fHead(x,T,W,pad,trackName,96);
+  // 「答え合わせ」の札（場名の右）と日付（右上）
+  x.font="700 32px "+T.JP; const lbW=Math.ceil(x.measureText("答え合わせ").width)+28;
+  fTag(x,T,tr+24+lbW,96,"答え合わせ","ink",60,32);
+  x.font="700 30px "+T.JP; x.fillStyle=T.ink; x.textAlign="right"; x.fillText(fDate(date), W-pad, 140); x.textAlign="left";
   // 凡例
-  x.font="600 24px 'Noto Sans JP',sans-serif"; let lx=pad+30;
-  [["1着",C.win],["2・3着",C.inn],["着外",C.out]].forEach(([t,col])=>{
-    x.fillStyle=col; x.fillText("●", lx, 158); lx+=26;
-    x.fillStyle=C.sub; x.fillText(t, lx, 158); lx+=x.measureText(t).width+22;
+  x.font="400 22px "+T.JP; let lx=pad;
+  [["1着",T.gold],["2・3着",T.ink],["着外",T.sub]].forEach(([t,col])=>{
+    x.fillStyle=col; x.fillText("●", lx, 216); lx+=26;
+    x.fillStyle=T.sub; x.fillText(t, lx, 216); lx+=x.measureText(t).width+20;
   });
-  x.fillStyle=C.muted; x.fillText("赤枠＝狙い的中／金枠＝通常的中／青点線＝見送り的中（取りこぼし）", lx+8, 158);
-  const sym2cls={ "◎":C.mkO,"○":C.mk1,"▲":C.mk2,"△":C.mk3 };
-  const rankColor=(r)=> r===1?C.win : (r!=null&&r<=3)?C.inn : C.out;
+  x.fillStyle=T.sub; x.fillText("／　"+T.accFrame+"＝狙い的中　金枠＝通常的中　点線＝見送り的中（取りこぼし）", lx, 216);
+  const sym2cls={ "◎":T.acc,"○":T.ink,"▲":T.ink,"△":T.sub };
+  const rankColor=(r)=> r===1?T.gold : (r!=null&&r<=3)?T.ink : T.sub;
   const rankTxt=(r)=> r!=null? r+"着" : "着外";
   races.forEach((c,i)=>{
     const cx=pad+(i%cols)*(cardW+gutter);
@@ -6355,99 +6243,71 @@ function drawCheckCanvas(trackName, races, date, tweetText, noSave){
     const missHit=hitRaw && pass;        // 見送ったのに的中＝取りこぼし
     const hit=hitRaw && !pass;           // 買い目ありで的中（純粋な的中）
     const aimHit=hit && (c.aim!=null?!!c.aim:isAim(c));        // 狙い目レースの的中＝価値が高い
-    if(hit){ x.save(); x.shadowColor=aimHit?"rgba(240,101,74,.5)":"rgba(240,180,60,.4)"; x.shadowBlur=aimHit?26:22; }
-    else if(missHit){ x.save(); x.shadowColor="rgba(62,198,255,.34)"; x.shadowBlur=18; }
-    roundRect(x,cx,cy,cardW,cardH,18);
-    x.fillStyle=hit?(aimHit?"#221a22":C.panelHit):(missHit?"#171c27":C.panel);
-    if(pass && !missHit) x.globalAlpha=.62;
-    x.fill();
-    if(hit){ x.restore(); roundRect(x,cx,cy,cardW,cardH,18); const ag=x.createLinearGradient(cx,cy,cx+cardW,cy); if(aimHit){ag.addColorStop(0,"#ffd43d");ag.addColorStop(1,"#ff7171");}else{ag.addColorStop(0,C.gold1);ag.addColorStop(1,C.gold2);} x.strokeStyle=ag; x.lineWidth=aimHit?3.5:3; x.stroke(); }
-    else if(missHit){ x.restore(); roundRect(x,cx,cy,cardW,cardH,18); x.strokeStyle="#57b8ff"; x.lineWidth=2.5; x.setLineDash([7,5]); x.stroke(); x.setLineDash([]); }
-    else { roundRect(x,cx,cy,cardW,cardH,18); x.strokeStyle=C.line; x.lineWidth=1.5; x.stroke(); }
-    // ヘッダ行
-    const hy=cy+cardPad, chipW=66, chipH=38;
-    roundRect(x,cx+cardPad,hy,chipW,chipH,10);
-    if(hit){ const cg=x.createLinearGradient(cx+cardPad,0,cx+cardPad+chipW,0); if(aimHit){cg.addColorStop(0,"#ffd43d");cg.addColorStop(1,"#ff7171");}else{cg.addColorStop(0,C.gold1);cg.addColorStop(1,C.gold2);} x.fillStyle=cg; }
-    else if(missHit){ x.fillStyle="#57b8ff"; }
-    else x.fillStyle="#333333";
-    x.fill();
-    x.font="700 26px 'Saira Condensed',sans-serif"; x.fillStyle=hit?(aimHit?"#fff":"#221a06"):(missHit?"#fff":C.txt);
-    x.textAlign="center"; x.fillText(c.no+"R", cx+cardPad+chipW/2, hy+28); x.textAlign="left";
-    // バッジ（狙い的中／的中／見送り的中／見送り／結果待ち）
+    if(pass && !missHit) x.globalAlpha=.8;
+    fBox(x,T,cx,cy,cardW,cardH, aimHit?"acc":hit?"gold":missHit?"dash":"plain");
+    // 1行目
+    const hy=cy+cardPad;
+    fRno(x,T,cx+cardPad,hy,c.no, aimHit?"fill":hit?"gold":"ink");
+    // 札（狙い的中／的中／見送り的中／見送り／レース取消／結果待ち）
     let badgeLeft=cx+cardW-cardPad;
-    let bTxt=null, bFillGrad=null, bFill=null, bTxtCol="#ffffff";
-    if(aimHit){ bTxt="狙い的中"; bFillGrad=["#ffd43d","#ff7171"]; bTxtCol="#fff"; }
-    else if(hit){ bTxt="的中"; bFillGrad=[C.gold1,C.gold2]; bTxtCol="#221a06"; }
-    else if(missHit){ bTxt="見送り的中"; bFill="#57b8ff"; bTxtCol="#06212e"; }
-    else if(pass){ bTxt="見送り"; bFill=C.passC; }
-    else if(c.cancelled){ bTxt="レース取消"; bFill="#6b4d4d"; }
-    else if(!c.decided && !c.skip){ bTxt="結果待ち"; bFill="#4d4d4d"; }
-    if(bTxt){
-      x.font="700 22px 'Noto Sans JP',sans-serif";
-      const bw=x.measureText(bTxt).width+34, bh=32, bx=cx+cardW-cardPad-bw, by=hy+3;
-      roundRect(x,bx,by,bw,bh,16);
-      if(bFillGrad){ const bgr=x.createLinearGradient(bx,0,bx+bw,0); bgr.addColorStop(0,bFillGrad[0]); bgr.addColorStop(1,bFillGrad[1]); x.fillStyle=bgr; }
-      else x.fillStyle=bFill;
-      x.fill();
-      x.fillStyle=bTxtCol; x.textAlign="center"; x.fillText(bTxt, bx+bw/2, by+23); x.textAlign="left";
-      badgeLeft=bx-14;
-    }
+    let bTxt=null, bKind="dash";
+    if(aimHit){ bTxt="狙い的中"; bKind="fill"; }
+    else if(hit){ bTxt="的中"; bKind="gold"; }
+    else if(missHit){ bTxt="見送り的中"; }
+    else if(pass){ bTxt="見送り"; }
+    else if(c.cancelled){ bTxt="レース取消"; }
+    else if(!c.decided && !c.skip){ bTxt="結果待ち"; }
+    if(bTxt) badgeLeft=fTag(x,T,cx+cardW-cardPad,hy+3,bTxt,bKind,40,24)-14;
     // レース名
-    x.font="600 26px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt;
-    const nameStart=cx+cardPad+chipW+16;
-    x.fillText(clip(x, c.name||"", badgeLeft-nameStart), nameStart, hy+28);
+    x.font="700 28px "+T.JP; x.fillStyle=T.ink;
+    const nameStart=cx+cardPad+70+16;
+    x.fillText(clip(x, c.name||"", badgeLeft-nameStart), nameStart, hy+35);
     // 区切り線
-    x.strokeStyle=C.line; x.lineWidth=1;
-    x.beginPath(); x.moveTo(cx+cardPad, hy+cardHeadH-4); x.lineTo(cx+cardW-cardPad, hy+cardHeadH-4); x.stroke();
+    x.fillStyle=T.weak; x.fillRect(cx+cardPad, hy+cardHeadH-6, cardW-cardPad*2, 2);
     if(c.skip){
-      x.font="500 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+      x.font="500 24px "+T.JP; x.fillStyle=T.sub;
       x.fillText((c.skipReason||"予想対象外")+"・予想対象外", cx+cardPad, hy+cardHeadH+44);
       x.globalAlpha=1; return;
     }
     if(!c.decided){
-      x.font="500 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+      x.font="500 24px "+T.JP; x.fillStyle=T.sub;
       x.fillText(c.cancelled?"レース取消（"+(c.cancelReason||"開催中止")+"）":"結果待ち", cx+cardPad, hy+cardHeadH+44);
       x.globalAlpha=1; return;
     }
     // 各馬: 着順は右端に揃える
     (c.marks||[]).forEach((mk,j)=>{
-      const ly=hy+cardHeadH+16+j*lineH+12;
+      const ly=hy+cardHeadH+j*lineH+38;
       const big=(j===0);
-      x.font=(big?"700 31px":"700 27px")+" 'Saira Condensed','Noto Sans JP',sans-serif";
-      x.fillStyle=sym2cls[mk.mk]||C.txt;
-      x.fillText(`${mk.mk}${mk.num}`, cx+cardPad, ly);
+      if(big && !pass){ x.fillStyle=T.row; x.fillRect(cx+12, ly-33, cardW-24, 46); x.fillStyle=T.acc; x.fillRect(cx+12, ly-33, 6, 46); }
+      x.font=(big?"700 32px ":"700 27px ")+T.JP; x.fillStyle=sym2cls[mk.mk]||T.ink;
+      x.fillText(mk.mk, cx+cardPad+4, ly);
+      x.font=(big?"700 32px ":"700 27px ")+T.NUM; x.fillStyle=T.ink; x.textAlign="right";
+      x.fillText(String(mk.num), cx+cardPad+86, ly);
       const rightEdge=cx+cardW-cardPad;
-      const rtxt=rankTxt(mk.rank);
-      x.font="700 26px 'Saira Condensed','Noto Sans JP',sans-serif";
-      x.fillStyle=rankColor(mk.rank);
-      x.textAlign="right"; x.fillText(rtxt, rightEdge, ly); x.textAlign="left";
-      const nameX=cx+cardPad+96;
-      x.font=(big?"600 27px":"500 25px")+" 'Noto Sans JP',sans-serif";
-      x.fillStyle= pass? C.sub : C.txt;
-      x.fillText(clip(x, mk.name||"", rightEdge-86-nameX), nameX, ly);
+      x.font="700 "+(big?28:26)+"px "+T.JP; x.fillStyle=rankColor(mk.rank);
+      x.fillText(rankTxt(mk.rank), rightEdge, ly); x.textAlign="left";
+      const nameX=cx+cardPad+104;
+      x.font=(big?"700 30px ":"500 27px ")+T.JP;
+      x.fillStyle= pass? T.sub : T.ink;
+      x.fillText(clip(x, mk.name||"", rightEdge-92-nameX), nameX, ly);
     });
-    // 的中行
-    const fy=hy+cardHeadH+16+5*lineH+22;
+    // 的中の行
+    const fy=cy+cardH-24;
     if(hit){
       const best=c.hits.reduce((a,b)=>b.yen>a.yen?b:a);
-      x.font="700 24px 'Space Mono','Noto Sans JP',monospace"; x.fillStyle=aimHit?"#ff7171":C.gold1;
+      x.font="700 24px "+T.JP; x.fillStyle=T.gold;
       x.fillText(clip(x, `${aimHit?"狙い的中":"的中"} ${best.type} ${best.combo} ${best.yen.toLocaleString()}円`, cardW-cardPad*2), cx+cardPad, fy);
     } else if(missHit){
       const best=c.hits.reduce((a,b)=>b.yen>a.yen?b:a);
-      x.font="700 22px 'Space Mono','Noto Sans JP',monospace"; x.fillStyle="#57b8ff";
+      x.font="700 22px "+T.JP; x.fillStyle=T.sub;
       x.fillText(clip(x, `見送り的中 ${best.type} ${best.combo} ${best.yen.toLocaleString()}円（取りこぼし）`, cardW-cardPad*2), cx+cardPad, fy);
     } else {
-      x.font="500 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+      x.font="500 22px "+T.JP; x.fillStyle=T.sub;
       x.fillText(pass?"見送り（買い目なし）":"推奨的中なし", cx+cardPad, fy);
     }
     x.globalAlpha=1;
   });
-  x.font="500 22px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText("◎○▲△△ BOX想定の的中／配当はnetkeiba確定値", pad, H-28);
-  x.font="700 22px 'Space Mono',monospace"; x.fillStyle=C.sub; x.textAlign="right";
-  x.fillText("", W-pad, H-26); x.textAlign="left";
-  const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,C.head1); fgb.addColorStop(1,C.head2);
-  x.fillStyle=fgb; x.fillRect(0,H-6,W,6);   // ブランドバー（結果＝寒色）
+  fFoot(x,T,W,pad,bodyEnd+34,[["◎○▲△△ BOX想定の的中／配当はnetkeiba確定値",T.sub,false]]);
   if(noSave){ return cv; }
   { const dl=`${trackName}_結果_${date}.png`; if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); } }
   return cv;
@@ -6995,65 +6855,45 @@ function venueRecoveryText(rows, total){
 }
 /* 場別回収率を画像化（寒色ブランド） */
 function drawVenueRecoveryCanvas(rows, total, dateStr, tweetText, noSave){
-  const C={ txt:"#ffffff", muted:"#b3b3b3", sub:"#cccccc", line:"#333333",
-            plus:"#51b883", mid:"#ffc700", minus:"#ff7171", gold:"#ffd43d" };
-  const W=1080, pad=56, headH=200, hdrRow=54, rowH=62;
+  /* 場別 回収率（F案）。100%以上＝金、未満＝灰（赤は「推し」の色なので、マイナスには使わない） */
+  const T=themeF();
+  const W=1080, pad=48, headH=250, hdrRow=52, rowH=66;
   const n=rows.length+(total?1:0);
-  const H=headH+hdrRow+n*rowH+96;
+  const bodyEnd=headH+hdrRow+n*rowH+(total?10:0);
+  const H=bodyEnd+24+76;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
   const x=cv.getContext("2d");
-  const bgg=x.createLinearGradient(0,0,0,H); bgg.addColorStop(0,"#0a0e16"); bgg.addColorStop(1,"#121826");
-  x.fillStyle=bgg; x.fillRect(0,0,W,H);
-  const rgl=x.createRadialGradient(pad+130,80,20,pad+130,80,520);
-  rgl.addColorStop(0,"rgba(87,184,255,0.09)"); rgl.addColorStop(1,"rgba(87,184,255,0)");
-  x.fillStyle=rgl; x.fillRect(0,0,W,230);
-  x.save(); x.globalAlpha=0.045; x.strokeStyle="#cccccc"; x.lineWidth=1;
-  for(let _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+70,140); x.stroke(); }
-  x.restore();
-  const abg=x.createLinearGradient(0,46,0,112); abg.addColorStop(0,"#57b8ff"); abg.addColorStop(1,"#51b883");
-  x.fillStyle=abg; x.fillRect(pad,46,8,66);
-  x.font="700 52px 'Saira Condensed','Noto Sans JP',sans-serif";
-  const tgd=x.createLinearGradient(0,52,0,100); tgd.addColorStop(0,"#ffffff"); tgd.addColorStop(1,"#cccccc");
-  x.save(); x.shadowColor="rgba(87,184,255,0.35)"; x.shadowBlur=16;
-  x.fillStyle=tgd; x.fillText("場別 回収率", pad+24, 96); x.restore();
-  x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText(`推奨／見送込／狙い目　${MODE==="nar"?"地方":"中央"}`, pad+24, 132);
-  if(dateStr){ x.textAlign="right"; x.fillText(dateStr, W-pad, 96); x.textAlign="left"; }
-  const hlg=x.createLinearGradient(pad,0,W-pad,0);
-  hlg.addColorStop(0,"#57b8ff"); hlg.addColorStop(0.45,"rgba(87,184,255,0.12)"); hlg.addColorStop(1,"rgba(87,184,255,0)");
-  x.fillStyle=hlg; x.fillRect(pad,146,W-pad*2,2);
-  const colX={name:pad+8, r:W-pad-560, rec:W-pad-380, all:W-pad-190, aim:W-pad};
+  fHead(x,T,W,pad,"場別 回収率",80);
+  fHeadRight(x,T,W,pad,MODE==="nar"?"地方":"中央",dateStr||"");
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub; x.fillText("推奨／見送込／狙い目　金＝100%以上", pad, 216);
+  const colX={name:pad+24, r:W-pad-560, rec:W-pad-384, all:W-pad-204, aim:W-pad-24};
   let y=headH;
-  x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText("場", colX.name, y);
+  x.font="700 24px "+T.JP; x.fillStyle=T.sub;
+  x.fillText("場", colX.name, y+26);
   x.textAlign="right";
-  x.fillText("R", colX.r, y); x.fillText("推奨", colX.rec, y); x.fillText("見送込", colX.all, y); x.fillText("狙い目", colX.aim, y);
+  x.fillText("R", colX.r, y+26); x.fillText("推奨", colX.rec, y+26); x.fillText("見送込", colX.all, y+26); x.fillText("狙い目", colX.aim, y+26);
   x.textAlign="left";
-  y+=hdrRow-18;
-  const roiCol=(v)=> v==null?C.muted : v>=100?C.plus : v>=80?C.mid : C.minus;
+  x.fillStyle=T.weak; x.fillRect(pad,y+40,W-pad*2,2);
+  y+=hdrRow;
+  const roiCol=(v)=> v==null?T.sub : v>=100?T.gold : T.sub;
   let ri=0;
   const drawRow=(r, isTotal)=>{
-    if(isTotal){ x.fillStyle="rgba(245,185,66,0.06)"; roundRect(x,pad-8,y-4,W-pad*2+16,rowH-8,10); x.fill(); }
-    else if(ri%2===1){ x.fillStyle="rgba(255,255,255,0.025)"; roundRect(x,pad-8,y-4,W-pad*2+16,rowH-8,10); x.fill(); }
-    x.font=(isTotal?"800 30px":"700 28px")+" 'Noto Sans JP',sans-serif";
-    x.fillStyle=isTotal?C.gold:C.txt; x.fillText(r.name, colX.name, y+34);
-    x.font="600 26px 'Space Mono',monospace"; x.textAlign="right";
-    x.fillStyle=C.sub; x.fillText(String(r.races), colX.r, y+34);
-    x.font="800 32px 'Space Mono',monospace";
-    x.fillStyle=roiCol(r.rec); x.fillText(r.rec==null?"-":r.rec+"%", colX.rec, y+34);
-    x.fillStyle=roiCol(r.all); x.fillText(r.all==null?"-":r.all+"%", colX.all, y+34);
-    x.fillStyle=roiCol(r.aim); x.fillText(r.aim==null?"-":r.aim+"%", colX.aim, y+34);
+    if(isTotal){ x.fillStyle=T.card; x.fillRect(pad,y,W-pad*2,rowH-6); x.strokeStyle=T.ink; x.lineWidth=4; x.strokeRect(pad,y,W-pad*2,rowH-6); }
+    else if(ri%2===0){ x.fillStyle=T.card; x.fillRect(pad,y,W-pad*2,rowH-6); }
+    x.font="700 28px "+T.JP;
+    x.fillStyle=T.ink; x.fillText(r.name, colX.name, y+41);
+    x.font="400 28px "+T.NUM; x.textAlign="right";
+    x.fillStyle=T.ink; x.fillText(String(r.races), colX.r, y+41);
+    x.font="700 32px "+T.NUM;
+    x.fillStyle=roiCol(r.rec); x.fillText(r.rec==null?"-":r.rec+"%", colX.rec, y+42);
+    x.fillStyle=roiCol(r.all); x.fillText(r.all==null?"-":r.all+"%", colX.all, y+42);
+    x.fillStyle=roiCol(r.aim); x.fillText(r.aim==null?"-":r.aim+"%", colX.aim, y+42);
     x.textAlign="left";
     y+=rowH; ri++;
   };
   rows.forEach(r=>drawRow(r,false));
-  if(total){ x.fillStyle=C.line; x.fillRect(pad,y-6,W-pad*2,1); drawRow(total,true); }
-  x.font="500 20px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText("◎軸/○軸 全券種1点100円換算・配当はnetkeiba確定値", pad, H-34);
-  x.font="700 20px 'Space Mono',monospace"; x.fillStyle=C.txt; x.textAlign="right";
-  x.fillText("", W-pad, H-32); x.textAlign="left";
-  const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,"#57b8ff"); fgb.addColorStop(1,"#51b883");
-  x.fillStyle=fgb; x.fillRect(0,H-6,W,6);
+  if(total){ y+=10; drawRow(total,true); }
+  fFoot(x,T,W,pad,bodyEnd+24,[["◎軸/○軸 全券種1点100円換算・配当はnetkeiba確定値",T.sub,false]]);
   const dl=dateStr? `場別回収率_${dateStr.replace(/\D/g,"")}.png` : "場別回収率.png";
   if(noSave){ return cv; }   // 自動投稿フック用：保存/DLせず返す
   if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); }
@@ -7692,10 +7532,9 @@ function generateResultTweet(){
 }
 /* 回収率を画像化（◎軸/○軸合計＋段階別） */
 function drawRecoveryCanvas(t, title, dateStr, tweetText, noSave){
-  /* DADS準拠（暗背景#0a0e16に対し全色4.5:1以上を検証済み）。
-     noSave=true なら保存/DLせず canvas を返す（自動投稿フック用）。 */
-  const C={ bg:"#0a0e16", panel:"#171c27", line:"#333333", txt:"#ffffff", muted:"#b3b3b3",
-            plus:"#51b883", minus:"#ff7171", mid:"#ffc700", accent:"#57b8ff" };
+  /* 回収率（F案）。100%以上＝金、未満＝灰（赤は「推し」の色なので、マイナスには使わない）。
+     noSave=true なら保存/DLせず canvas を返す（自動投稿フック用）。載せる中身は前と同じ */
+  const T=themeF();
   const oKeys=["tanO","fukuO","umarenO","umatanO","wideO","fuku3O","tan3O"];
   const pKeys=["umarenP","umatanP","wideP","fuku3P","tan3P"];
   const sum=(keys)=>{let inv=0,ret=0;keys.forEach(k=>{if(t[k]){inv+=t[k].inv;ret+=t[k].ret;}});return{inv,ret};};
@@ -7716,92 +7555,71 @@ function drawRecoveryCanvas(t, title, dateStr, tweetText, noSave){
     {label:"ワイド ◎-相手", k:"wideO"},{label:"3連複 ◎-相手2", k:"fuku3O"},
     {label:"3連単マルチ ◎", k:"tan3O"},
   ].map(r=>({label:r.label, ...(t[r.k]||{inv:0,ret:0,hit:0,races:0})})).filter(r=>r.races>0);
-  const W=1080, pad=46;
-  const headH=150, sumH=3*54+30, stageHd=40, stageRowH=46;
-  const kindHd=40, kindRowH=44;
-  const H=headH + (oRows.length?kindHd+oRows.length*kindRowH+16:0) + sumH + 40 + stageHd + stages.length*stageRowH + 90;
+  const W=1080, pad=48;
+  const headH=250, sumRowH=76, stageHd=56, stageRowH=54;
+  const kindHd=56, kindRowH=56;
+  const bodyEnd=headH + (oRows.length?kindHd+oRows.length*kindRowH+20:0) + 3*sumRowH + 24 + stageHd + stages.length*stageRowH;
+  const H=bodyEnd+24+76;
   const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
   const x=cv.getContext("2d");
-  const bgg=x.createLinearGradient(0,0,0,H); bgg.addColorStop(0,"#0a0e16"); bgg.addColorStop(1,"#121826");
-  x.fillStyle=bgg; x.fillRect(0,0,W,H);
-  // 放射グロー＋斜めスピードライン（結果系＝寒色）
-  const rgl=x.createRadialGradient(pad+130,80,20,pad+130,80,520);
-  rgl.addColorStop(0,"rgba(87,184,255,0.09)"); rgl.addColorStop(1,"rgba(87,184,255,0)");
-  x.fillStyle=rgl; x.fillRect(0,0,W,220);
-  x.save(); x.globalAlpha=0.045; x.strokeStyle="#cccccc"; x.lineWidth=1;
-  for(let _sx=-140;_sx<W+140;_sx+=44){ x.beginPath(); x.moveTo(_sx,0); x.lineTo(_sx+70,140); x.stroke(); }
-  x.restore();
-  const abg=x.createLinearGradient(0,46,0,112); abg.addColorStop(0,"#57b8ff"); abg.addColorStop(1,"#51b883");
-  x.fillStyle=abg; x.fillRect(pad,46,8,66);
-  x.font="700 52px 'Saira Condensed','Noto Sans JP',sans-serif";
-  const tgd=x.createLinearGradient(0,52,0,100); tgd.addColorStop(0,"#ffffff"); tgd.addColorStop(1,"#cccccc");
-  x.save(); x.shadowColor="rgba(87,184,255,0.35)"; x.shadowBlur=16;
-  x.fillStyle=tgd; x.fillText("回収率", pad+24, 96); x.restore();
-  x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
+  fHead(x,T,W,pad,"回収率",80);
   // titleから「推奨Nレース集計」を抽出して明示。無ければそのまま
   const raceN = t.tanO && t.tanO.races!=null ? t.tanO.races : null;
   const subtitle = raceN!=null
     ? `${(title||"").replace(/（.*）/,"").trim()}　対象 ${raceN} レース分の合算`
     : (title||"");
-  x.fillText(subtitle, pad+24, 130);
-  if(dateStr){ x.textAlign="right"; x.fillText(dateStr, W-pad, 96); x.textAlign="left"; }
-  // ヘッダ下ヘアライン（寒色）
-  const hlg=x.createLinearGradient(pad,0,W-pad,0);
-  hlg.addColorStop(0,"#57b8ff"); hlg.addColorStop(0.45,"rgba(87,184,255,0.12)"); hlg.addColorStop(1,"rgba(87,184,255,0)");
-  x.fillStyle=hlg; x.fillRect(pad,140,W-pad*2,2);
+  fHeadRight(x,T,W,pad,null,dateStr||"");
+  x.font="400 22px "+T.JP; x.fillStyle=T.sub; x.fillText(clip(x,subtitle+"　／　金＝100%以上",W-pad*2), pad, 216);
+  const col=(rr)=> rr>=100?T.gold:T.sub;
   let y=headH;
-  // 券種別（本命軸）— アプリ画面と同じ内訳
+  // 券種別（本命軸）
   if(oRows.length){
-    x.font="700 22px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle="#ffd43d";
-    x.fillText("◎ 本命軸 券種別", pad, y+24); y+=kindHd;
-    oRows.forEach(r=>{
-      const rr=rate(r); const col=rr>=100?C.plus:rr>=80?C.mid:C.minus;
+    x.font="900 28px "+T.SERIF; x.fillStyle=T.ink;
+    x.fillText("◎ 本命軸 券種別", pad, y+32); y+=kindHd;
+    oRows.forEach((r,i)=>{
+      const rr=rate(r);
       const hr=r.races>0?Math.round(r.hit/r.races*100):0;
-      x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(r.label, pad+4, y+27);
-      x.font="700 26px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="right"; x.fillText(rr+"%", pad+430, y+27);
-      x.font="600 20px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted; x.fillText(`的中 ${r.hit}/${r.races} (${hr}%)`, W-pad, y+26);
+      if(i%2===0){ x.fillStyle=T.card; x.fillRect(pad,y,W-pad*2,kindRowH-4); }
+      x.font="700 26px "+T.JP; x.fillStyle=T.ink; x.fillText(r.label, pad+24, y+36);
+      x.font="700 32px "+T.NUM; x.fillStyle=col(rr); x.textAlign="right"; x.fillText(rr+"%", pad+520, y+38);
+      x.font="400 24px "+T.NUM; x.fillStyle=T.sub; x.fillText(`的中 ${r.hit}/${r.races} (${hr}%)`, W-pad-24, y+36);
       x.textAlign="left";
-      x.strokeStyle=C.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad,y+kindRowH-6); x.lineTo(W-pad,y+kindRowH-6); x.stroke();
       y+=kindRowH;
     });
-    y+=16;
+    y+=20;
   }
   // 合計3行（◎軸/○軸/総合計）
-  const sumRow=(lbl,r)=>{
-    const rr=rate(r); const col=rr>=100?C.plus:rr>=80?C.mid:C.minus; const prof=r.ret-r.inv;
-    x.fillStyle=C.panel; roundRect(x,pad,y,W-pad*2,46,10); x.fill(); x.strokeStyle=C.line; x.lineWidth=1; x.stroke();
-    x.font="700 26px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(lbl, pad+18, y+31);
-    x.font="700 32px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="right";
-    x.fillText(rr+"%", pad+330, y+32);
-    x.font="600 20px 'Space Mono',monospace"; x.fillStyle=C.muted;
-    x.fillText(`${r.inv.toLocaleString()}→${r.ret.toLocaleString()}円`, W-pad-180, y+30);
-    x.fillStyle=prof>=0?C.plus:C.minus;
-    x.fillText(`${prof>=0?"+":""}${prof.toLocaleString()}`, W-pad-18, y+30);
-    x.textAlign="left"; y+=54;
+  const sumRow=(lbl,r,strong)=>{
+    const rr=rate(r); const prof=r.ret-r.inv;
+    x.fillStyle=T.card; x.fillRect(pad,y,W-pad*2,sumRowH-12);
+    x.strokeStyle=strong?T.ink:T.weak; x.lineWidth=strong?4:2; x.strokeRect(pad,y,W-pad*2,sumRowH-12);
+    x.font="700 28px "+T.JP; x.fillStyle=T.ink; x.fillText(lbl, pad+24, y+42);
+    x.font="700 40px "+T.NUM; x.fillStyle=col(rr); x.textAlign="right";
+    x.fillText(rr+"%", pad+400, y+46);
+    x.font="400 24px "+T.NUM; x.fillStyle=T.sub;
+    x.fillText(`${r.inv.toLocaleString()}→${r.ret.toLocaleString()}円`, W-pad-190, y+42);
+    x.font="700 26px "+T.NUM; x.fillStyle=prof>=0?T.gold:T.sub;
+    x.fillText(`${prof>=0?"+":""}${prof.toLocaleString()}`, W-pad-24, y+42);
+    x.textAlign="left"; y+=sumRowH;
   };
-  sumRow("◎軸 合計", so); sumRow("○軸 合計", sp); sumRow("総合計", st);
+  sumRow("◎軸 合計", so, false); sumRow("○軸 合計", sp, false); sumRow("総合計", st, true);
   // 段階別
-  y+=20;
-  x.font="700 20px 'Saira Condensed','Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText("どこまで買うか（◎○合算・累積）", pad, y+20); y+=stageHd;
-  stages.forEach(s=>{
-    const rr=rate(s); const col=rr>=100?C.plus:rr>=80?C.mid:C.minus; const prof=s.ret-s.inv;
-    x.font="600 24px 'Noto Sans JP',sans-serif"; x.fillStyle=C.txt; x.fillText(s.label, pad, y+26);
-    x.font="700 26px 'Space Mono',monospace"; x.fillStyle=col; x.textAlign="right";
-    x.fillText(rr+"%", pad+330, y+26);
-    x.font="600 20px 'Space Mono',monospace"; x.fillStyle=C.muted;
-    x.fillText(`${s.inv.toLocaleString()}→${s.ret.toLocaleString()}円`, W-pad-150, y+25);
-    x.fillStyle=prof>=0?C.plus:C.minus; x.fillText(`${prof>=0?"+":""}${prof.toLocaleString()}`, W-pad, y+25);
+  y+=24;
+  x.font="900 28px "+T.SERIF; x.fillStyle=T.ink;
+  x.fillText("どこまで買うか（◎○合算・累積）", pad, y+32); y+=stageHd;
+  stages.forEach((s,i)=>{
+    const rr=rate(s); const prof=s.ret-s.inv;
+    if(i%2===0){ x.fillStyle=T.card; x.fillRect(pad,y,W-pad*2,stageRowH-4); }
+    x.font="700 26px "+T.JP; x.fillStyle=T.ink; x.fillText(s.label, pad+24, y+35);
+    x.font="700 30px "+T.NUM; x.fillStyle=col(rr); x.textAlign="right";
+    x.fillText(rr+"%", pad+400, y+36);
+    x.font="400 24px "+T.NUM; x.fillStyle=T.sub;
+    x.fillText(`${s.inv.toLocaleString()}→${s.ret.toLocaleString()}円`, W-pad-190, y+35);
+    x.font="700 24px "+T.NUM; x.fillStyle=prof>=0?T.gold:T.sub; x.fillText(`${prof>=0?"+":""}${prof.toLocaleString()}`, W-pad-24, y+35);
     x.textAlign="left";
-    x.strokeStyle=C.line; x.lineWidth=1; x.beginPath(); x.moveTo(pad,y+stageRowH-8); x.lineTo(W-pad,y+stageRowH-8); x.stroke();
     y+=stageRowH;
   });
-  x.font="500 20px 'Noto Sans JP',sans-serif"; x.fillStyle=C.muted;
-  x.fillText("100円単位・◎軸/○軸流し", pad, H-34);
-  x.font="700 20px 'Space Mono',monospace"; x.fillStyle=C.txt; x.textAlign="right";
-  x.fillText("", W-pad, H-32); x.textAlign="left";
-  const fgb=x.createLinearGradient(0,0,W,0); fgb.addColorStop(0,"#57b8ff"); fgb.addColorStop(1,"#51b883");
-  x.fillStyle=fgb; x.fillRect(0,H-6,W,6);   // ブランドバー（寒色）
+  fFoot(x,T,W,pad,bodyEnd+24,[["100円単位・◎軸/○軸流し",T.sub,false]]);
   if(noSave){ return cv; }
   const dl=dateStr? `回収率_${dateStr.replace(/\D/g,"")}.png` : "回収率.png";
   if(tweetText){ shareCanvasTweet(cv, dl, tweetText); } else { saveCanvasPNG(cv, dl); }
