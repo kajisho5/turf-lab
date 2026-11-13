@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="760" viewBox="0 0 1240 760" font-family="'Noto Sans JP','Noto Sans CJK JP',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121826"/><stop offset="1" stop-color="#0a0e16"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd43d"/><stop offset="1" stop-color="#ff7171"/></linearGradient>
+  </defs>
+  <rect width="1240" height="760" fill="url(#bg)"/>
+  <text x="48" y="64" font-size="28" font-weight="700" fill="#ffffff">見本①　「今日の★勝負」の枠に「強み」の1行を足す（枠の高さ 150 → 190）</text>
+  <g font-weight="700">
+    <g transform="translate(48,96)">
+      <rect width="560" height="190" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">15:10</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">潮見 3R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">C2二組　1400m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎7</text><text x="104" y="104" font-size="36" fill="#ffffff">オッターダッシュ</text>
+      <rect x="24" y="118" width="76" height="34" rx="6" fill="#12303f" stroke="#57b8ff" stroke-width="1.5"/><text x="62" y="143" font-size="22" text-anchor="middle" fill="#57b8ff">強み</text>
+      <text x="112" y="143" font-size="24" font-weight="400" fill="#ffffff">近走の時計がメンバー1位</text>
+      <text x="24" y="178" font-size="24" fill="#ffc700">○3</text><text x="78" y="178" font-size="24" font-weight="400" fill="#cccccc">ラッコノユメ</text>
+    </g>
+    <g transform="translate(632,96)">
+      <rect width="560" height="190" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">16:20</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">鳴瀬 5R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">B3　1600m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎2</text><text x="104" y="104" font-size="36" fill="#ffffff">カワウソブレイブ</text>
+      <rect x="24" y="118" width="76" height="34" rx="6" fill="#12303f" stroke="#57b8ff" stroke-width="1.5"/><text x="62" y="143" font-size="22" text-anchor="middle" fill="#57b8ff">強み</text>
+      <text x="112" y="143" font-size="24" font-weight="400" fill="#ffffff">この場で3着内 8走中6回</text>
+      <text x="24" y="178" font-size="24" fill="#ffc700">○9</text><text x="78" y="178" font-size="24" font-weight="400" fill="#cccccc">ミナモノカゼ</text>
+    </g>
+  </g>
+  <text x="48" y="344" font-size="24" fill="#cccccc">強みに当てはまるものが無い馬は、この行を出さない（枠は150のまま）</text>
+
+  <text x="48" y="420" font-size="28" font-weight="700" fill="#ffffff">見本②　的中速報の文に同じ1行を足す</text>
+  <rect x="48" y="444" width="700" height="268" rx="16" fill="#171c27" stroke="#555b66" stroke-width="2"/>
+  <g font-size="26" fill="#ffffff">
+    <text x="76" y="496">🎯 ★勝負 的中</text>
+    <text x="76" y="538">潮見3R ◎7 オッターダッシュ　1着</text>
+    <text x="76" y="580" fill="#57b8ff">強み：近走の時計がメンバー1位</text>
+    <text x="76" y="622">単勝 250円／複勝 130円</text>
+    <text x="76" y="664">今日の★勝負：2戦2勝</text>
+  </g>
+  <g font-size="22" fill="#cccccc">
+    <text x="780" y="480">出す強み（上から順に、最初に</text>
+    <text x="780" y="512">当てはまった1つだけ）</text>
+    <text x="780" y="556" fill="#ffffff">1 近走の時計がメンバー1位</text>
+    <text x="780" y="590" fill="#ffffff">2 この距離の持ち時計が1位</text>
+    <text x="780" y="624" fill="#ffffff">3 近走の上がりがメンバー最速</text>
+    <text x="780" y="658" fill="#ffffff">4 この場で3着内 n走中m回</text>
+    <text x="780" y="692" fill="#ffffff">5 騎手の3着内率 ○%</text>
+  </g>
+</svg>

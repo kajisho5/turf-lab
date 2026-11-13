@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1180" viewBox="0 0 1240 1180" font-family="'Noto Sans JP','Noto Sans CJK JP',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121826"/><stop offset="1" stop-color="#0a0e16"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd43d"/><stop offset="1" stop-color="#ff7171"/></linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd43d"/><stop offset="1" stop-color="#ffb400"/></linearGradient>
+  </defs>
+  <rect width="1240" height="1180" fill="url(#bg)"/>
+  <rect x="48" y="56" width="10" height="66" rx="5" fill="url(#bar)"/>
+  <text x="78" y="112" font-size="64" font-weight="700" fill="#ffffff">11月の成績</text>
+  <g font-size="24" font-weight="700">
+    <rect x="620" y="66" width="270" height="48" rx="24" fill="#171c27" stroke="#555b66" stroke-width="2"/><text x="755" y="99" text-anchor="middle" fill="#cccccc">地方　全612レース</text>
+    <rect x="906" y="66" width="286" height="48" rx="24" fill="#171c27" stroke="#555b66" stroke-width="2"/><text x="1049" y="99" text-anchor="middle" fill="#ffffff">2026.11.01–11.30</text>
+  </g>
+  <text x="48" y="156" font-size="24" fill="#cccccc">朝に出した予想を、公式の着順と払戻で採点した結果です（外れも全部入っています）</text>
+  <rect x="48" y="176" width="1144" height="2" fill="url(#gold)"/>
+
+  <!-- 大きい数字3つ -->
+  <g font-weight="700" text-anchor="middle">
+    <g transform="translate(48,204)"><rect width="365" height="200" rx="16" fill="#1b1f2b" stroke="#555b66" stroke-width="2"/>
+      <text x="182" y="52" font-size="26" fill="#cccccc">◎が3着以内</text><text x="182" y="138" font-size="84" fill="#ffffff">62.4<tspan font-size="40">%</tspan></text><text x="182" y="178" font-size="22" font-weight="400" fill="#cccccc">612レース中 382回</text></g>
+    <g transform="translate(437,204)"><rect width="365" height="200" rx="16" fill="#1b1f2b" stroke="#555b66" stroke-width="2"/>
+      <text x="182" y="52" font-size="26" fill="#cccccc">◎の複勝を全部買うと</text><text x="182" y="138" font-size="84" fill="#ffffff">88.1<tspan font-size="40">%</tspan></text><text x="182" y="178" font-size="22" font-weight="400" fill="#cccccc">100円が88円（回収率）</text></g>
+    <g transform="translate(826,204)"><rect width="366" height="200" rx="16" fill="#1b1f2b" stroke="#555b66" stroke-width="2"/>
+      <text x="183" y="52" font-size="26" fill="#cccccc">◎の単勝を全部買うと</text><text x="183" y="138" font-size="84" fill="#ffffff">81.7<tspan font-size="40">%</tspan></text><text x="183" y="178" font-size="22" font-weight="400" fill="#cccccc">100円が82円（回収率）</text></g>
+  </g>
+
+  <!-- 表: 区分別 -->
+  <text x="48" y="462" font-size="28" font-weight="700" fill="#ffffff">区分ごと</text>
+  <g font-size="24">
+    <g fill="#cccccc" font-weight="700"><text x="72" y="512">区分</text><text x="560" y="512" text-anchor="end">レース</text><text x="760" y="512" text-anchor="end">◎3着内</text><text x="960" y="512" text-anchor="end">複の回収率</text><text x="1168" y="512" text-anchor="end">単の回収率</text></g>
+    <rect x="48" y="526" width="1144" height="2" fill="#333333"/>
+    <g fill="#ffffff">
+      <rect x="48" y="536" width="1144" height="56" rx="8" fill="#171c27"/><text x="72" y="573" font-weight="700" fill="#ffd43d">★勝負</text><text x="560" y="573" text-anchor="end">138</text><text x="760" y="573" text-anchor="end">71.0%</text><text x="960" y="573" text-anchor="end">90.3%</text><text x="1168" y="573" text-anchor="end">84.2%</text>
+      <text x="72" y="637" font-weight="700" fill="#ff8d44">狙い目</text><text x="560" y="637" text-anchor="end">201</text><text x="760" y="637" text-anchor="end">64.7%</text><text x="960" y="637" text-anchor="end">88.9%</text><text x="1168" y="637" text-anchor="end">82.0%</text>
+      <rect x="48" y="664" width="1144" height="56" rx="8" fill="#171c27"/><text x="72" y="701" font-weight="700">そのほか</text><text x="560" y="701" text-anchor="end">273</text><text x="760" y="701" text-anchor="end">56.4%</text><text x="960" y="701" text-anchor="end">86.4%</text><text x="1168" y="701" text-anchor="end">80.1%</text>
+    </g>
+  </g>
+
+  <!-- 新旧モデル -->
+  <text x="48" y="786" font-size="28" font-weight="700" fill="#ffffff">新モデルと前のモデル（同じレースで比べたら）</text>
+  <g font-size="24" fill="#ffffff">
+    <rect x="48" y="806" width="560" height="120" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+    <text x="72" y="850" font-weight="700" fill="#ffd43d">新モデル（本番）</text><text x="72" y="898">◎3着内 62.4%　複 88.1%</text>
+    <rect x="632" y="806" width="560" height="120" rx="16" fill="#1b1f2b" stroke="#555b66" stroke-width="2"/>
+    <text x="656" y="850" font-weight="700" fill="#cccccc">前のモデル（予想だけ記録）</text><text x="656" y="898">◎3着内 59.8%　複 86.0%</text>
+  </g>
+
+  <!-- 今月の一番 -->
+  <text x="48" y="990" font-size="28" font-weight="700" fill="#ffffff">今月いちばんの的中</text>
+  <rect x="48" y="1010" width="1144" height="64" rx="12" fill="#171c27"/>
+  <text x="72" y="1052" font-size="26" fill="#ffffff">11/08 潮見9R　<tspan fill="#ff7171" font-weight="700">◎3</tspan> ミズカキエース　単勝 <tspan font-weight="700">2,340円</tspan>（8番人気）</text>
+
+  <rect x="48" y="1098" width="1144" height="2" fill="#333333"/>
+  <text x="48" y="1140" font-size="22" fill="#cccccc">回収率は買った全レースが分母。100%未満＝買えば増える予想ではありません　／　馬券は20歳から</text>
+  <rect x="0" y="1172" width="1240" height="8" fill="url(#gold)"/>
+</svg>
