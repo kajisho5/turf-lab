@@ -64,6 +64,34 @@ def walk(zips, asof=None, fo=None):
     win = defaultdict(lambda: deque(maxlen=300))   # (場,距離,馬場) / (場,距離) -> 勝ち時計
     hist = defaultdict(lambda: deque(maxlen=3))    # 馬名 -> (sf, af)
     best = defaultdict(dict)                       # 馬名 -> {(場,距離): 一番速い時計}
+    # ★馬場差つきの時計（2026-11-13 追加・sv1/svb/sva）★
+    #   その日その場の全レースの勝ち時計が基準（場×距離の中央値）より200mあたり何秒遅いかの中央値＝馬場差
+    #   （3レース以上ある日だけ）。各馬の時計指数に足し戻して「馬場のぶん」を消す。
+    #   基準と馬場差は、その日その場が全部終わってから履歴に足す（win2 / hsv）。
+    win2 = defaultdict(lambda: deque(maxlen=300))  # (場,距離) -> 勝ち時計（その日が終わってから足す）
+    hsv = defaultdict(lambda: deque(maxlen=3))     # 馬名 -> 馬場差つきの時計指数
+    pend = {"k": None, "items": []}                # 今たどっている (日付, 場) と、その日のレース
+
+    def std2(v, d):
+        a = win2[(v, d)]
+        return statistics.median(a) if len(a) >= 20 else None
+
+    def flush():
+        dev = []
+        for rows_, s0, per, _d in pend["items"]:
+            w = [t_run(r[32]) for r in rows_ if r[31].strip() == "1"]
+            if s0 and w and w[0]:
+                dev.append((w[0] - s0) / per)
+        var = statistics.median(dev) if len(dev) >= 3 else None
+        for rows_, s0, per, vd in pend["items"]:
+            for r in rows_:
+                if not r[31].strip().isdigit():
+                    continue
+                t = t_run(r[32])
+                hsv[r[6]].append(round((s0 - t) / per + var, 3) if (s0 and t and var is not None) else None)
+                if r[31].strip() == "1" and t:
+                    win2[vd].append(t)
+        pend["items"] = []
 
     def std(v, d, g=None):
         if g is not None:
@@ -90,6 +118,9 @@ def walk(zips, asof=None, fo=None):
             if not dist:
                 continue
             per = dist / 200.0
+            if pend["k"] != (key[1], key[0]):
+                flush()
+                pend["k"] = (key[1], key[0])
             if fo is not None:
                 s_today = std(key[0], dist)            # 今日の馬場は発走前に確定しないので場×距離
                 out = {}
@@ -97,11 +128,13 @@ def walk(zips, asof=None, fo=None):
                     p = list(hist[r[6]])[::-1] if r[6] in hist else []
                     bt = best[r[6]].get((key[0], dist)) if r[6] in best else None
                     f = feats_of(p)
+                    f.update(sv_of(list(hsv[r[6]])[::-1] if r[6] in hsv else []))
                     f["btf"] = round((s_today - bt) / per, 3) if (s_today and bt) else None
                     out[str(int(r[5])) if r[5].isdigit() else r[5]] = {k: v for k, v in f.items() if v is not None}
                 rid = key[1][:4] + TC[key[0]] + key[1][4:] + key[2].zfill(2)
                 fo.write(json.dumps({"rid": rid, "h": out}, ensure_ascii=False) + "\n")
             n += 1
+            pend["items"].append((rows[key], std2(key[0], dist), per, (key[0], dist)))
             # ---- ここから結果を履歴に足す ----
             s_run = std(key[0], dist, going)
             ag = [fl(r[34]) for r in rows[key]]
@@ -121,7 +154,15 @@ def walk(zips, asof=None, fo=None):
                 if r[31].strip() == "1" and t:
                     win[(key[0], dist, going)].append(t)
                     win[(key[0], dist)].append(t)
-    return hist, best, std, n
+    flush()
+    return hist, best, std, n, hsv
+
+
+def sv_of(p):
+    """p = 近3走の 馬場差つきの時計指数 を新しい順に"""
+    v = [x for x in p if x is not None]
+    return {"sv1": p[0] if p else None, "svb": max(v) if v else None,
+            "sva": round(sum(v) / len(v), 3) if v else None}
 
 
 def feats_of(p):
@@ -139,9 +180,9 @@ def feats_of(p):
 
 
 def index_time(zips, asof, names=None):
-    """索引用: 馬名 -> {"s": [sf1,sfb,sfa,af1,afb,afa], "b": {"場|距離": 持ち時計の指数}}
+    """索引用: 馬名 -> {"s": [sf1,sfb,sfa,af1,afb,afa,sv1,svb,sva], "b": {"場|距離": 持ち時計の指数}}
     asof の日までの結果だけで作る。本番の画面はこれを読んで学習時と同じ値を出す。"""
-    hist, best, std, _n = walk(zips, asof=asof)
+    hist, best, std, _n, hsv = walk(zips, asof=asof)
     out = {}
     for nm in (names if names is not None else list(hist)):
         if nm not in hist:
@@ -152,20 +193,21 @@ def index_time(zips, asof, names=None):
             s0 = std(v, d)
             if s0:
                 b["%s|%d" % (v, d)] = round((s0 - t) / (d / 200.0), 3)
-        out[nm] = {"s": [f[k] for k in ("sf1", "sfb", "sfa", "af1", "afb", "afa")], "b": b}
+        v = sv_of(list(hsv[nm])[::-1] if nm in hsv else [])
+        out[nm] = {"s": [f[k] for k in ("sf1", "sfb", "sfa", "af1", "afb", "afa")] + [v["sv1"], v["svb"], v["sva"]], "b": b}
     return out
 
 
 def main():
     zips = sorted(glob.glob(os.path.join(WORK, "race_*.zip")))
     with open(OUT + ".tmp", "w", encoding="utf-8") as fo:
-        _h, _b, _s, n = walk(zips, fo=fo)
+        _h, _b, _s, n, _v = walk(zips, fo=fo)
     os.replace(OUT + ".tmp", OUT)
     print(f"完了: {n:,}レース -> {OUT}")
     merge()
 
 
-KEYS = ["sf1", "sfb", "sfa", "af1", "afb", "afa", "btf"]
+KEYS = ["sf1", "sfb", "sfa", "af1", "afb", "afa", "btf", "sv1", "svb", "sva"]
 
 
 def merge():

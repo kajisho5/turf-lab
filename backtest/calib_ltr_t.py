@@ -5,14 +5,14 @@ calib_ltr.py の narC12 と同じ作り方（2023年以降・10分位）。ほ�
 使い方: python3 backtest/calib_ltr_t.py
 """
 import json, os, sys
-os.environ.update(LTR_NEWFEATS="pre", LTR_NODMS="1", LTR_TC="1", LTR_TIME="1")
+os.environ.update(LTR_NEWFEATS="pre", LTR_NODMS="1", LTR_TC="1", LTR_TIME="2")
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.argv = ["x"]; sys.path.insert(0, HERE)
 import numpy as np, lightgbm as lgb
 import bt_train_ltr as T
 K = 2.0
 L33 = lgb.Booster(model_file=os.path.join(HERE, "ltr_model.txt")); R33 = lgb.Booster(model_file=os.path.join(HERE, "ltr_res_model.txt"))
-L40 = lgb.Booster(model_file=os.path.join(HERE, "ltr_model_t40.txt")); R40 = lgb.Booster(model_file=os.path.join(HERE, "ltr_res_model_t40.txt"))
+L40 = lgb.Booster(model_file=os.path.join(HERE, "ltr_model_t.txt")); R40 = lgb.Booster(model_file=os.path.join(HERE, "ltr_res_model_t.txt"))
 F33, F40 = L33.feature_name(), L40.feature_name()
 assert R33.feature_name() == F33 and R40.feature_name() == F40
 

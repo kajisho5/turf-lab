@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """時計つきモデル（mv 2.3・地方）を JS 用に書き出す。
 
-入力: backtest/ltr_model_t40.txt（順位学習40列）/ backtest/ltr_res_model_t40.txt（補助40列）
+入力: backtest/ltr_model_t.txt（順位学習43列）/ backtest/ltr_res_model_t.txt（補助43列）
 出力: core/ltr_model_t.js（LTR_MODEL に narT / narTR を足す。core/ltr_model.js の後に読み込む）
 ★core/ltr_model.js は作り直さない★ 中に入っている narM / jraM の元ファイルがリポに無く、作り直すと消えるため。
 使い方: python3 backtest/bt_export_ltr_t.py
@@ -15,8 +15,8 @@ OUT = os.path.join(ROOT, "core", "ltr_model_t.js")
 
 
 def main():
-    t = load_model(os.path.join(HERE, "ltr_model_t40.txt"))
-    r = load_model(os.path.join(HERE, "ltr_res_model_t40.txt"))
+    t = load_model(os.path.join(HERE, "ltr_model_t.txt"))
+    r = load_model(os.path.join(HERE, "ltr_res_model_t.txt"))
     if not t or not r:
         print("モデルが無い（先に bt_time_feats.py final backtest）"); return 1
     if t["feats"] != r["feats"]:
@@ -24,7 +24,7 @@ def main():
     body = json.dumps({"narT": t, "narTR": r}, separators=(",", ":"), ensure_ascii=False)
     js = (
         "/* 自動生成（backtest/bt_export_ltr_t.py）。手で編集しない。\n"
-        " * 時計つきモデル（mv 2.3・地方）。narT=順位学習40列 / narTR=補助40列。\n"
+        " * 時計つきモデル（mv 2.3・地方）。narT=順位学習43列 / narTR=補助43列。\n"
         " * ltrScoreT(f, 'narT'|'narTR')。木のたどり方は core/ltr_model.js の ltrScore と同じ。 */\n"
         "(function (root) {\n"
         "  var M = " + body + ";\n"

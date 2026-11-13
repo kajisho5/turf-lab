@@ -2602,12 +2602,15 @@ function ltrFeatTweet(num, ctx, fn, trackName){
   /* ★2026-11-13 時計の7列（mv 2.3・地方だけ）★ 走破タイム・上がり3F・持ち時計。
      値は索引（horses.json の s と b）から取る。索引は学習データと同じ関数で作っている
      （backtest/build_time_feats.py）ので、学習時と同じ値になる。無ければ null＝学習時の欠損と同じ。
-       s = [前走の時計指数, 近3走の最良, 平均, 前走の上がり指数, 最良, 平均]
+       s = [前走の時計指数, 近3走の最良, 平均, 前走の上がり指数, 最良, 平均, 馬場差つきの時計指数の前走, 最良, 平均]
        b = {"場|距離": 持ち時計の指数}（今日と同じ場×距離の自己ベスト） */
-  var _ts=(_m==="nar"&&rec&&rec.s&&rec.s.length===6)?rec.s:null;
+  var _ts=(_m==="nar"&&rec&&rec.s&&rec.s.length>=6)?rec.s:null;
   var _nn=function(v){ return (v===null||v===undefined||v!==v)?null:+v; };
   f.sf1=_ts?_nn(_ts[0]):null; f.sfb=_ts?_nn(_ts[1]):null; f.sfa=_ts?_nn(_ts[2]):null;
   f.af1=_ts?_nn(_ts[3]):null; f.afb=_ts?_nn(_ts[4]):null; f.afa=_ts?_nn(_ts[5]):null;
+  /* 馬場差つきの時計（s の7〜9番目）: その日その場の馬場の速さ・遅さを引いた時計指数の 前走／最良／平均 */
+  var _tv=(_ts&&_ts.length>=9)?_ts:null;
+  f.sv1=_tv?_nn(_tv[6]):null; f.svb=_tv?_nn(_tv[7]):null; f.sva=_tv?_nn(_tv[8]):null;
   f.btf=null;
   try{
     var _bd=ctx.race&&ctx.race.dist;
@@ -2738,7 +2741,7 @@ async function scoreRace(html, r, trackName){
         let _raw=_comb(_ltrVals,_res,1);
         /* ★時計つきモデル（mv 2.3・地方・T_FROM以降）★ 順位学習も補助モデルも、時計の7列を足した40列のものに替える。
            全頭ぶん出せた時だけ。1頭でも欠けたら今までのC12のまま（安全側）。
-           T_SCALE は点数の幅の調整（新モデルは幅が約1.07倍に広がるので、判定の閾値の意味がずれないよう戻す）。
+           T_SCALE は点数の幅の調整（新モデルは幅が約1.08倍に広がるので、判定の閾値の意味がずれないよう戻す）。
            切替前（C12）の上位3頭は裏の記録に残す。 */
         try{
           if(tActive(ctx.raceDate) && typeof ltrScoreT==="function" && Object.keys(_ltrValsT).length===nums.length){
@@ -3364,11 +3367,13 @@ const MODEL_VER = "2.1";
 const C12_K = 2.0, C12_FROM = "20260928";
 function c12Active(dateStr){ return MODE==="nar" && String(dateStr||"")>=C12_FROM; }
 /* ★v2.3 = 時計つきモデル（2026-11-13採用・地方のみ・T_FROM以降の日付）★
-   順位学習と補助モデルの両方に、走破タイム・上がり3F・持ち時計から作った7列を足した（40列）。
+   順位学習と補助モデルの両方に、走破タイム・上がり3F・持ち時計から作った7列と、馬場差つきの時計3列を足した（43列）。
+   （同じ11/13のうちに40列→43列に差し替えた。40列のまま本番で予想を保存したことは無い。43列は40列と同じレースで比べて
+     複 88.2→89.3（+1.06［+0.38〜+1.72］）・単 82.5→83.9・16種類の買い方のうち15で回収率が上がった）
    2023-01〜2026-11-12・52,419R で C12 と同じレースを比べて ◎3着内 60.0→63.7% / 複 86.2→88.2 / 単 82.1→82.5、
    16種類の買い方のうち14で回収率が上がった（backtest/bt_time_feats.py・docs/SCORING_AUDIT.md 2026-11-13）。
    切替は C12 と同じく「レースの日付」で決める（過去日はいつ再計算しても同じ◎）。 */
-const T_FROM = "20261114", T_SCALE = 0.935;
+const T_FROM = "20261114", T_SCALE = 0.923;
 function tActive(dateStr){ return MODE==="nar" && String(dateStr||"")>=T_FROM; }
 function modelVerFor(dateStr){ return tActive(dateStr) ? "2.3" : (c12Active(dateStr) ? "2.2" : MODEL_VER); }
 /* 場ごとの天気・馬場見込みを保存用に控えておく（attachTrackWeatherが書く）。
