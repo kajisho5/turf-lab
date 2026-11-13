@@ -34,6 +34,8 @@ const RENDER_TIMEOUT_MS = 420000;           // __autoOut 待ちの上限（朝�
 const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じない時間（既定60秒では足りない）
 
 /** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
+const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
+
 export function kindForTime(ms) {
   const h = new Date((Number(ms) || Date.now()) + 9 * 3600 * 1000).getUTCHours();
   return (h >= 4 && h < 14) ? "morning" : "evening";
@@ -43,6 +45,27 @@ export default {
   async scheduled(event, env, ctx) {
     // 動いた時刻（日本時間）で朝/夜を決める。cron の文字列には頼らない
     // （以前は "0 23 * * *" と完全一致した時だけ朝だったので、時刻をずらすと朝の回が夜扱いになった）
+    // 鍵の確認だけ（投稿しない・画像も作らない）。wrangler.toml に KEYCHECK_CRON と同じ時刻を臨時で足した時だけ動く。
+    // Xに「自分は誰か」を聞くだけで、結果（OK/NG とXの返答の番号）をメールで知らせる。鍵の値は出さない
+    if (event.cron === KEYCHECK_CRON) {
+      ctx.waitUntil((async () => {
+        let line = "";
+        try {
+          const url = "https://api.twitter.com/2/users/me";
+          const res = await fetch(url, { headers: { Authorization: await oauthHeader(env, "GET", url, {}) } });
+          const body = (await res.text()).slice(0, 200);
+          line = res.ok ? `OK（Xの返答 ${res.status}）: ${body}` : `NG（Xの返答 ${res.status}）: ${body}`;
+        } catch (e) { line = "NG（通信の失敗）: " + String(e && e.message || e); }
+        console.log("autopost keycheck", line);
+        if (env.MAIL) await env.MAIL.send({
+          to: "kajiyama@seventh-well.com",
+          from: { email: "autopost@notify.seventh-well.com", name: "カジ競馬 自動投稿" },
+          subject: `【鍵の確認】${line.startsWith("OK") ? "OK" : "NG"}`,
+          text: "Xの鍵の確認（投稿はしていません）\n" + line + "\n",
+        });
+      })().catch(e => console.error("keycheck", e)));
+      return;
+    }
     const kind = kindForTime(event.scheduledTime);
     ctx.waitUntil((async () => {
       let r = null, err = null;
