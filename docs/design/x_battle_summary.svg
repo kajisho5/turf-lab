@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1010" viewBox="0 0 1240 1010" font-family="'Noto Sans JP','Noto Sans CJK JP',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121826"/><stop offset="1" stop-color="#0a0e16"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffd43d"/><stop offset="1" stop-color="#ff7171"/></linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd43d"/><stop offset="1" stop-color="#ffb400"/></linearGradient>
+  </defs>
+  <rect width="1240" height="1010" fill="url(#bg)"/>
+  <!-- 見出し（場ごとのカードと同じ作り） -->
+  <rect x="48" y="56" width="10" height="66" rx="5" fill="url(#bar)"/>
+  <text x="78" y="112" font-size="64" font-weight="700" fill="#ffffff">今日の★勝負</text>
+  <g font-size="24" font-weight="700">
+    <rect x="610" y="66" width="150" height="48" rx="24" fill="#2a2410" stroke="#ffd43d" stroke-width="2"/>
+    <text x="685" y="99" text-anchor="middle" fill="#ffd43d">★勝負 8</text>
+    <rect x="776" y="66" width="170" height="48" rx="24" fill="#171c27" stroke="#555b66" stroke-width="2"/>
+    <text x="861" y="99" text-anchor="middle" fill="#cccccc">全34レース中</text>
+    <rect x="962" y="66" width="230" height="48" rx="24" fill="#171c27" stroke="#555b66" stroke-width="2"/>
+    <text x="1077" y="99" text-anchor="middle" fill="#ffffff">2026.11.14　朝</text>
+  </g>
+  <text x="48" y="156" font-size="24" fill="#cccccc">発走の早い順（左→右、上→下）　／　<tspan fill="#ff7171">◎</tspan>本命　<tspan fill="#ffc700">○</tspan>対抗　／　オッズが出る前の予想です。このあと変えません</text>
+  <rect x="48" y="176" width="1144" height="2" fill="url(#gold)"/>
+
+  <!-- 1行ぶんの部品: 左=発走時刻と場・レース / 中=◎ / 右=○ -->
+  <g id="rows" font-weight="700">
+    <!-- 左の列 -->
+    <g transform="translate(48,204)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">15:10</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">潮見 3R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">C2二組　1400m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎7</text><text x="104" y="104" font-size="36" fill="#ffffff">オッターダッシュ</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○3</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">ラッコノユメ</text>
+    </g>
+    <g transform="translate(632,204)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">16:20</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">潮見 5R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">C1三組　1300m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎2</text><text x="104" y="104" font-size="36" fill="#ffffff">カワウソブレイブ</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○9</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">ミナモノカゼ</text>
+    </g>
+    <g transform="translate(48,372)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">17:05</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">鳴瀬 6R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">B3　1600m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎11</text><text x="120" y="104" font-size="36" fill="#ffffff">セセラギキング</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○4</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">アオノミズベ</text>
+    </g>
+    <g transform="translate(632,372)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">17:40</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">潮見 7R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">C1一組　1400m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎5</text><text x="104" y="104" font-size="36" fill="#ffffff">イタチノホシ</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○1</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">ハシレコツメ</text>
+    </g>
+    <!-- 右の列 -->
+    <g transform="translate(48,540)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">18:15</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">鳴瀬 8R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">B2　1400m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎6</text><text x="104" y="104" font-size="36" fill="#ffffff">ナガレボシオッター</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○8</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">カワベノウタ</text>
+    </g>
+    <g transform="translate(632,540)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">19:00</text>
+      <rect x="128" y="20" width="150" height="40" rx="8" fill="#ffd43d"/><text x="203" y="49" font-size="24" text-anchor="middle" fill="#1a1400">潮見 9R</text>
+      <text x="296" y="49" font-size="22" font-weight="400" fill="#cccccc">B1　1600m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎3</text><text x="104" y="104" font-size="36" fill="#ffffff">ミズカキエース</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○10</text><text x="94" y="136" font-size="24" font-weight="400" fill="#cccccc">ユウグレノセ</text>
+    </g>
+    <g transform="translate(48,708)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">19:40</text>
+      <rect x="128" y="20" width="166" height="40" rx="8" fill="#ffd43d"/><text x="211" y="49" font-size="24" text-anchor="middle" fill="#1a1400">鳴瀬 10R</text>
+      <text x="312" y="49" font-size="22" font-weight="400" fill="#cccccc">A2　1800m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎1</text><text x="104" y="104" font-size="36" fill="#ffffff">オッターノキズナ</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○7</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">セキレイマーチ</text>
+    </g>
+    <g transform="translate(632,708)">
+      <rect width="560" height="150" rx="16" fill="#1b1f2b" stroke="url(#gold)" stroke-width="3"/>
+      <text x="24" y="50" font-size="32" fill="#ffffff">20:30</text>
+      <rect x="128" y="20" width="166" height="40" rx="8" fill="#ffd43d"/><text x="211" y="49" font-size="24" text-anchor="middle" fill="#1a1400">潮見 12R</text>
+      <text x="312" y="49" font-size="22" font-weight="400" fill="#cccccc">A1　1600m</text>
+      <text x="24" y="104" font-size="36" fill="#ff7171">◎9</text><text x="104" y="104" font-size="36" fill="#ffffff">ラッコグランデ</text>
+      <text x="24" y="136" font-size="24" fill="#ffc700">○2</text><text x="78" y="136" font-size="24" font-weight="400" fill="#cccccc">ヒカリノミナモ</text>
+    </g>
+  </g>
+
+  <!-- 下の帯 -->
+  <rect x="48" y="886" width="1144" height="2" fill="#333333"/>
+  <text x="48" y="930" font-size="24" font-weight="700" fill="#ffffff">当たったら、この投稿の返信でお知らせします</text>
+  <text x="48" y="968" font-size="22" fill="#cccccc">全レースの予想は2枚目から　／　近走・騎手・血統・時計から自動算出（オッズ非依存）　／　馬券は20歳から</text>
+  <rect x="0" y="1002" width="1240" height="8" fill="url(#gold)"/>
+</svg>
