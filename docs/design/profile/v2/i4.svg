@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" font-family="'Noto Sans JP',sans-serif"><defs></defs>
+<rect width="400" height="400" fill="#171614"/>
+<rect x="118" y="52" width="164" height="296" fill="#efe7d6"/>
+<rect x="130" y="64" width="140" height="272" fill="none" stroke="#171614" stroke-width="3"/>
+<text x="200" y="92" writing-mode="vertical-rl" font-family="'Noto Serif JP',serif" font-weight="900" font-size="104" fill="#171614" letter-spacing="6">カジ</text>
+<circle cx="200" cy="312" r="0" fill="none" stroke="#ff7a6b" stroke-width="0" opacity="1"/>
+</svg>

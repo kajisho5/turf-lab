@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" font-family="'Noto Sans JP',sans-serif"><defs></defs>
+<rect width="1500" height="500" fill="#171614"/>
+<path d="M 1152.0 376.0 L 1152.0 196.0 A 108.0 108.0 0 0 1 1368.0 196.0 L 1368.0 376.0" fill="none" stroke="#efe7d6" stroke-width="84.00000000000001" stroke-linecap="butt"/>
+<circle cx="1158.5" cy="159.1" r="9.0" fill="#171614"/>
+<circle cx="1198.1" cy="107.5" r="9.0" fill="#171614"/>
+<circle cx="1260.0" cy="88.0" r="9.0" fill="#171614"/>
+<circle cx="1321.9" cy="107.5" r="9.0" fill="#171614"/>
+<circle cx="1361.5" cy="159.1" r="9.0" fill="#171614"/>
+<circle cx="1152.0" cy="286.0" r="9.0" fill="#171614"/>
+<circle cx="1368.0" cy="286.0" r="9.0" fill="#171614"/>
+<circle cx="1152.0" cy="340.0" r="9.0" fill="#171614"/>
+<circle cx="1368.0" cy="340.0" r="9.0" fill="#171614"/>
+<circle cx="1260" cy="262" r="44" fill="none" stroke="#ff7a6b" stroke-width="16" opacity="1"/>
+<circle cx="1260" cy="262" r="14" fill="none" stroke="#ff7a6b" stroke-width="12" opacity="1"/>
+<text x="430" y="262" font-family="'Noto Serif JP',serif" font-weight="900" font-size="150" fill="#efe7d6" letter-spacing="-3">カジ競馬</text>
+<rect x="434" y="300" width="610" height="6" fill="#a3271c"/>
+<text x="434" y="352" font-size="30" font-weight="700" fill="#efe7d6" letter-spacing="2">地方競馬 AI予想</text>
+<text x="434" y="398" font-size="24" font-weight="500" fill="#b8b0a0" letter-spacing="1">毎朝 8:30 全場・全レース　／　外れも全部のせます</text>
+</svg>

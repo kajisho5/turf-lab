@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" font-family="'Noto Sans JP',sans-serif"><defs><pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="#171614"/><rect width="2" height="10" fill="#efe7d6" opacity=".22"/></pattern></defs>
+<rect width="1500" height="500" fill="#171614"/>
+<circle cx="-30" cy="120" r="330" fill="none" stroke="#efe7d6" stroke-width="3" opacity="0.1"/>
+<circle cx="-30" cy="120" r="250" fill="none" stroke="#efe7d6" stroke-width="3" opacity="0.1"/>
+<circle cx="-30" cy="120" r="170" fill="none" stroke="#efe7d6" stroke-width="3" opacity="0.1"/>
+<text x="430" y="212" font-family="'Noto Serif JP',serif" font-weight="900" font-size="128" fill="#efe7d6" letter-spacing="-2">外れも、</text>
+<text x="430" y="352" font-family="'Noto Serif JP',serif" font-weight="900" font-size="128" letter-spacing="-2"><tspan fill="#ff7a6b">全部</tspan><tspan fill="#efe7d6">のせる。</tspan></text>
+<rect x="432" y="384" width="760" height="2" fill="#efe7d6"/>
+<text x="432" y="424" font-size="22" font-weight="500" fill="#b8b0a0">地方競馬 AI予想　／　毎朝 8:30 全場・全レース　／　毎晩 22:30 答え合わせ</text>
+<rect x="1286" y="70" width="156" height="366" fill="url(#hatch)" stroke="#efe7d6" stroke-width="4"/>
+<rect x="1298" y="82" width="132" height="342" fill="#171614"/>
+<text x="1364" y="104" writing-mode="vertical-rl" font-family="'Noto Serif JP',serif" font-weight="900" font-size="78" fill="#efe7d6" letter-spacing="2">カジ競馬</text>
+</svg>
