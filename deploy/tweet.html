@@ -6797,9 +6797,17 @@ async function checkAll(){
   // まず開催一覧を取得して場を確定
   $("#status").innerHTML=`<span class="prog">開催一覧を取得中…</span>`;
   let list=[];
-  try{ const html=await fetchDecoded(listURL(date)); list=parseRaceListHTML(html); }catch(e){ $("#status").textContent="一覧取得失敗: "+e.message; return; }
-  if(!list.length){ $("#status").textContent="本日の開催が見つからない（日付を確認）"; return; }
-  const tracks=[...new Set(list.map(r=>r.race_id.slice(4,6)))];
+  let _listErr="";
+  try{ const html=await fetchDecoded(listURL(date)); list=parseRaceListHTML(html); }catch(e){ _listErr=String((e&&e.message)||e); }
+  let tracks=[...new Set(list.map(r=>r.race_id.slice(4,6)))];
+  /* ★開催一覧が取れない時は、保存してある予想から場を決める（2026-11-14）★
+     中央は一覧のページが取れない回がある。ここで止まると答え合わせが丸ごと「レースなし」になる（11/14 の夜に中央の投稿が出なかった）。
+     答え合わせに要るのは「予想を保存した場」だけなので、一覧が無くても進められる。 */
+  if(!tracks.length){
+    try{ const r=await fetch(`predictions.php?action=list&mode=${encodeURIComponent(MODE)}&date=${encodeURIComponent(date)}&_=${Date.now()}`,{headers:{Accept:"application/json"}});
+      const j=r.ok?await r.json():null; tracks=[...new Set(((j&&j.records)||[]).filter(x=>x&&x.tc&&x.races&&x.races.length).map(x=>String(x.tc)))]; }catch(_){}
+  }
+  if(!tracks.length){ $("#status").textContent=_listErr?("一覧取得失敗: "+_listErr):"本日の開催が見つからない（日付を確認）"; return; }
   // 保存済み予想が1場でも欠けてたら、全場予想を先に作る
   // 保存済み予想だけで答え合わせ（予想の再取得・再予想はしない。予想が無い場はスキップ）
   allCheck={}; checkResults=[];
