@@ -8,6 +8,11 @@ const SITE = "https://seventh-well.com/odds";
 const AFTER_MIN = 3;        // 発走の何分後から結果を見に行くか
 const GIVE_UP_MIN = 120;    // 発走から何分たっても確定しなければあきらめる
 const MAX_FETCH = 12;       // 1回の実行で結果を見に行くレース数の上限（全レースを見るようにしたので 8 → 12）
+/* ★中央は少しずつ見に行く（2026-11-14）★
+   中央の結果のページは、直接は取れず（netkeiba が 400 を返す）中継を通る。中継は短い時間に続けて頼むと断られる（429）。
+   11/14 は全レースを10分おきに最大12件ずつ頼んだせいで、31レース中12レースしか結果を記録できなかった。
+   中央は 1回4件まで・1件ごとに2秒あける・発走10分後から、にする（地方は直接取れるので今までどおり）。 */
+const JRA_MAX_FETCH = 4, JRA_GAP_MS = 2000, JRA_AFTER_MIN = 10;
 export const BIG_TAN = 1000;   // 高配当の的中（単独で出す）の線引き＝単勝の払戻がこの額以上。根拠は docs/design/X_HIT_AND_GRADE_DESIGN.md
 
 export const HITS_DDL = `CREATE TABLE IF NOT EXISTS xpost_log (
@@ -111,7 +116,8 @@ export async function rememberMorning(env, date, mode, tweetId) {
 /* 10分おきの回。reply(text, toId) は投稿して投稿IDを返す関数（worker.js が渡す）。
    big(r, mode, date, st) は高配当の的中を画像つきの単独の投稿で出して投稿IDを返す関数（無ければ出さない）。
    記録: r:レースID＝そのレースの◎の結果（全レース）／h:レースID＝★勝負の結果（今までどおり） */
-export async function runHits(env, reply, { dry, big } = {}) {
+export async function runHits(env, reply, { dry, big, sleep } = {}) {
+  const wait = sleep || ((ms) => new Promise(r => setTimeout(r, ms)));   // sleep は試験用（ふだんは本当に待つ）
   const out = { date: null, checked: 0, posted: [], missed: 0, big: [], skipped: null };
   if (!env.DB) { out.skipped = "DB なし"; return out; }
   const j = new Date(Date.now() + 9 * 3600e3);
@@ -135,7 +141,11 @@ export async function runHits(env, reply, { dry, big } = {}) {
     let aPlayed = rRows.length, aWon = rRows.filter(x => isWin(x, "win")).length;       // 全レースの◎の戦績
     // まだ見ていないレース（★勝負は h:、それ以外は r: が無いもの）
     const todo = races.filter(r => bigOn ? !rDone.has(r.rid) : !hDone.has(r.rid));
-    for (const r of dueRaces(todo, new Set(), nowMin).slice(0, MAX_FETCH)) {
+    const jra = mode === "jra";
+    const due = dueRaces(todo, new Set(), nowMin).filter(r => !jra || nowMin >= postMin(r.post) + JRA_AFTER_MIN).slice(0, jra ? JRA_MAX_FETCH : MAX_FETCH);
+    let nth = 0;
+    for (const r of due) {
+      if (jra && nth++ > 0) await wait(JRA_GAP_MS);
       const base = mode === "nar" ? "https://nar.netkeiba.com" : "https://race.netkeiba.com";
       const u = btoa(`${base}/race/result.html?race_id=${r.rid}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
       let res = null;

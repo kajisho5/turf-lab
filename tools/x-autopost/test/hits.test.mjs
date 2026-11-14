@@ -124,4 +124,24 @@ if (now >= 30 && now <= 23 * 60) {
   r = await runHits(env4, reply, { dry: true, big: async () => { throw new Error("呼ばれてはいけない"); } });
   eq("ドライランは投稿しない", r.big.map(x => [x.rid, x.dry]), [["B2", true], ["B3", true]]);
 }
+// ---- 中央は少しずつ見に行く（1回4件まで・間をあける・発走10分後から）----
+if (now >= 60 && now <= 23 * 60) {
+  const mk = (i, ago) => ({ no: i, race_id: "J" + i, post: hm(now - ago), marks: [{ num: "1", name: "カワベノハナ" }] });
+  const recs = [{ tc: "05", trackName: "鳴瀬", races: [mk(1, 50), mk(2, 40), mk(3, 30), mk(4, 25), mk(5, 20), mk(6, 15), mk(7, 8)] }];
+  const asked = [];
+  globalThis.fetch = async (u) => {
+    u = String(u);
+    if (u.includes("action=listlocks")) return { ok: true, json: async () => ({ locks: [] }) };
+    if (u.includes("action=list")) return { ok: true, json: async () => ({ records: u.includes("mode=jra") ? recs : [] }) };
+    const m = u.match(/proxy\.php\?u=([^&]+)/); const url = atob(m[1].replace(/-/g, "+").replace(/_/g, "/")); asked.push(url.match(/race_id=(\w+)/)[1]);
+    return { ok: true, text: async () => page([9], ["300円"], [9], ["150円"]) };
+  };
+  const env = { DB: fakeDB() }; const waits = [];
+  await rememberMorning(env, today, "jra", "ROOT");
+  let r = await runHits(env, async () => "T", { big: async () => "G", sleep: async (ms) => { waits.push(ms); } });
+  eq("中央: 1回目は古い順に4件だけ", asked, ["J1", "J2", "J3", "J4"]);
+  eq("中央: 1件ごとに間をあける（最初の前はあけない）", waits, [2000, 2000, 2000]);
+  asked.length = 0; r = await runHits(env, async () => "T", { big: async () => "G", sleep: async () => {} });
+  eq("中央: 2回目は続きから。発走10分たっていないレースはまだ見ない", asked, ["J5", "J6"]);
+}
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);
