@@ -79,6 +79,19 @@ function fakeDB() {
   await runRetry(env2, at("2026-11-14T23:10:00"), M, bad, notify);
   eq("失敗が続いても2回まで", [c2, (await loadState(env2, d, "evening")).tries], [["nar", "nar"], 2]);
 
+  // 夜に「確定レースなし」だったが、その日の朝に投稿していたモードは出し直す（開催があったのに結果が取れなかった時）
+  const env7 = { DB: fakeDB() }, c7 = [];
+  const ok7 = async (kind, mode) => { c7.push(kind + ":" + mode); return { modes: { [mode]: { ok: true, posted: [{ id: "888", images: 5 }] } } }; };
+  await env7.DB.prepare("INSERT OR REPLACE INTO xpost_log(k,date,mode,tweet_id,body,ts) VALUES(?,?,?,?,?,?)").bind("m:" + d + ":jra", d, "jra", "ROOT", null, 1).run();
+  await saveState(env7, d, "evening", { modes: { nar: "ok", jra: "none" }, tries: 0 });
+  eq("23:40 も夜のやり直しの回", retryKind(at("2026-11-14T23:40:00")), "evening");
+  await runRetry(env7, at("2026-11-14T23:40:00"), M, ok7, notify);
+  eq("朝に投稿した日の『なし』は出し直す", [c7, (await loadState(env7, d, "evening")).modes], [["evening:jra"], { nar: "ok", jra: "ok" }]);
+  const env8 = { DB: fakeDB() }, c8 = [];
+  await saveState(env8, d, "evening", { modes: { nar: "ok", jra: "none" }, tries: 0 });
+  await runRetry(env8, at("2026-11-14T22:50:00"), M, async (k, m) => { c8.push(m); return { modes: {} }; }, notify);
+  eq("朝の投稿が無い日の『なし』（開催なし）は出し直さない", c8, []);
+
   // 途中で落ちた（印だけ残る）→ 次の回は出し直さない
   const env3 = { DB: fakeDB() }, c3 = [];
   await saveState(env3, d, "morning", { modes: { nar: "fail", jra: "none" }, tries: 0 });

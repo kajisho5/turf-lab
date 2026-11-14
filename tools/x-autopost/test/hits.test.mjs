@@ -139,9 +139,12 @@ if (now >= 60 && now <= 23 * 60) {
   const env = { DB: fakeDB() }; const waits = [];
   await rememberMorning(env, today, "jra", "ROOT");
   let r = await runHits(env, async () => "T", { big: async () => "G", sleep: async (ms) => { waits.push(ms); } });
-  eq("中央: 1回目は古い順に4件だけ", asked, ["J1", "J2", "J3", "J4"]);
+  // 見はじめる場所は回ごとにずれる（10分ごとに1つ）。見られるのは発走10分後からの J1〜J6
+  const rot = (ids) => { const off = Math.floor(now / 10) % ids.length; return ids.slice(off).concat(ids.slice(0, off)); };
+  const first = rot(["J1", "J2", "J3", "J4", "J5", "J6"]).slice(0, 4);
+  eq("中央: 1回目は4件だけ", asked, first);
   eq("中央: 1件ごとに間をあける（最初の前はあけない）", waits, [2000, 2000, 2000]);
   asked.length = 0; r = await runHits(env, async () => "T", { big: async () => "G", sleep: async () => {} });
-  eq("中央: 2回目は続きから。発走10分たっていないレースはまだ見ない", asked, ["J5", "J6"]);
+  eq("中央: 2回目は残りの2件。発走10分たっていないレースはまだ見ない", asked.slice().sort(), ["J1", "J2", "J3", "J4", "J5", "J6"].filter(x => !first.includes(x)));
 }
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);

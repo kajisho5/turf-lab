@@ -2355,6 +2355,11 @@ function init(){
              これが無いと毎晩「【中央】的中なし。推奨0R中0的中」が出てしまう（2026-10-30に発見）。 */
           { let _n=0; for(const _tc of Object.keys(allCheck)){ (allCheck[_tc].races||[]).forEach(c=>{ if(c&&c.decided&&!c.skip) _n++; }); }
             if(!_n){ window.__autoOut={ok:false, kind:"evening", mode:MODE, date, error:"no races（確定レースなし）"}; return; } }
+          /* ★結果が取れていないレースが多い時は投稿しない（2026-11-14）★
+             中央は結果のページが取れない回が多い。一部しか取れていないまま答え合わせを出すと、少ないレースの成績を「今日の成績」として出してしまう。
+             予想したレースの8割以上で結果（または取消）が分かっている時だけ出す。足りない時は失敗として返す（あとの回でやり直す）。 */
+          { let _tot=0, _dec=0; for(const _tc of Object.keys(allCheck)){ (allCheck[_tc].races||[]).forEach(c=>{ if(!c||c.skip||!(c.marks||[]).length) return; _tot++; if(c.decided||c.cancelled) _dec++; }); }
+            if(_tot && _dec < _tot*0.8){ window.__autoOut={ok:false, kind:"evening", mode:MODE, date, error:"結果が取れていないレースが多い（"+_dec+"/"+_tot+"）"}; return; } }
           /* ★狙い目は「朝の予想と一緒に保存済みの信頼度(firmO)」で判定★
              夜にオッズを取り直すと朝公開した予想とズレる（公開後不変に反する）。
              朝カードの狙い目(firmO≥60)はfirmOごと保存済みなので、それを唯一の正として夜も採点。 */

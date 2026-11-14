@@ -8,6 +8,17 @@ import { Ctx, Env, resp, json, q, sha1, nowSec, readJson, toAB } from '../lib';
 
 const TTL_FRESH = 90;
 const TTL_STALE = 21600;
+const TTL_FINAL = 14 * 86400;   // 払戻まで入った結果のページ（もう変わらない）を取っておく長さ
+
+/* 結果のページで、単勝の払戻の行まで入っているか（＝確定済み。あとから変わらない）。
+   ★2026-11-14★ 中央（race.netkeiba.com）は直接取りに行くと 400 が返ることが多く、中継も続けて頼むと断られる（429）。
+   夜の答え合わせは全レースの結果を一度に取りに行くので、ほとんど取れずに「確定レースなし」になり、中央の夜の投稿が出なかった。
+   一度でも取れた確定済みの結果は取っておいて、次からはそれを返す（取り直さない）。 */
+function isFinalResult(url: string, body: Uint8Array): boolean {
+  if (!/\/race\/result\.html/.test(url) || body.length < 5000) return false;
+  const t = new TextDecoder().decode(body);
+  return /<tr class="Tansho">[\s\S]{0,2000}?class="Payout">\s*<span>\s*[\d,]+/.test(t);
+}
 const WL = /^https:\/\/[a-z0-9.-]*\.(netkeiba|keeeeeeba)\.com\//i;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
@@ -71,6 +82,11 @@ export async function proxyGet(env: Env, url: string, diag = false): Promise<Res
   const volatile = /\/race\/result\.html/.test(url);
   const cached = await cacheRead(env, url);
 
+  if (cached && cached.code >= 200 && cached.code < 400 && cached.age < TTL_FINAL && isFinalResult(url, cached.body)) {
+    const h: Record<string, string> = { ...base, 'X-Proxy-Cache': 'final' };
+    if (cached.ctype) h['Content-Type'] = cached.ctype;
+    return resp(cached.body, cached.code, h);
+  }
   if (cached && cached.age < TTL_FRESH && cached.code >= 200 && cached.code < 400) {
     const h: Record<string, string> = { ...base, 'X-Proxy-Cache': 'fresh' };
     if (cached.ctype) h['Content-Type'] = cached.ctype;

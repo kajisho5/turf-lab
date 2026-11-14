@@ -22,7 +22,7 @@ export function isRehearsalTime(ms) { const { h } = jst(ms); return h >= 5 && h 
 export function retryKind(ms) {
   const { h, m } = jst(ms);
   if (h === 9 && (m === 0 || m === 20)) return "morning";
-  if ((h === 22 && m === 50) || (h === 23 && m === 10)) return "evening";
+  if ((h === 22 && m === 50) || (h === 23 && (m === 10 || m === 40))) return "evening";   // 23:40 は 2026-11-14 に足した（中央の結果が取れなかった夜の最後の機会）
   return null;
 }
 /** 週間まとめを出す回か。月曜の 9:10・12:10・15:10（日本時間）なら「先週の月曜の日付」を返す。それ以外は null。
@@ -98,7 +98,19 @@ export function planRetry(st, date, modes) {
 export async function runRetry(env, ms, modes, runAll, notify) {
   const kind = retryKind(ms); if (!kind) return null;
   const { date } = jst(ms);
-  const st = await loadState(env, date, kind);
+  let st = await loadState(env, date, kind);
+  /* ★夜の「確定レースなし」でも、その日の朝に投稿したモードなら失敗として扱う（2026-11-14）★
+     11/14 の夜、中央は結果のページが1つも取れず「確定レースなし」になった。開催が無い日と同じ扱いで、やり直しもメールも無かった。
+     朝の投稿のIDが残っている＝その日は開催があった、なので「なし」は取り損ねとみなして出し直す。 */
+  if (kind === "evening" && st && st.modes && env.DB) {
+    const up = {};
+    for (const mode of modes) {
+      if (st.modes[mode] !== "none") continue;
+      const m = await env.DB.prepare("SELECT tweet_id FROM xpost_log WHERE k=?").bind(`m:${date}:${mode}`).first();
+      if (m && m.tweet_id) up[mode] = "fail";
+    }
+    if (Object.keys(up).length) st = Object.assign({}, st, { modes: Object.assign({}, st.modes, up) });
+  }
   const plan = planRetry(st, date, modes);
   if (plan.warn) {
     await saveState(env, date, kind, Object.assign({}, st, { warned: 1 }));

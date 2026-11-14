@@ -13,6 +13,7 @@ const MAX_FETCH = 12;       // 1回の実行で結果を見に行くレース数
    11/14 は全レースを10分おきに最大12件ずつ頼んだせいで、31レース中12レースしか結果を記録できなかった。
    中央は 1回4件まで・1件ごとに2秒あける・発走10分後から、にする（地方は直接取れるので今までどおり）。 */
 const JRA_MAX_FETCH = 4, JRA_GAP_MS = 2000, JRA_AFTER_MIN = 10;
+const JRA_GIVE_UP_MIN = 420;   // 中央は取れない回が多いので、発走の7時間後まで（夜の答え合わせの前まで）取りに行き続ける。取れた結果は中継の側に残り、夜の回がそれを使う
 export const BIG_TAN = 1000;   // 高配当の的中（単独で出す）の線引き＝単勝の払戻がこの額以上。根拠は docs/design/X_HIT_AND_GRADE_DESIGN.md
 
 export const HITS_DDL = `CREATE TABLE IF NOT EXISTS xpost_log (
@@ -84,8 +85,8 @@ export function bigText(r, res, played, won, mode) {
 export function postMin(s) { const m = String(s || "").match(/^(\d{1,2}):(\d{2})$/); return m ? (+m[1]) * 60 + (+m[2]) : null; }
 
 /* 今見に行くレース（発走 AFTER_MIN 分後〜GIVE_UP_MIN 分後・未記録のもの） */
-export function dueRaces(races, doneSet, nowMin) {
-  return races.filter(r => { const p = postMin(r.post); return p != null && !doneSet.has(r.rid) && nowMin >= p + AFTER_MIN && nowMin <= p + GIVE_UP_MIN; });
+export function dueRaces(races, doneSet, nowMin, giveUp) {
+  return races.filter(r => { const p = postMin(r.post); return p != null && !doneSet.has(r.rid) && nowMin >= p + AFTER_MIN && nowMin <= p + (giveUp || GIVE_UP_MIN); });
 }
 
 /* 速報の文。played/won はこのレースを含めた今日の★勝負の戦績 */
@@ -142,7 +143,10 @@ export async function runHits(env, reply, { dry, big, sleep } = {}) {
     // まだ見ていないレース（★勝負は h:、それ以外は r: が無いもの）
     const todo = races.filter(r => bigOn ? !rDone.has(r.rid) : !hDone.has(r.rid));
     const jra = mode === "jra";
-    const due = dueRaces(todo, new Set(), nowMin).filter(r => !jra || nowMin >= postMin(r.post) + JRA_AFTER_MIN).slice(0, jra ? JRA_MAX_FETCH : MAX_FETCH);
+    let due = dueRaces(todo, new Set(), nowMin, jra ? JRA_GIVE_UP_MIN : 0).filter(r => !jra || nowMin >= postMin(r.post) + JRA_AFTER_MIN);
+    // 中央は回ごとに見はじめる場所をずらす（同じレースが取れないまま先頭に居座って、ほかが見られなくなるのを防ぐ）
+    if (jra && due.length > JRA_MAX_FETCH) { const off = Math.floor(nowMin / 10) % due.length; due = due.slice(off).concat(due.slice(0, off)); }
+    due = due.slice(0, jra ? JRA_MAX_FETCH : MAX_FETCH);
     let nth = 0;
     for (const r of due) {
       if (jra && nth++ > 0) await wait(JRA_GAP_MS);
