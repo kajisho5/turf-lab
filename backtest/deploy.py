@@ -39,6 +39,7 @@ MAP = [
     ("core/ltr_model_t.js",           "/seventh-well.com/odds/core/ltr_model_t.js"),   # 時計つきモデル（mv 2.3）
     ("deploy/data/horses.json",       "/seventh-well.com/odds/data/horses.json"),
     ("deploy/data/horses_time.json",  "/seventh-well.com/odds/data/horses_time.json"),   # 時計の値（mv 2.3 用・tweet.html だけが読む。公開側には置かない）
+    ("deploy/data/banei_pred.json",   "/seventh-well.com/odds/data/banei_pred.json"),   # ばんえい専用モデルの点数（毎朝作る・tweet.html だけが読む）
     ("deploy/data/nar_index_asof.json", "/seventh-well.com/odds/data/nar_index_asof.json"),   # 索引がいつまでの結果で作られたか（外から鮮度を確かめる用）
     # 実運用の成績表（backtest/scoreboard.py が毎朝作る。運営側だけに置く）
     ("deploy/data/scoreboard.json",    "/seventh-well.com/odds/data/scoreboard.json"),

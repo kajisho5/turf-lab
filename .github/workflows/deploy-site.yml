@@ -17,6 +17,9 @@ on:
       - "backtest/build_nar_index.py"
       - "backtest/build_time_feats.py"
       - "backtest/scoreboard.py"
+      - "backtest/build_banei_pred.py"
+      - "backtest/banei_feats.py"
+      - "backtest/banei_model.json"
       - ".github/workflows/deploy-site.yml"
   # ★GitHub の時刻指定は遅れる★ 2026-11-13 は 4:40 の回が 9:40、7:40 の回が 11:53 に動いた（朝8:30の投稿に間に合わず）。
   #   対策: 2:40〜7:40（日本時間）に1時間おきで6回並べる。5時間遅れても最初の回は 7:40 に動く。
@@ -101,7 +104,7 @@ jobs:
     uses: kajisho5/tower/.github/workflows/deploy-workers.yml@main
     with:
       working-directory: cloudflare
-      build-command: python3 ../backtest/build_nar_index.py --cache ../.nar_cache ${{ github.event_name == 'push' && '--soft' || '' }} && (python3 ../backtest/scoreboard.py --cache ../.nar_cache || echo "::warning::成績表を作れませんでした（前の成績表のまま公開します）") && python3 build.py --site both
+      build-command: python3 ../backtest/build_nar_index.py --cache ../.nar_cache ${{ github.event_name == 'push' && '--soft' || '' }} && (python3 ../backtest/scoreboard.py --cache ../.nar_cache || echo "::warning::成績表を作れませんでした（前の成績表のまま公開します）") && (python3 ../backtest/build_banei_pred.py --cache ../.nar_cache || echo "::warning::ばんえいの点数を作れませんでした（前の点数のまま公開します）") && python3 build.py --site both
       cache-path: .nar_cache
       cache-key: nar-zip-v1
     secrets:

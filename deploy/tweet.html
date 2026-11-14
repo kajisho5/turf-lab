@@ -2039,6 +2039,14 @@ async function fetchWinOdds(rid, post){   /* postは発走時刻'HH:MM'。オッ
    スコアの抜け具合 c=0.6*gap+0.4*nextGap を、holdout(2023〜)の10分位×実測複勝率に
    写像する（backtest/calib_ltr.py → data/ltr_calib.json。オッズ不使用=事前条件）。
    ★表示専用★ 判定(狙い目/見送り)の閾値は従来のfirmnessのまま＝蓄積記録の意味を変えない。 */
+/* ばんえい専用モデルの点数（backtest/build_banei_pred.py が毎朝作る。docs/FACTS.md 2026-11-14）。読めなければ null＝今までの手作りの点数で並べる */
+let _BANEI_PRED_P=null;
+function loadBaneiPred(){
+  if(_BANEI_PRED_P) return _BANEI_PRED_P;
+  _BANEI_PRED_P=fetch("data/banei_pred.json?_="+Date.now(),{cache:"no-store"})
+    .then(r=>r.ok?r.json():null).then(j=>(j&&j.races)?j:null).catch(()=>null);
+  return _BANEI_PRED_P;
+}
 let _LTR_CALIB=null, _LTR_CALIB_P=null;
 function loadLtrCalib(){
   if(_LTR_CALIB_P) return _LTR_CALIB_P;
@@ -2933,6 +2941,30 @@ async function scoreRace(html, r, trackName){
       }
     }
   }catch(_){}
+  /* ★ばんえい専用モデル（2026-11-14）★ 帯広は、毎朝作った専用モデルの点数で並べる。
+     検証（backtest/train_banei.py・2023年以降 6,761R・朝の材料だけ）: ◎3着内 57.3%（今までの手作りの点数は 47.6%）。
+     点数は、今までの点数と同じ平均・ばらつきに写してから使う（下流の信頼度・見送りの計算の意味を変えないため）。
+     全頭ぶんの点数がそろったレースだけ。1頭でも欠けたら今までの点数のまま（安全側）。
+     _baneiC＝抜け具合 c（記録用）。ばんえいは★勝負・狙い目を付けない（betPlan 参照） */
+  let _baneiC=null;
+  try{
+    if(isBanei && MODE==="nar" && scored.length>=2){
+      const _bp=await loadBaneiPred();
+      const _rid=String(r.race_id||""), _key=_rid.slice(0,4)+_rid.slice(6,10)+"_"+(+r.no);
+      const _rec=_bp && _bp.races && _bp.races[_key];
+      if(_rec && _rec.s && scored.every(x=>typeof _rec.s[String(x.num)]==="number" && isFinite(_rec.s[String(x.num)]))){
+        const _mean=a=>a.reduce((p,c)=>p+c,0)/a.length;
+        const _sd=a=>{ const m=_mean(a); return Math.sqrt(a.reduce((p,c)=>p+(c-m)*(c-m),0)/a.length); };
+        const _mv=scored.map(x=>_rec.s[String(x.num)]), _lv=scored.map(x=>x.s);
+        const mM=_mean(_mv), sM=_sd(_mv), mL=_mean(_lv), sL=(_sd(_lv)||5);
+        scored.forEach(x=>{ x.s = mL + sL*(sM>0?(_rec.s[String(x.num)]-mM)/sM:0); x._b=true; });
+        scored.sort((a,b)=>b.s-a.s);
+        const _srt=_mv.slice().sort((a,b)=>b-a), _spread=(_srt[0]-_srt[_srt.length-1])||1;
+        _baneiC=Math.round((0.6*(_srt[0]-mM)/_spread + 0.4*(_srt[0]-_srt[1])/_spread)*10000)/10000;
+        window.__BANEI_USED=(window.__BANEI_USED||0)+1;
+      }
+    }
+  }catch(_){}
   const sym=["◎","○","▲","△","△"];
   // オッズ取得（人気の裏付け用）
   const odds=await fetchWinOdds(r.race_id, r.post||null);
@@ -3076,6 +3108,7 @@ async function scoreRace(html, r, trackName){
     /* old = 時計つきモデルに切り替えたレースで、切替前（C12）の上位3頭。t=1 は時計つきで並べたレース */
     shadow={ v:2, adj:_top(_a), nokoryu:_top(_b), koryu:(scored.some(function(x){return x._koryu;})?1:0), c12:(scored.some(function(x){return x._c12;})?1:0),
              t:(scored.some(function(x){return x._t;})?1:0), old:_oldTop };
+    if(scored.some(function(x){return x._b;})){ shadow.b=1; shadow.bc=_baneiC; }   // b=1 はばんえい専用モデルで並べたレース。bc＝抜け具合（記録用）
   }catch(_){ shadow=null; }
   /* ◎の強み（地方・全頭の材料がそろったレースだけ）。朝に決めた文を予想と一緒に保存し、後から作り直さない */
   let strong=null;
@@ -9129,6 +9162,11 @@ function betPlan(m){
     }
   }
   if(field>=14) return {tier:"見送り", cls:"pass", reason:"多頭数は荒れやすい", gap, roi:null};
+  /* ★ばんえい専用モデルで並べたレースは、★勝負・狙い目を付けない（2026-11-14）★
+     検証（backtest/train_banei.py・2023年以降 6,761R）で、抜け具合の上位2割を★勝負にしても
+     ◎3着内は 65.5%（平地の★勝負は 80.8%）、全体との回収率の差は 単+1.0［-6.1〜+8.6］・複+0.7［-3.1〜+4.5］で差が出なかった。
+     平地と同じ「★勝負」の札を付けると、札の意味が薄まる。印は出すが区分は「様子見」にする。 */
+  if(MODE==="nar" && m.shadow && m.shadow.b===1) return {tier:"様子見", cls:"pass", reason:"ばんえいは★勝負・狙い目を付けません", gap, roi:null};
 
   /* 交流戦（JRA×地方の交流競走）は近走着順の比較が難しく評価が不安定。
      レース名で判定（所属アイコンは地方主催で地元馬に付かず誤検出するため使わない）。

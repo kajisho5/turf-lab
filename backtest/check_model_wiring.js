@@ -112,6 +112,17 @@ if (!deploy.includes('/seventh-well.com/odds/data/horses_time.json'))
 if (!read('deploy/tweet.html').includes('data/horses_time.json'))
   fail('tweet.html が horses_time.json を読んでいない（時計つきモデルの材料が届かない）');
 
+/* ばんえい専用モデルの点数（banei_pred.json）。運営側の MAP・tweet.html・毎朝の作り直しのどれかが欠けると、帯広が黙って今までの手作りの点数に戻る */
+if (!deploy.includes('/seventh-well.com/odds/data/banei_pred.json'))
+  fail('ばんえいの点数 banei_pred.json が deploy.py の MAP（tweet.html側）に無い');
+if (!read('deploy/tweet.html').includes('data/banei_pred.json'))
+  fail('tweet.html が banei_pred.json を読んでいない（ばんえい専用モデルが使われない）');
+if (!read('.github/workflows/deploy-site.yml').includes('build_banei_pred.py'))
+  fail('毎朝の公開（deploy-site.yml）に build_banei_pred.py が入っていない（ばんえいの点数が作られない）');
+{ const m = JSON.parse(read('backtest/banei_model.json')), fe = (read('backtest/banei_feats.py').match(/^FE = \[([\s\S]*?)\]/m) || [])[1] || '';
+  const names = [...fe.matchAll(/"([a-z0-9]+)"/g)].map(x => x[1]);
+  if (JSON.stringify(m.feat) !== JSON.stringify(names)) fail('ばんえいのモデル（banei_model.json）と banei_feats.py の材料の並びが違う（train_banei.py で作り直す）'); }
+
 /* 索引の生成が日次に入っているか（入れ忘れると古い率で予想し続ける） */
 const daily = read('backtest/daily.py');
 for (const s of ['build_horse_index.py', 'build_jockey_index.py', 'build_dataset.py']) {
