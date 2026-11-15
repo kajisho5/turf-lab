@@ -29,7 +29,7 @@ import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
 import { wakeDeploy, tokenDaysLeft } from "./wake.js";
-import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -111,6 +111,15 @@ export default {
             if (rr && (rr.warned || (rr.run && rr.run.length))) console.log("autopost retry", JSON.stringify(rr));
           }
         } catch (e) { console.error("retry", String(e && e.message || e)); }
+        // 昼の出し直し（土日に中央の朝の予想が出ていない時だけ。発走前のレースだけ出す。src/guard.js）
+        try {
+          if (env.DRYRUN !== "1") {
+            const lr = await runLate(env, event.scheduledTime,
+              (mode) => runAll(env, "morning", { dry: false, only: mode, extra: "&late=1" }),
+              (kind, r, note) => notifyMail(env, kind, r, null, note));
+            if (lr) console.log("autopost late", JSON.stringify(lr));
+          }
+        } catch (e) { console.error("late", String(e && e.message || e)); }
         // 重賞の日の1枚（発走2時間前に単独で出す。src/grade.js）。止める時は GRADE="0"
         if (env.GRADE !== "0") {
           try {
@@ -274,7 +283,7 @@ async function notifyMail(env, kind, r, err, note) {
 }
 
 /* 朝/夜を全モード分まとめて実行。dry=true なら投稿せず要約を返す。 */
-async function runAll(env, kind, { dry, only, date, caption } = {}) {
+async function runAll(env, kind, { dry, only, date, caption, extra } = {}) {
   const modes = only ? [only] : MODES;
   const browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS });
   const summary = { kind, dry: !!dry, at: new Date().toISOString(), modes: {} };
@@ -282,7 +291,7 @@ async function runAll(env, kind, { dry, only, date, caption } = {}) {
     for (const mode of modes) {
       const t0 = Date.now();
       try {
-        const out = await renderOne(browser, env, kind, mode, date);
+        const out = await renderOne(browser, env, kind, mode, date, extra);
         const thread = out.ok ? toThread(kind, mode, out, caption) : [];
         const one = mergePosts(thread, kind === "evening" ? out.caption : null);   // 1件にまとめた形（まとめられない時は null）
         const posts = one ? [one] : thread;

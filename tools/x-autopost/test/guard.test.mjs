@@ -139,3 +139,4 @@ function fakeDB() {
   eq("夜の答え合わせ: ファイルが無くても問題にしない", await rehearsal(env, t, good, get()), []);
 }
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);
+

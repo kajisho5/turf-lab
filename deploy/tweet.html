@@ -1140,9 +1140,14 @@ function parseRaceListHTML(html){
   const re=/race_id=(\d{12})/g; let m;
   while((m=re.exec(html))){
     const rid=m[1]; if(seen.has(rid)) continue; seen.add(rid);
-    const win=html.slice(m.index, m.index+900);
-    const tm=win.match(/(\d{1,2}:\d{2})/);
-    const nm=win.match(/Item(?:Title|Long)"?[^>]*>\s*([^<\n]{1,40}?)\s*</i);
+    let win=html.slice(m.index, m.index+900);
+    let tm=win.match(/(\d{1,2}:\d{2})/);
+    let nm=win.match(/Item(?:Title|Long)"?[^>]*>\s*([^<\n]{1,40}?)\s*</i);
+    /* ★中継ごしの一覧は形が違う（2026-11-15）★ 「*   [11R レース名 15:40 芝2200m 18頭 …](…race_id=…)」と、時刻と名前がリンクの前に来る。
+       上の読み方（リンクの後ろを見る）だと次のレースの発走時刻を拾ってしまう（全レースが1つずつずれる）。同じ行の頭から読む。 */
+    { const ls=html.lastIndexOf("\n", m.index)+1, line=html.slice(ls, m.index);
+      const mk=line.match(/^\*?\s*\[(\d{1,2})R\s+(.+?)\s+(\d{1,2}:\d{2})\s/);
+      if(mk){ tm=[mk[3],mk[3]]; nm=[mk[2],mk[2]]; win=line; } }
     // グレード: JRA=Icon_GradeType{1|2|3}。NAR=名前内の(JpnⅠ/Ⅱ/Ⅲ)や重賞表記、主要重賞名で判定
     const gm=win.match(/Icon_GradeType(\d+)/);
     let grade=null; if(gm){ const g=+gm[1]; if(g===1)grade="G1"; else if(g===2)grade="G2"; else if(g===3)grade="G3"; }
@@ -1854,11 +1859,16 @@ async function fetchDecoded(url){
     if(!res.ok) throw new Error("HTTP "+res.status);
     return decodeBytes(await res.arrayBuffer());
   }
+  /* 遅れて出す回（late=1）は時間が限られる（自動投稿は7分で打ち切る）。朝と同じ条件にそろえる意味でも、結果とオッズは取りに行かない
+     （朝8:30にはどちらもまだ無い）。取れない時に外の中継を順に回るのもやめる（1レースで数十秒かかる）。 */
+  const _lateRun=(window.__LATE_NOW!=null);
+  if(_lateRun && /\/race\/result\.html|api_get_(jra|nar)_odds|odds_get_form/.test(inner)) throw new Error("遅れて出す回は取らない");
   const order=[];
   const up=userProxyPrefix();
   if(up) order.push(up);
   if(_proxyOK && !order.includes(_proxyOK)) order.push(_proxyOK);
   for(const p of PROXY_LIST){ if(!order.includes(p)) order.push(p); }
+  if(_lateRun) order.length=1;
   let lastErr=null;
   for(const prefix of order){
     try{
@@ -2181,6 +2191,11 @@ function init(){
           const _md=new URLSearchParams(location.search).get("date");   // 検証用に日付指定可（本番cronは指定しない＝今日）
           if(_md && /^\d{8}$/.test(_md) && $("#date")) $("#date").value=_md;
           const date=($("#date").value||"").trim()||jstTodayStr();
+          /* ★遅れて出す回（late=1・2026-11-15）★ 朝8:30に中央のページが取れず予想が出なかった日に、昼に出し直す用。
+             もう発走した（発走まで10分を切った）レースは予想しない＝「発走済み」の見送りにする。終わったレースをあとから当てたように見せない。
+             夜の答え合わせにも入らない（見送りは集計の外）。 */
+          const _late=new URLSearchParams(location.search).get("late")==="1" && date===jstTodayStr();
+          if(_late){ const _n=new Date(Date.now()+9*3600e3); window.__LATE_NOW=_n.getUTCHours()*60+_n.getUTCMinutes(); }
           await runAll();                       // 全場予想（保存も走る＝夜の答え合わせの素）
           /* ★朝に公開した「狙い目/★勝負」を確定値として保存（2026-10-30 ユーザー指示「確定したものは夜に変えないで」）★
              保存先は狙い目ロックと同じ locks 表。ロック本体と混ざらないよう tc を "pub_<tc>" にする。
@@ -2220,9 +2235,10 @@ function init(){
           try{
             const _bs2=battleSummaryRows(allResults), _f=_bs2.rows[0];
             const _md=(+date.slice(4,6))+"/"+(+date.slice(6,8))+"（"+"日月火水木金土"[new Date(Date.UTC(+date.slice(0,4),+date.slice(4,6)-1,+date.slice(6,8))).getUTCDay()]+"）";
-            const L=[_md+(MODE==="nar"?"地方競馬":"中央競馬")+" 全"+_bs2.total+"レースの予想"];
+            const L=[_md+(MODE==="nar"?"地方競馬":"中央競馬")+(_late?(" これからの"+_bs2.total+"レースの予想"):(" 全"+_bs2.total+"レースの予想"))];
             if(_bs2.battle) L.push("★勝負は"+_bs2.battle+"レース"+(_f&&_f.post?("。最初は"+_f.post+" "+_f.track+_f.no+"R"):""));
-            L.push("オッズを見る前に出して、このあと変えません"); L.push("夜に全部答え合わせします");
+            if(_late){ L.push("朝に出せなかったので、発走前のレースだけ出します"); L.push("夜に答え合わせします"); }
+            else { L.push("オッズを見る前に出して、このあと変えません"); L.push("夜に全部答え合わせします"); }
             L.push("#競馬予想 #"+(MODE==="nar"?"地方競馬":"競馬"));
             if(_bs2.total) caption=L.join("\n");
           }catch(_){ caption=null; }
@@ -2802,6 +2818,12 @@ function ltrFeatTweet(num, ctx, fn, trackName){
 }
 
 async function scoreRace(html, r, trackName){
+  /* 一覧から格（G1など）や発走時刻が取れなかった時は、出馬表のページから補う（中継ごしの一覧には格の印が無い・2026-11-15） */
+  try{
+    const _h1=(html.match(/<h1 class="RaceName">([\s\S]{0,600}?)<\/h1>/)||[])[1]||"";
+    if(!r.grade){ const _g=_h1.match(/Icon_GradeType([123])\b/); if(_g) r.grade="G"+_g[1]; }
+    const _pt=html.match(/(\d{1,2}:\d{2})発走/); if(_pt && MODE==="jra") r.post=_pt[1];
+  }catch(_){}
   const ps=parseShutuba(html);
   const cond=ps.cond||{};
   /* 頭数を採点コンテキストに置く。factorW() が頭数帯ごとの重みを引くのに使う。
@@ -4182,6 +4204,12 @@ function toggleLineMode(){
 }
 
 /* ===== 全場まとめて取得 ===== */
+/* 遅れて出す回（window.__LATE_NOW＝今の時刻・分）で、このレースはもう出さないか。発走時刻が分からないレースも出さない（終わっているかもしれないため） */
+function lateStarted(post){
+  if(window.__LATE_NOW==null) return false;
+  const m=String(post||"").match(/^(\d{1,2}):(\d{2})$/); if(!m) return true;
+  return (+m[1])*60+(+m[2]) <= window.__LATE_NOW+10;
+}
 async function runAll(){
   const date=($("#date").value||"").trim()||jstTodayStr();
   await preloadLocks(date, MODE);   // ロックをサーバーからメモリへ（B: 最初の◎を固定）
@@ -4218,6 +4246,10 @@ async function runAll(){
     await mapLimit(races.map((r,i)=>({r,i})), 3, async(job)=>{
       const {r,i}=job;
       let res;
+      if(lateStarted(r.post)){   // 遅れて出す回：発走済み（発走まで10分以内）は予想しない
+        _slots[i]={ no:r.no, name:(r.name||""), track:trackName, race_id:r.race_id, post:(r.post||null), marks:[], field:0, firmO:null, firm1:null, hasOdds:false, skip:true, skipReason:"発走済み" };
+        totalDone++; return;
+      }
       for(let _t=0;_t<3;_t++){
         try{ const html=await fetchDecoded(shutubaURL(r.race_id)); res=await scoreRace(html, r, trackName); if(res && (res.skip || (res.marks && res.marks.length))) break; }
         catch(e){ res={ no:r.no, name:(r.name||""), track:trackName, race_id:r.race_id, marks:[], field:0, err:true }; }

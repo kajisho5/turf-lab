@@ -142,6 +142,34 @@ export async function runRetry(env, ms, modes, runAll, notify) {
   return { kind, date, run, state: next };
 }
 
+/** 昼の出し直しを見る回か。土日の 10:00〜14:00 の 0分・30分（日本時間）。中央の朝の予想が出なかった日のため（2026-11-15） */
+export function lateSlot(ms) {
+  const { h, m } = jst(ms);
+  const dow = new Date((Number(ms) || Date.now()) + 9 * 3600e3).getUTCDay();
+  return (dow === 0 || dow === 6) && (m === 0 || m === 30) && (h >= 10 && (h < 14 || (h === 14 && m === 0)));
+}
+/** 昼の出し直し。土日なのに中央の朝の予想が出ていない時（ページが取れず「開催なし」扱いになった時）、発走前のレースだけで出し直す。
+    runLate(mode) は late=1 つきで朝の回を1モードだけ回して summary を返す関数。1日4回まで。途中で落ちた時は二重に出さないよう、もう出さない */
+export async function runLate(env, ms, runLateOne, notify) {
+  if (!lateSlot(ms) || !env.DB) return null;
+  const { date } = jst(ms), mode = "jra";
+  const st = await loadState(env, date, "morning");
+  if (!st || !st.modes || (st.modes[mode] !== "none" && st.modes[mode] !== "fail")) return null;
+  if ((st.late || 0) >= 4) return null;
+  const m = await env.DB.prepare("SELECT tweet_id FROM xpost_log WHERE k=?").bind(`m:${date}:${mode}`).first();
+  if (m && m.tweet_id) return null;
+  const next = Object.assign({}, st, { late: (st.late || 0) + 1, modes: Object.assign({}, st.modes) });
+  await saveState(env, date, "morning", Object.assign({}, next, { modes: Object.assign({}, next.modes, { [mode]: "part" }) }));   // 先に「触った」印
+  let s = null;
+  try { s = await runLateOne(mode); } catch (e) { s = { modes: { [mode]: { ok: false, error: String(e && e.message || e) } } }; }
+  const r = (s && s.modes && s.modes[mode]) || { ok: false, error: "結果なし" };
+  const state = modeState(r);
+  next.modes[mode] = state === "ok" || state === "part" || state === "auth" ? state : "none";   // 出せなかった時は「なし」に戻して次の回でもう一度
+  await saveState(env, date, "morning", next);
+  if (state === "ok" || state === "part" || state === "auth") await notify("morning", { kind: "morning", dry: false, at: new Date().toISOString(), modes: { [mode]: r } }, `昼の出し直し（${next.late}回目）`);
+  return { date, mode, state, late: next.late };
+}
+
 /** 朝の前の点検。問題の一覧（空なら問題なし）を返す。whoami() は { ok, status, body } を返す関数 */
 export async function rehearsal(env, ms, whoami, get = fetch) {
   const bad = [];
