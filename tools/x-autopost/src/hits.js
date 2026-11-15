@@ -13,6 +13,9 @@ const MAX_FETCH = 12;       // 1回の実行で結果を見に行くレース数
    11/14 は全レースを10分おきに最大12件ずつ頼んだせいで、31レース中12レースしか結果を記録できなかった。
    中央は 1回4件まで・1件ごとに2秒あける・発走10分後から、にする（地方は直接取れるので今までどおり）。 */
 const JRA_MAX_FETCH = 4, JRA_GAP_MS = 2000, JRA_AFTER_MIN = 10;
+const JRA_EVE_FROM = 17 * 60, JRA_EVE_MAX = 8, JRA_EVE_GAP_MS = 4000;   // 17:00 以降は中央の全レースが終わっているので、まとめて多めに取りに行く（本人の案・2026-11-15）
+/** 中央を1回に何件・何秒おきに見に行くか。昼は少しずつ、17:00 以降は多め */
+export function jraPace(nowMin) { return nowMin >= JRA_EVE_FROM ? { max: JRA_EVE_MAX, gap: JRA_EVE_GAP_MS } : { max: JRA_MAX_FETCH, gap: JRA_GAP_MS }; }
 const JRA_GIVE_UP_MIN = 420;   // 中央は取れない回が多いので、発走の7時間後まで（夜の答え合わせの前まで）取りに行き続ける。取れた結果は中継の側に残り、夜の回がそれを使う
 export const BIG_TAN = 1000;   // 高配当の的中（単独で出す）の線引き＝単勝の払戻がこの額以上。根拠は docs/design/X_HIT_AND_GRADE_DESIGN.md
 
@@ -117,7 +120,7 @@ export async function rememberMorning(env, date, mode, tweetId) {
 /* 10分おきの回。reply(text, toId) は投稿して投稿IDを返す関数（worker.js が渡す）。
    big(r, mode, date, st) は高配当の的中を画像つきの単独の投稿で出して投稿IDを返す関数（無ければ出さない）。
    記録: r:レースID＝そのレースの◎の結果（全レース）／h:レースID＝★勝負の結果（今までどおり） */
-export async function runHits(env, reply, { dry, big, sleep } = {}) {
+export async function runHits(env, reply, { dry, big, sleep, paceMin } = {}) {   // paceMin は試験用（中央の取り方を決める時刻。ふだんは今の時刻）
   const wait = sleep || ((ms) => new Promise(r => setTimeout(r, ms)));   // sleep は試験用（ふだんは本当に待つ）
   const out = { date: null, checked: 0, posted: [], missed: 0, big: [], skipped: null };
   if (!env.DB) { out.skipped = "DB なし"; return out; }
@@ -145,11 +148,12 @@ export async function runHits(env, reply, { dry, big, sleep } = {}) {
     const jra = mode === "jra";
     let due = dueRaces(todo, new Set(), nowMin, jra ? JRA_GIVE_UP_MIN : 0).filter(r => !jra || nowMin >= postMin(r.post) + JRA_AFTER_MIN);
     // 中央は回ごとに見はじめる場所をずらす（同じレースが取れないまま先頭に居座って、ほかが見られなくなるのを防ぐ）
-    if (jra && due.length > JRA_MAX_FETCH) { const off = Math.floor(nowMin / 10) % due.length; due = due.slice(off).concat(due.slice(0, off)); }
-    due = due.slice(0, jra ? JRA_MAX_FETCH : MAX_FETCH);
+    const pace = jraPace(paceMin == null ? nowMin : paceMin);
+    if (jra && due.length > pace.max) { const off = Math.floor(nowMin / 10) % due.length; due = due.slice(off).concat(due.slice(0, off)); }
+    due = due.slice(0, jra ? pace.max : MAX_FETCH);
     let nth = 0;
     for (const r of due) {
-      if (jra && nth++ > 0) await wait(JRA_GAP_MS);
+      if (jra && nth++ > 0) await wait(pace.gap);
       const base = mode === "nar" ? "https://nar.netkeiba.com" : "https://race.netkeiba.com";
       const u = btoa(`${base}/race/result.html?race_id=${r.rid}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
       let res = null;
