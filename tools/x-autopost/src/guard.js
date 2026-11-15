@@ -111,6 +111,16 @@ export async function runRetry(env, ms, modes, runAll, notify) {
     }
     if (Object.keys(up).length) st = Object.assign({}, st, { modes: Object.assign({}, st.modes, up) });
   }
+  /* ★朝の中央が「なし」でも、朝の前に一覧からレースを拾えていた日は失敗として扱う（2026-11-15）★
+     11/15 の朝、中央は一覧のページが取れず「開催なし」の扱いになり、9:00・9:20 のやり直しも飛ばされた。
+     src/warm.js の記録（wm:日付）にレースの番号がある＝その日は開催がある。 */
+  if (kind === "morning" && st && st.modes && st.modes.jra === "none" && modes.includes("jra") && env.DB) {
+    try {
+      const w = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(`wm:${date}`).first();
+      const j = w && w.body ? JSON.parse(w.body) : null;
+      if (j && j.rids && j.rids.length) st = Object.assign({}, st, { modes: Object.assign({}, st.modes, { jra: "fail" }) });
+    } catch {}
+  }
   const plan = planRetry(st, date, modes);
   if (plan.warn) {
     await saveState(env, date, kind, Object.assign({}, st, { warned: 1 }));

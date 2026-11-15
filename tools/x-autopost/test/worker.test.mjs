@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, mkdtempSync, copyFileSync } from "node:fs"
 import { tmpdir } from "node:os"; import { join, dirname } from "node:path"; import { fileURLToPath, pathToFileURL } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url)), src = join(here, "..", "src");
 const dir = mkdtempSync(join(tmpdir(), "autopost-"));
-for (const f of ["posts.js", "hits.js", "guard.js", "grade.js", "wake.js"]) copyFileSync(join(src, f), join(dir, f));
+for (const f of ["posts.js", "hits.js", "guard.js", "grade.js", "wake.js", "warm.js"]) copyFileSync(join(src, f), join(dir, f));
 let code = readFileSync(join(src, "worker.js"), "utf8");
 const imp = 'import puppeteer from "@cloudflare/puppeteer";';
 if (!code.includes(imp)) { console.log("NG worker.js の読み込みの行が変わった"); process.exit(1); }
@@ -54,7 +54,7 @@ const mkEnv = () => ({ DB: fakeDB(), BROWSER: {}, TWEET_URL: "https://example.te
 const w = (await import(pathToFileURL(join(dir, "worker.mjs")).href)).default;
 const run = async (env, cron, t) => { const ps = []; await w.scheduled({ cron, scheduledTime: at(t) }, env, { waitUntil: (p) => ps.push(p) }); await Promise.all(ps); };
 const reset = () => { tweets = []; uploads = 0; failTweet = () => null; failUpload = null; mails.length = 0; opened = []; };
-const MORNING = "30 21,23 * * *", EVENING = "30 13 * * *", TEN = "*/10 0-14 * * *";
+const MORNING = "30 21,23 * * *", EVENING = "30 13 * * *", TEN = "*/10 0-14,20-23 * * *";
 const morningOut = (n) => ({ ok: true, date: "20261114", summary: { image: PNG }, cards: Array.from({ length: n }, () => ({ image: PNG })) });
 const noRace = { ok: false, error: "no races" };
 const state = async (env, kind) => JSON.parse((await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(`s:20261114:${kind}`).first()).body);

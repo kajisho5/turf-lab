@@ -29,6 +29,7 @@ import { toThread, mergePosts, MAX_MEDIA } from "./posts.js";
 import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
 import { wakeDeploy, tokenDaysLeft } from "./wake.js";
+import { runWarm } from "./warm.js";
 import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
@@ -40,7 +41,7 @@ const KEEP_ALIVE_MS = 600000;               // ブラウザを無操作で閉じ
 
 /** 動いた時刻（ミリ秒）から朝/夜を決める。日本時間の 4:00〜13:59 に動いたら朝の予想、それ以外は夜の結果 */
 const MONTHLY_CRON = "0 0 1 * *";       // 月間まとめ（毎月1日 9:00 日本時間）。wrangler.toml の crons と同じ文字列
-const HITS_CRON = "*/10 0-14 * * *";    // ★勝負の的中速報＋失敗した回のやり直し（日本時間 9:00〜23:50 の10分おき）。wrangler.toml の crons と同じ文字列
+const HITS_CRON = "*/10 0-14,20-23 * * *";    // ★勝負の的中速報＋失敗した回のやり直し（日本時間 9:00〜23:50 の10分おき）。wrangler.toml の crons と同じ文字列
 const MAIN_CRONS = ["30 21,23 * * *", "30 13 * * *"];   // 朝の前の点検＋朝の予想／夜の結果。wrangler.toml の crons と同じ文字列
 const WAKE_CRON = "40 19,20 * * *";     // 毎朝のデータ更新を起こす（日本時間 4:40・5:40）。wrangler.toml の crons と同じ文字列。src/wake.js
 const KEYCHECK_CRON = "22 3 * * *";   // 鍵の確認用の臨時の時刻（UTC）。使う時だけ wrangler.toml の crons に足す
@@ -102,6 +103,8 @@ export default {
             }
           }
         } catch (e) { console.error("weekly", String(e && e.message || e)); }
+        // 朝の前に、中央の開催一覧と出馬表を少しずつ取っておく（5:00〜8:20。投稿はしない。src/warm.js）
+        try { const w = await runWarm(env, event.scheduledTime); if (w && (w.got || w.list === false)) console.log("autopost warm", JSON.stringify(w)); } catch (e) { console.error("warm", String(e && e.message || e)); }
         // 失敗した回のやり直し（朝 9:00・9:20／夜 22:50・23:10 の回だけ見る。src/guard.js）
         try {
           if (retryKind(event.scheduledTime) && env.DRYRUN !== "1") {
