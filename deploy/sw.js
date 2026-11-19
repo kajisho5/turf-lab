@@ -6,7 +6,7 @@
 // 2026-07-26: v425(単純カウンタ)からセマンティックバージョニングへ切替。
 // 起点4.3.0は節目（初期MVP→GBM/人格導入→⭐フォメ/kochi独立→中央DB拡充、の4区切り目の途中）の目安。
 // 以後はdeploy.pyが自動でパッチ番号だけ+1する。
-const CACHE = "odds-anomaly-v4.3.78";
+const CACHE = "odds-anomaly-v4.3.79";
 const SHELL = [
   "./",
   "./index.html",
