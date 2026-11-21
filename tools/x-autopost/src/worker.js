@@ -30,7 +30,7 @@ import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
 import { wakeDeploy, tokenDaysLeft } from "./wake.js";
 import { runWarm } from "./warm.js";
-import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, runAsk, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -123,6 +123,15 @@ export default {
             if (lr) console.log("autopost late", JSON.stringify(lr));
           }
         } catch (e) { console.error("late", String(e && e.message || e)); }
+        // 依頼された出し直し（その場の発走前のレースだけを1回。xpost_log に ask:<日付> を置いた時だけ。src/guard.js）
+        try {
+          if (env.DRYRUN !== "1") {
+            const ar = await runAsk(env, event.scheduledTime,
+              (mode, tc) => runAll(env, "morning", { dry: false, only: mode, extra: `&late=1&onlytc=${tc}`, keep: true }),
+              (kind, r, note) => notifyMail(env, kind, r, null, note));
+            if (ar) console.log("autopost ask", JSON.stringify(ar));
+          }
+        } catch (e) { console.error("ask", String(e && e.message || e)); }
         // 重賞の日の1枚（発走2時間前に単独で出す。src/grade.js）。止める時は GRADE="0"
         if (env.GRADE !== "0") {
           try {
@@ -286,7 +295,7 @@ async function notifyMail(env, kind, r, err, note) {
 }
 
 /* 朝/夜を全モード分まとめて実行。dry=true なら投稿せず要約を返す。 */
-async function runAll(env, kind, { dry, only, date, caption, extra } = {}) {
+async function runAll(env, kind, { dry, only, date, caption, extra, keep } = {}) {
   const modes = only ? [only] : MODES;
   const browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS });
   const summary = { kind, dry: !!dry, at: new Date().toISOString(), modes: {} };
@@ -314,7 +323,7 @@ async function runAll(env, kind, { dry, only, date, caption, extra } = {}) {
           } catch (e) { if (e && typeof e === "object") e.date = out.date; throw e; }
           summary.modes[mode].posted = r;
           // 朝の投稿のIDを覚えておく（的中速報をこの投稿への返信で出すため）。失敗しても投稿は成功のまま
-          if (kind === "morning" && r && r[0] && r[0].id) {
+          if (kind === "morning" && !keep && r && r[0] && r[0].id) {   // keep＝朝の投稿の記録を書き換えない（1つの場だけの出し直し）
             try { await rememberMorning(env, out.date, mode, r[0].id); } catch (e) { console.error("rememberMorning", String(e && e.message || e)); }
             // その日の重賞を覚えておく（発走2時間前に1枚出す用）。失敗しても朝の投稿は成功のまま
             if (out.grades && out.grades.length) {

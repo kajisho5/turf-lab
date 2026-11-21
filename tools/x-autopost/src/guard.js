@@ -187,6 +187,28 @@ export async function runLate(env, ms, runLateOne, notify) {
   return { date, mode, state, late: next.late };
 }
 
+/** 依頼された出し直し（2026-11-21）。朝の投稿で1つの場だけ抜けた日に、その場の発走前のレースだけを1回出す。
+    xpost_log に k="ask:<日付>"、body={"mode":"nar","tc":"65"} の行を置くと、次の回（10分ごと）で1回だけ動く。
+    先に「済み」の印を付けるので、途中で落ちても二重には出さない。runOne(mode, tc) は summary を返す関数 */
+export async function runAsk(env, ms, runOne, notify) {
+  if (!env.DB) return null;
+  const { date } = jst(ms), k = `ask:${date}`;
+  const row = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(k).first();
+  if (!row || !row.body) return null;
+  let j = null;
+  try { j = JSON.parse(row.body); } catch { return null; }
+  if (!j || j.done || (j.mode !== "nar" && j.mode !== "jra") || !/^\d{2}$/.test(String(j.tc || ""))) return null;
+  const mode = j.mode, tc = String(j.tc);
+  await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ mode, tc, done: 1 }), Date.now(), k).run();
+  let s = null;
+  try { s = await runOne(mode, tc); } catch (e) { s = { modes: { [mode]: { ok: false, error: String(e && e.message || e) } } }; }
+  const r = (s && s.modes && s.modes[mode]) || { ok: false, error: "結果なし" };
+  const state = modeState(r);
+  await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ mode, tc, done: 1, state, error: r.error || null }), Date.now(), k).run();
+  try { await notify("morning", { kind: "morning", dry: false, at: new Date().toISOString(), modes: { [mode]: r } }, `依頼された出し直し（場 ${tc}）`); } catch {}
+  return { date, mode, tc, state };
+}
+
 /** 朝の前の点検。問題の一覧（空なら問題なし）を返す。whoami() は { ok, status, body } を返す関数 */
 export async function rehearsal(env, ms, whoami, get = fetch) {
   const bad = [];

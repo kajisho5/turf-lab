@@ -7,7 +7,7 @@
   eq(lateSlot(J("2026-11-15T13:00:00")), true, "late: 日曜 13:00 は見る");
   eq(lateSlot(J("2026-11-15T13:10:00")), false, "late: 13:10 は見ない");
   eq(lateSlot(J("2026-11-15T14:30:00")), false, "late: 14:30 は見ない");
-  eq(lateSlot(J("2026-11-16T13:00:00")), false, "late: 月曜は見ない");
+  eq(lateSlot(J("2026-11-16T13:00:00")), true, "late: 月曜も見る（祝日の開催のため。出すかどうかは runLate が決める）");
   const mk = (rows) => { const db = new Map(Object.entries(rows));
     return { db, DB: { prepare: (sql) => ({ bind: (...a) => ({ first: async () => { const v = db.get(a[0]); return v === undefined ? null : v; },
       run: async () => { if (/INSERT/.test(sql)) db.set(a[0], { body: a[a.length - 2] !== undefined ? a.find(x => typeof x === "string" && x[0] === "{") : null }); return { meta: { changes: 1 } }; } }), run: async () => ({}) }) } }; };

@@ -2205,6 +2205,10 @@ function init(){
           const _late=new URLSearchParams(location.search).get("late")==="1" && date===jstTodayStr();
           if(_late){ const _n=new Date(Date.now()+9*3600e3); window.__LATE_NOW=_n.getUTCHours()*60+_n.getUTCMinutes(); }
           await runAll();                       // 全場予想（保存も走る＝夜の答え合わせの素）
+          /* ★1つの場だけ出す（onlytc=場の番号・2026-11-21）★ 朝の投稿でその場だけ抜けた日に、あとからその場だけ出す用。
+             予想は全場ぶん回るが（保存は noclobber なので朝の版は変わらない）、画像と文に使うのは指定の場だけ。 */
+          const _otc=new URLSearchParams(location.search).get("onlytc");
+          if(_otc && /^\d{2}$/.test(_otc)){ for(const _k of Object.keys(allResults)){ if(String(_k)!==_otc) delete allResults[_k]; } }
           /* ★朝に公開した「狙い目/★勝負」を確定値として保存（2026-10-30 ユーザー指示「確定したものは夜に変えないで」）★
              保存先は狙い目ロックと同じ locks 表。ロック本体と混ざらないよう tc を "pub_<tc>" にする。
              すでに保存済みなら上書きしない（最初に公開したものが正）。 */
