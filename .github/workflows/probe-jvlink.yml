@@ -20,17 +20,34 @@ jobs:
         shell: pwsh
         run: |
           $exe = "$env:RUNNER_TEMP\JV-Link.exe"
-          $tries = @('/s /v"/qn /norestart"', '/S /v/qn', '/s', '/quiet /norestart', '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART')
-          foreach ($a in $tries) {
-            if (Test-Path "C:\Windows\SysWOW64\JVDTLAB\JVDTLab.dll") { break }
-            "--- 引数: $a"
-            $p = Start-Process -FilePath $exe -ArgumentList $a -PassThru
-            if (-not $p.WaitForExit(150000)) { "時間切れ（画面が出て止まっている可能性）"; Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object Name, MainWindowTitle | Format-Table | Out-String; Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue; Get-Process -Name "JV-Link*","msiexec","setup*","ISBEW64*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue }
-            else { "終了コード $($p.ExitCode)" }
-            Start-Sleep -Seconds 5
+          $dll = "C:\Windows\SysWOW64\JVDTLAB\JVDTLab.dll"
+          function KillAll { Get-Process -Name "JVLinkSetup","ISBEW64","JV-Link" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 3 }
+          # 1) まず普通に起動して、中から出てくる本体（JVLinkSetup）の場所と起動のしかたを見る
+          Start-Process -FilePath $exe | Out-Null
+          Start-Sleep -Seconds 25
+          $procs = Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'JVLinkSetup|ISBEW64|JV-Link' }
+          $procs | Select-Object Name, ExecutablePath, CommandLine | Format-List | Out-String -Width 300
+          $inner = ($procs | Where-Object { $_.Name -match 'JVLinkSetup' } | Select-Object -First 1).ExecutablePath
+          "本体: $inner"
+          if ($inner) {
+            $dir = Split-Path $inner
+            Get-ChildItem $dir -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 300
+            $keep = "$env:RUNNER_TEMP\jvsetup"; Copy-Item $dir $keep -Recurse -Force
+            KillAll
+            $in2 = Join-Path $keep (Split-Path $inner -Leaf)
+            $tries = @('/s /v"/qn /norestart"', '/s /sms', '/s', '/S /v/qn')
+            foreach ($a in $tries) {
+              if (Test-Path $dll) { break }
+              "--- 本体に引数: $a"
+              $p = Start-Process -FilePath $in2 -ArgumentList $a -PassThru -WorkingDirectory $keep
+              if (-not $p.WaitForExit(120000)) { "時間切れ"; KillAll } else { "終了コード $($p.ExitCode)" }
+              $n = 0; while ((Get-Process -Name "JVLinkSetup","ISBEW64" -ErrorAction SilentlyContinue) -and $n -lt 20) { Start-Sleep -Seconds 5; $n++ }
+              if ($n -ge 20) { "まだ動いている（画面で止まっている可能性）"; KillAll }
+              "入ったか: " + (Test-Path $dll)
+            }
           }
-          "入ったか: " + (Test-Path "C:\Windows\SysWOW64\JVDTLAB\JVDTLab.dll")
-          Get-ChildItem "C:\Windows\SysWOW64\JVDTLAB","C:\Windows\System32\JVDTLAB","C:\Program Files (x86)\JRA-VAN","C:\Program Files\JRA-VAN" -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 200
+          "最終 入ったか: " + (Test-Path $dll)
+          Get-ChildItem "C:\Windows\SysWOW64\JVDTLAB","C:\Windows\System32\JVDTLAB" -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 200
       - name: 部品を呼べるか（32ビット）
         if: always()
         shell: pwsh
