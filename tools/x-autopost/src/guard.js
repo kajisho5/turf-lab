@@ -21,7 +21,7 @@ export function isRehearsalTime(ms) { const { h } = jst(ms); return h >= 5 && h 
 /** やり直しを見る回か。朝 9:00・9:20 → "morning"／夜 22:50・23:10 → "evening"／それ以外 null */
 export function retryKind(ms) {
   const { h, m } = jst(ms);
-  if (h === 9 && (m === 0 || m === 20)) return "morning";
+  if (h === 9 && (m === 0 || m === 20 || m === 40)) return "morning";   // 9:40 は 2026-11-21 に足した（中央の1Rは 9:50〜10:00 ごろ。その前の最後の機会）
   if ((h === 22 && m === 50) || (h === 23 && (m === 10 || m === 40 || m === 50))) return "evening";   // 23:40 は 2026-11-14 に足した（中央の結果が取れなかった夜の最後の機会）
   return null;
 }
