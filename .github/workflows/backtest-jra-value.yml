@@ -1,0 +1,38 @@
+# 中央の「期待値買い」の検証。決まりは backtest/PREREG_jra_value_20261121.md に先に書いてある。
+# 手で動かす時だけ（鍵を使うので pull_request では動かさない）。記録に出すのは集計だけ。
+name: backtest-jra-value
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install --quiet numpy==2.5.3 lightgbm==4.7.0 scipy==1.18.1
+      - name: 倉庫から取る
+        run: |
+          python backtest/r2_sync.py get jra/raw/target_all.txt backtest/jvdata/target_all.txt
+          python backtest/r2_sync.py get jra/raw/setup_2026.txt backtest/jvdata/setup_2026.txt
+          python backtest/r2_sync.py get jra/store/20261121.txt backtest/jvdata/gap_20261121.txt
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl backtest/nardata/bt_jra.jsonl
+      - name: 馬ごとの単勝オッズを取り出す
+        run: |
+          JRA_EXTRA_DUMPS=backtest/jvdata/gap_20261121.txt python backtest/build_jra_odds.py
+          python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl.odds jra/bt_jra_rebuilt.jsonl.odds
+      - name: 検証
+        run: |
+          python backtest/bt_jra_value.py | tee /tmp/out.txt
+          { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jra_value
+          path: backtest/store/discovery/jra_value.json
