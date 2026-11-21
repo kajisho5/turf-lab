@@ -55,3 +55,7 @@ node_modules/
 backtest/nardata_zip/
 __pycache__/
 *.pyc
+
+# 鍵のファイル（PC だけに置く）
+r2_key.txt
+pc_push_key.txt

@@ -142,6 +142,35 @@ def main():
                     hr[line[H_KEY]] = line
         print(f"  読了 {os.path.basename(path)}  RA{len(ra):,} SE{len(se):,} HR{len(hr):,}", flush=True)
 
+    # ★追加ぶん（環境変数 JRA_EXTRA_DUMPS・os.pathsep 区切り）★ 2026-11-21
+    #   あとから取り直したぶんを重ねる。元の2本と日付が重なるので、同じレースの同じ馬
+    #   （血統登録番号）は**追加ぶんで置き換える**（足すだけだと同じ馬が2頭になる）。
+    #   環境変数が無ければ何もしない＝今までの出力と1バイトも変わらない。
+    n_rep = n_add = 0
+    for path in [x for x in os.environ.get("JRA_EXTRA_DUMPS", "").split(os.pathsep) if x]:
+        if not os.path.exists(path):
+            print(f"  無い: {path}")
+            continue
+        with open(path, "rb") as f:
+            for line in f:
+                t = line[:2]
+                if t == b"SE":
+                    rows, kt = se[line[S_KEY]], line[S_KETTO]
+                    for i, r in enumerate(rows):
+                        if r[S_KETTO] == kt:
+                            rows[i] = line
+                            n_rep += 1
+                            break
+                    else:
+                        rows.append(line)
+                        n_add += 1
+                elif t == b"RA":
+                    ra[line[R_KEY]] = line
+                elif t == b"HR":
+                    hr[line[H_KEY]] = line
+        print(f"  追加 {os.path.basename(path)}  RA{len(ra):,} SE{len(se):,} HR{len(hr):,}"
+              f"  馬の置き換え {n_rep:,} / 新規 {n_add:,}", flush=True)
+
     # ★日付順に処理する★ 過去走から特徴量を作るので、順序を間違えると
     #   「未来の結果」で予想したことになり、成績が実際より良く出る。
     keys = sorted(se, key=lambda k: (k[:8].decode(), k[14:16].decode()))

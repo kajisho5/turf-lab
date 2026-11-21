@@ -1,0 +1,72 @@
+# 中央のデータを非公開の倉庫（Cloudflare R2）から取って、学習用データを作り直し、
+# いまの本番モデルを「作った時に見ていない期間」で採点する。モデルは作り直さない。
+# 手で動かす時だけ（鍵を使うので pull_request では動かさない）。
+# 記録に出すのは集計だけ。生データ・馬名は出さない。成果物としても保存しない。
+name: backtest-jra
+on:
+  workflow_dispatch:
+    inputs:
+      new_from:
+        description: 新しい期間の開始日（YYYYMMDD）
+        default: "20260713"
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      NEW_FROM: ${{ inputs.new_from }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install --quiet numpy==2.5.3 lightgbm==4.7.0
+      - name: 倉庫から取る
+        run: |
+          python backtest/r2_sync.py get jra/raw/target_all.txt backtest/jvdata/target_all.txt
+          python backtest/r2_sync.py get jra/raw/setup_2026.txt backtest/jvdata/setup_2026.txt
+          python backtest/r2_sync.py get jra/store/20261121.txt backtest/jvdata/gap_20261121.txt
+          python backtest/r2_sync.py get jra/bt_jra.jsonl /tmp/bt_jra_old.jsonl
+      - name: 学習用データを作り直す（追加ぶんを重ねる）
+        run: |
+          JRA_EXTRA_DUMPS=backtest/jvdata/gap_20261121.txt python backtest/build_jra_dataset.py
+      - name: 作り直す前と同じか（重なる前の日付まで）
+        run: |
+          python - <<'PY'
+          import json, collections
+          def load(p):
+              d = {}
+              with open(p, encoding="utf-8") as f:
+                  for line in f:
+                      rc = json.loads(line); d[rc["rid"]] = line
+              return d
+          old, new = load("/tmp/bt_jra_old.jsonl"), load("backtest/nardata/bt_jra.jsonl")
+          print(f"前 {len(old):,}R / 今 {len(new):,}R")
+          diff = collections.Counter(); miss = collections.Counter()
+          for rid, line in old.items():
+              ym = rid[:6]
+              if rid not in new: miss[ym] += 1
+              elif new[rid] != line: diff[ym] += 1
+          print("前にあって今ない（月別）", dict(sorted(miss.items())[-8:]), "計", sum(miss.values()))
+          print("中身が違う（月別・新しい方から8つ）", dict(sorted(diff.items())[-8:]), "計", sum(diff.values()))
+          print("中身が違う 2026年6月より前", sum(v for k, v in diff.items() if k < "202606"))
+          add = collections.Counter(r[:6] for r in new if r not in old)
+          print("今だけにある（月別）", dict(sorted(add.items())))
+          PY
+      - name: 採点（◎と1番人気を同じレースで）
+        run: |
+          python backtest/bt_jra_unseen.py "$NEW_FROM" | tee /tmp/out.txt
+          { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: 作り直したデータを倉庫へ戻す
+        run: |
+          python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl jra/bt_jra_rebuilt.jsonl
+          python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl.jockeys jra/bt_jra_rebuilt.jsonl.jockeys
+          python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl.trainers jra/bt_jra_rebuilt.jsonl.trainers
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jra_unseen
+          path: backtest/store/discovery/jra_unseen.json
