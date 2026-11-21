@@ -86,7 +86,7 @@ def main():
     last = ""
     with open(DATA, encoding="utf-8") as f:
         for line in f:
-            if '"d": "2026' not in line[:80]:
+            if '"d":"2026' not in line[:80] and '"d": "2026' not in line[:80]:
                 continue
             rc = json.loads(line)
             d = rc["d"]
