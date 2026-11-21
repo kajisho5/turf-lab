@@ -1872,7 +1872,11 @@ async function fetchDecoded(url){
   if(up) order.push(up);
   if(_proxyOK && !order.includes(_proxyOK)) order.push(_proxyOK);
   for(const p of PROXY_LIST){ if(!order.includes(p)) order.push(p); }
-  if(_lateRun) order.length=1;
+  /* ★自動投稿の回（?auto=）は、自分のサイトの中継だけを使う（2026-11-21）★
+     中央のオッズや結果が取れない時、外の中継を順に試して1件あたり最大20秒かかっていた。11/21 の朝は中央24レースでこれが積み重なり、
+     7分の制限時間のうちに半分（12/24）までしか進まず、9:20・9:40 の出し直しが失敗した。外の中継はどれも通っていなかった（14回中14回失敗）。 */
+  const _autoRun=/[?&]auto=/.test(location.search||"");
+  if(_lateRun || _autoRun) order.length=1;
   let lastErr=null;
   for(const prefix of order){
     try{
