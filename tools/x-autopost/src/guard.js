@@ -61,6 +61,13 @@ export function modeState(m) {
   if ((m.posts || []).length) return "dry";
   return "none";
 }
+/** 失敗した理由を短く残す（2026-11-22。夜の中央が3回失敗したのに、理由がメールとCloudflareの記録にしか無く、あとから調べられなかった）。
+    Xの返事や通信の失敗の文だけ。鍵の値は入らない（投稿の関数は鍵を文に含めない） */
+export function errsOf(summary, modes) {
+  const out = {};
+  for (const mode of modes) { const m = ((summary && summary.modes) || {})[mode]; if (m && m.error && !NO_RACE.test(String(m.error))) out[mode] = String(m.error).slice(0, 300); }   // 「開催なし」は失敗ではないので残さない
+  return out;
+}
 export function stateOf(summary, modes) {
   const out = {};
   for (const mode of modes) out[mode] = (summary && summary.dry && !((summary.modes || {})[mode] || {}).error) ? "dry" : modeState(((summary && summary.modes) || {})[mode]);
@@ -91,7 +98,7 @@ export function planRetry(st, date, modes) {
   if (st === undefined) return { run: [], warn: null };                         // DB が無い
   if (st === null) return date >= GUARD_FROM ? { run: modes.slice(), warn: null, fresh: true } : { run: [], warn: null };
   if (!st.modes) return { run: [], warn: st.warned ? null : "回が途中で止まった記録があります（投稿できたか分かりません）。Xを見て、出ていなければ手で出してください。" };
-  if ((st.tries || 0) >= 2) return { run: [], warn: null };
+  if ((st.tries || 0) >= (st.max || 2)) return { run: [], warn: null };
   return { run: modes.filter(mode => st.modes[mode] === "fail"), warn: null };
 }
 /** やり直しの回。runAll(kind, mode) は1モードだけ回して summary を返す関数、notify(kind, summary, note) はメール */
@@ -121,6 +128,9 @@ export async function runRetry(env, ms, modes, runAll, notify) {
       if (j && j.rids && j.rids.length) st = Object.assign({}, st, { modes: Object.assign({}, st.modes, { jra: "fail" }) });
     } catch {}
   }
+  /* やり直しの上限は、朝3回（9:00・9:20・9:40）・夜4回（22:50・23:10・23:40・23:50）＝枠の数（2026-11-22）。
+     前は一律2回で、あとから足した 9:40 と 23:40・23:50 の枠が一度も動いていなかった */
+  if (st && st.modes) st = Object.assign({}, st, { max: kind === "evening" ? 4 : 3 });
   const plan = planRetry(st, date, modes);
   if (plan.warn) {
     await saveState(env, date, kind, Object.assign({}, st, { warned: 1 }));
@@ -139,6 +149,7 @@ export async function runRetry(env, ms, modes, runAll, notify) {
   }
   if (!run.length) return { kind, date, run: [] };
   const next = { modes: Object.assign({}, (st && st.modes) || {}), tries: ((st && st.tries) || 0) + 1 };
+  if (st && st.errs) next.errs = st.errs;
   await saveState(env, date, kind, Object.assign({}, next, { modes: Object.assign({}, next.modes, Object.fromEntries(run.map(m => [m, "part"]))) }));   // 先に「触った」印（途中で落ちても二重に出さない）
   const merged = { kind, dry: false, at: new Date().toISOString(), modes: {} };
   for (const mode of run) {
@@ -147,6 +158,8 @@ export async function runRetry(env, ms, modes, runAll, notify) {
     merged.modes[mode] = (s && s.modes && s.modes[mode]) || { ok: false, error: "結果なし" };
     next.modes[mode] = modeState(merged.modes[mode]);
   }
+  const errs = errsOf(merged, run);
+  if (Object.keys(errs).length) next.errs = Object.assign({}, (st && st.errs) || {}, errs);
   await saveState(env, date, kind, next);
   await notify(kind, merged, `やり直し（${next.tries}回目）`);
   return { kind, date, run, state: next };
@@ -197,14 +210,32 @@ export async function runAsk(env, ms, runOne, notify) {
   if (!row || !row.body) return null;
   let j = null;
   try { j = JSON.parse(row.body); } catch { return null; }
-  if (!j || j.done || (j.mode !== "nar" && j.mode !== "jra") || !/^\d{2}$/.test(String(j.tc || ""))) return null;
-  const mode = j.mode, tc = String(j.tc);
+  if (!j || j.done || (j.mode !== "nar" && j.mode !== "jra")) return null;
+  const mode = j.mode;
+  /* 夜の回の依頼（2026-11-22）: body={"kind":"evening","mode":"jra","date":"20261121"}。夜の答え合わせが出なかった時に、あとから1回出す。
+     日付は今日か前の日だけ（古い日のものを間違って出さない） */
+  if (j.kind === "evening") {
+    const d = String(j.date || "");
+    const y = new Date((Number(ms) || Date.now()) + 9 * 3600e3 - 86400e3).toISOString().slice(0, 10).replace(/-/g, "");
+    if (d !== date && d !== y) return null;
+    await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ kind: "evening", mode, date: d, done: 1 }), Date.now(), k).run();
+    let s = null;
+    try { s = await runOne(mode, null, "evening", d); } catch (e) { s = { modes: { [mode]: { ok: false, error: String(e && e.message || e) } } }; }
+    const r = (s && s.modes && s.modes[mode]) || { ok: false, error: "結果なし" };
+    const state = modeState(r);
+    await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ kind: "evening", mode, date: d, done: 1, state,
+      error: r.error ? String(r.error).slice(0, 300) : null, merge: r.mergeError ? String(r.mergeError).slice(0, 300) : null, posted: (r.posted || r.partial || []).length }), Date.now(), k).run();
+    try { await notify("evening", { kind: "evening", dry: false, at: new Date().toISOString(), modes: { [mode]: r } }, `依頼された出し直し（${d} の夜）`); } catch {}
+    return { date, mode, kind: "evening", for: d, state };
+  }
+  if (!/^\d{2}$/.test(String(j.tc || ""))) return null;
+  const tc = String(j.tc);
   await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ mode, tc, done: 1 }), Date.now(), k).run();
   let s = null;
   try { s = await runOne(mode, tc); } catch (e) { s = { modes: { [mode]: { ok: false, error: String(e && e.message || e) } } }; }
   const r = (s && s.modes && s.modes[mode]) || { ok: false, error: "結果なし" };
   const state = modeState(r);
-  await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ mode, tc, done: 1, state, error: r.error || null }), Date.now(), k).run();
+  await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ mode, tc, done: 1, state, error: r.error ? String(r.error).slice(0, 300) : null }), Date.now(), k).run();
   try { await notify("morning", { kind: "morning", dry: false, at: new Date().toISOString(), modes: { [mode]: r } }, `依頼された出し直し（場 ${tc}）`); } catch {}
   return { date, mode, tc, state };
 }

@@ -30,7 +30,7 @@ import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
 import { wakeDeploy, tokenDaysLeft } from "./wake.js";
 import { runWarm } from "./warm.js";
-import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, runAsk, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, runAsk, errsOf, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -127,7 +127,9 @@ export default {
         try {
           if (env.DRYRUN !== "1") {
             const ar = await runAsk(env, event.scheduledTime,
-              (mode, tc) => runAll(env, "morning", { dry: false, only: mode, extra: `&late=1&onlytc=${tc}`, keep: true }),
+              (mode, tc, kind, d) => kind === "evening"
+                ? runAll(env, "evening", { dry: false, only: mode, date: d })
+                : runAll(env, "morning", { dry: false, only: mode, extra: `&late=1&onlytc=${tc}`, keep: true }),
               (kind, r, note) => notifyMail(env, kind, r, null, note));
             if (ar) console.log("autopost ask", JSON.stringify(ar));
           }
@@ -226,7 +228,7 @@ export default {
       try { r = await runAll(env, kind, { dry: env.DRYRUN === "1" }); console.log("autopost result", JSON.stringify(r)); }
       catch (e) { err = e; console.error("scheduled", kind, e); }
       // 各モードの結果を残す（失敗したモードだけ、あとの回でやり直すため）
-      try { await saveState(env, day, kind, { modes: stateOf(r, MODES), tries: 0 }); } catch (e) { console.error("saveState", String(e && e.message || e)); }
+      try { const _e = errsOf(r, MODES); await saveState(env, day, kind, Object.assign({ modes: stateOf(r, MODES), tries: 0 }, Object.keys(_e).length ? { errs: _e } : {})); } catch (e) { console.error("saveState", String(e && e.message || e)); }
       try { await notifyMail(env, kind, r, err); } catch (e) { console.error("notify mail failed", String(e && e.message || e), String(e && e.code || "")); }
     })());
   },
