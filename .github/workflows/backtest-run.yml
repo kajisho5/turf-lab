@@ -11,6 +11,7 @@ on:
           - bt_jra_bands.py
           - bt_jra_gbm.py
           - bt_jra_favplace.py
+          - bt_jra_wide.py
 permissions:
   contents: read
 jobs:
@@ -36,6 +37,6 @@ jobs:
       - name: 回す
         run: |
           set -o pipefail
-          case "$SCRIPT" in bt_jra_bands.py|bt_jra_gbm.py|bt_jra_favplace.py) ;; *) echo "知らないスクリプト"; exit 1;; esac
+          case "$SCRIPT" in bt_jra_bands.py|bt_jra_gbm.py|bt_jra_favplace.py|bt_jra_wide.py) ;; *) echo "知らないスクリプト"; exit 1;; esac
           python "backtest/$SCRIPT" | tee /tmp/out.txt
           { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
