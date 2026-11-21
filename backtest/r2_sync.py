@@ -18,6 +18,7 @@
   python backtest/r2_sync.py ls [前置き]                倉庫の中身の一覧
   python backtest/r2_sync.py put <ファイル> <置く名前>   1つ上げる（同じ大きさのものが既にあれば飛ばす）
   python backtest/r2_sync.py get <置いた名前> <保存先>   1つ取ってくる
+  python backtest/r2_sync.py getdir <前置き> <フォルダ>  前置きの下を全部取ってくる
   python backtest/r2_sync.py push-all                  決まった一式を上げる（下の PUSH の表）
 """
 import datetime
@@ -263,6 +264,9 @@ def main():
         put(a[1], a[2])
     elif a[0] == "get" and len(a) == 3:
         get(a[1], a[2])
+    elif a[0] == "getdir" and len(a) == 3:      # 前置きの下を全部、フォルダへ（名前は最後の部分だけ使う）
+        for k, _ in ls(a[1]):
+            get(k, os.path.join(a[2], k.rsplit("/", 1)[-1]))
     elif a[0] == "push-all":
         push_all()
     else:

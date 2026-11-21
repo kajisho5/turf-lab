@@ -24,7 +24,16 @@ GROUPS = {"time": ["sf1", "sfb", "sfa", "af1", "afb", "afa", "btf"],
           "body": ["wt", "wd"],
           "mining": ["dmr", "dmt"]}
 GROUPS["all"] = sum(GROUPS.values(), [])
-COLS = GROUPS["all"]
+# 調教（2026-11-21 追加）。別ファイル bt_jra.jsonl.chokyo がある時だけ。SCREEN_GROUPS=chokyo,chokyo_best のように絞れる
+CHOKYO = ["hz", "hlast", "hl", "wz", "wlast", "wl", "cz", "cnt", "gap"]
+HAS_CH = os.path.exists(DATA + ".chokyo")
+if HAS_CH:
+    GROUPS["chokyo"] = CHOKYO
+    GROUPS["chokyo_best"] = ["cz"]
+COLS = GROUPS["all"] + (CHOKYO if HAS_CH else [])
+_only = [g for g in os.environ.get("SCREEN_GROUPS", "").split(",") if g]
+if _only:
+    GROUPS = {g: GROUPS[g] for g in _only}
 TS = [1.00, 1.05, 1.10, 1.15, 1.20, 1.30, 1.50]
 CAPS = [None, 50, 20, 10]
 MIN_SEL = 300
@@ -49,6 +58,12 @@ def load():
                 rid, v = json.loads(line)
                 if rid >= FIT[0][:4]:
                     d[rid] = v
+    chk = {}
+    if HAS_CH:
+        with open(DATA + ".chokyo", encoding="utf-8") as f:
+            for line in f:
+                rid, v = json.loads(line)
+                chk[rid] = v
     S = {"fit": [], "sel": [], "fin": []}
     ex = {"払戻なし": 0, "オッズ欠け": 0, "材料なし(障害など)": 0}
     last = ""
@@ -82,8 +97,13 @@ def load():
             o = np.array(o, float)
             q = (1 / o) / (1 / o).sum()
             X = [np.log(q)]
+            ck = chk.get(rc["rid"]) or {}
+            if HAS_CH and _only and all(g.startswith("chokyo") for g in _only) and not ck:
+                ex["調教なし"] = ex.get("調教なし", 0) + 1
+                continue
             for col in COLS:
-                X.append(zrace([h.get(col) if col in ("wt", "wd") else c[n].get(col) for h, n in zip(hs, ns)]))
+                X.append(zrace([h.get(col) if col in ("wt", "wd") else (ck.get(n) or {}).get(col) if col in CHOKYO
+                                else c[n].get(col) for h, n in zip(hs, ns)]))
             win = np.array([h["rk"] == 1 for h in hs])
             if win.sum() != 1:                      # 同着は外す（尤度の式を単純に保つ）
                 continue
@@ -147,7 +167,7 @@ def main():
     out = {"last": last, "n": {k: len(v) for k, v in S.items()}, "excluded": ex, "groups": {}}
     b_m = fit(P["fit"], [0])
     nll_m, _ = race_nll(b_m, P["sel"], [0])
-    print(f"\nオッズだけ: 係数 {b_m[0]:.3f}  読み(2024年) {nll_m.mean():.4f}")
+    print(f"\nオッズだけ: 係数 {b_m[0]:.3f}  読み(ふるいの期間) {nll_m.mean():.4f}")
     out["market"] = {"a": float(b_m[0]), "nll_sel": float(nll_m.mean())}
     for g, cols in GROUPS.items():
         idx = [0] + [1 + COLS.index(c) for c in cols]
@@ -160,7 +180,7 @@ def main():
                "nll_sel": float(nll.mean()), "diff": float(diff.mean()), "diff_ci": c95, "pass": bool(ok)}
         print(f"\n[{g}] 読み {nll.mean():.4f}  差 {diff.mean():+.4f} {c95}  → {'ふるい通過' if ok else '通らない'}")
         print(f"   係数 {res['coef']}")
-        if ok and "fin" in P:
+        if ok and "fin" in P and os.environ.get("SCREEN_NOFINAL") != "1":
             grid = []
             for t in TS:
                 for cap in CAPS:
@@ -183,6 +203,16 @@ def main():
                 res["final"] = f
                 print(f"   選んだ決まり t≥{t} 上限{cap or 'なし'}（2024年 {n_}点 {roi:.1f}%）")
                 print(f"   ★最終 {f}")
+        # 案B用: 先に固定した決まり（SCREEN_FIXED="t,上限"）を、ふるいの期間で1回だけ採点する
+        if os.environ.get("SCREEN_FIXED"):
+            t_, cap_ = os.environ["SCREEN_FIXED"].split(",")
+            x = bets(S["sel"], P["sel"], b, idx, float(t_), float(cap_) or None)
+            fx = {"t": float(t_), "cap": float(cap_), "n": int(len(x)),
+                  "roi": round(float(x.mean()), 1) if len(x) else None,
+                  "hit": round(100 * float((x > 0).mean()), 1) if len(x) else None,
+                  "ci": ci(x) if len(x) >= 100 else None}
+            res["fixed"] = fx
+            print(f"   固定の決まり（確率×オッズ≥{t_}・{cap_}倍まで）: {fx}")
         out["groups"][g] = res
     os.makedirs(os.path.join(HERE, "store", "discovery"), exist_ok=True)
     json.dump(out, open(os.path.join(HERE, "store", "discovery", "jra_screen.json"), "w", encoding="utf-8"),

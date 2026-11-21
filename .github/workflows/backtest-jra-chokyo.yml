@@ -1,0 +1,54 @@
+# 中央の調教タイムのふるい。決まりは backtest/PREREG_jra_chokyo_20261121.md に先に書いてある。
+# 手で動かす時だけ（鍵を使うので pull_request では動かさない）。記録に出すのは集計だけ。
+name: backtest-jra-chokyo
+on:
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: A＝過去ぶんあり（当てはめ〜2023・ふるい2024・最終2025〜） / B＝直近1年だけ
+        default: "A"
+      fit_from:
+        description: 案Aの当てはめの最初の日（YYYYMMDD）
+        default: "20150115"
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      PLAN: ${{ inputs.plan }}
+      FIT_FROM: ${{ inputs.fit_from }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install --quiet numpy==2.5.3 scipy==1.18.1 lightgbm==4.7.0
+      - name: 倉庫から取る
+        run: |
+          python backtest/r2_sync.py get jra/raw/target_all.txt backtest/jvdata/target_all.txt
+          python backtest/r2_sync.py get jra/raw/setup_2026.txt backtest/jvdata/setup_2026.txt
+          python backtest/r2_sync.py get jra/store/20261121.txt backtest/jvdata/gap_20261121.txt
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl backtest/nardata/bt_jra.jsonl
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.odds backtest/nardata/bt_jra.jsonl.odds
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.cand backtest/nardata/bt_jra.jsonl.cand
+          python backtest/r2_sync.py getdir jra/chokyo/ backtest/jvdata/chokyo
+      - name: 調教の項目を作る
+        run: |
+          if [ "$PLAN" = "A" ]; then FILES=$(ls backtest/jvdata/chokyo/*setup* | tr '\n' ':'); else FILES=$(ls backtest/jvdata/chokyo/*opt1* | tr '\n' ':'); fi
+          JRA_CHOKYO="$FILES" JRA_EXTRA_DUMPS=backtest/jvdata/gap_20261121.txt python backtest/build_jra_chokyo.py
+      - name: ふるい
+        run: |
+          set -o pipefail
+          export SCREEN_GROUPS=chokyo,chokyo_best
+          if [ "$PLAN" = "A" ]; then export SCREEN_FIT="$FIT_FROM,20240101"
+          else export SCREEN_FIT=20251202,20260701 SCREEN_SEL=20260701,99999999 SCREEN_FIN=20990101,20990102 SCREEN_FIXED=1.10,20; fi
+          python backtest/bt_jra_screen.py | tee /tmp/out.txt
+          { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jra_chokyo
+          path: backtest/store/discovery/jra_screen.json
