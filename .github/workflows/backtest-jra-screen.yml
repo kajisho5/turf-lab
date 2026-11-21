@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install --quiet numpy==2.5.3 scipy==1.18.1
+      - run: pip install --quiet numpy==2.5.3 scipy==1.18.1 lightgbm==4.7.0
       - name: 倉庫から取る
         run: |
           python backtest/r2_sync.py get jra/raw/target_all.txt backtest/jvdata/target_all.txt
@@ -31,6 +31,7 @@ jobs:
           python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl.cand jra/bt_jra_rebuilt.jsonl.cand
       - name: ふるい
         run: |
+          set -o pipefail
           python backtest/bt_jra_screen.py | tee /tmp/out.txt
           { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4

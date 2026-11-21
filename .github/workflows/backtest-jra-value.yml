@@ -30,6 +30,7 @@ jobs:
           python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl.odds jra/bt_jra_rebuilt.jsonl.odds
       - name: 検証
         run: |
+          set -o pipefail
           python backtest/bt_jra_value.py | tee /tmp/out.txt
           { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4

@@ -59,6 +59,7 @@ jobs:
           PY
       - name: 採点（◎と1番人気を同じレースで）
         run: |
+          set -o pipefail
           python backtest/bt_jra_unseen.py "$NEW_FROM" | tee /tmp/out.txt
           { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: 作り直したデータを倉庫へ戻す
