@@ -1,0 +1,38 @@
+# 倉庫（R2）のデータで、事前登録ずみの検証スクリプトを1つ回す。手で動かす時だけ。記録に出すのは集計だけ。
+# 生データは取らない（作り直しずみの学習用データと別ファイルだけ）。鍵を使うので pull_request では動かさない。
+name: backtest-run
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: 回すスクリプト
+        type: choice
+        options:
+          - bt_jra_bands.py
+permissions:
+  contents: read
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      SCRIPT: ${{ inputs.script }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install --quiet numpy==2.5.3 scipy==1.18.1 lightgbm==4.7.0
+      - name: 倉庫から取る
+        run: |
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl backtest/nardata/bt_jra.jsonl
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.odds backtest/nardata/bt_jra.jsonl.odds
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.cand backtest/nardata/bt_jra.jsonl.cand
+      - name: 回す
+        run: |
+          set -o pipefail
+          case "$SCRIPT" in bt_jra_bands.py) ;; *) echo "知らないスクリプト"; exit 1;; esac
+          python "backtest/$SCRIPT" | tee /tmp/out.txt
+          { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
