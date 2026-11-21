@@ -29,7 +29,7 @@ async function via(url) {
 export async function runWarm(env, ms, { sleep } = {}) {
   if (!warmSlot(ms) || !env.DB) return null;
   const { date, h, m } = jstParts(ms), k = `wm:${date}`;
-  const dow = new Date((Number(ms) || Date.now()) + 9 * 3600e3).getUTCDay(), weekend = dow === 0 || dow === 6;
+  const dow = new Date((Number(ms) || Date.now()) + 9 * 3600e3).getUTCDay(), weekend = dow === 0 || dow === 6 || dow === 1;   // 月曜も最後まで見る（祝日の開催がある）
   const wait = sleep || (t => new Promise(r => setTimeout(r, t)));
   await env.DB.prepare(HITS_DDL).run();
   const row = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(k).first();

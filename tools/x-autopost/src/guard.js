@@ -156,8 +156,8 @@ export async function runRetry(env, ms, modes, runAll, notify) {
 export function lateSlot(ms) {
   const { h, m } = jst(ms);
   const dow = new Date((Number(ms) || Date.now()) + 9 * 3600e3).getUTCDay();
-  if ((dow === 0 || dow === 6) && h === 9 && m === 50) return true;   // 9:50 は 2026-11-21 に足した（朝とやり直しが全部だめだった日に、1R の前後から出せるように）
-  return (dow === 0 || dow === 6) && (m === 0 || m === 30) && (h >= 10 && (h < 14 || (h === 14 && m === 0)));
+  if ((dow === 0 || dow === 6 || dow === 1) && h === 9 && m === 50) return true;   // 9:50 は 2026-11-21 に足した（朝とやり直しが全部だめだった日に、1R の前後から出せるように）
+  return (dow === 0 || dow === 6 || dow === 1) && (m === 0 || m === 30) && (h >= 10 && (h < 14 || (h === 14 && m === 0)));   // 月曜は祝日の開催のため（下の runLate で「朝の前に一覧からレースを拾えた日」だけに絞る）
 }
 /** 昼の出し直し。土日なのに中央の朝の予想が出ていない時（ページが取れず「開催なし」扱いになった時）、発走前のレースだけで出し直す。
     runLate(mode) は late=1 つきで朝の回を1モードだけ回して summary を返す関数。1日4回まで。途中で落ちた時は二重に出さないよう、もう出さない */
@@ -167,6 +167,12 @@ export async function runLate(env, ms, runLateOne, notify) {
   const st = await loadState(env, date, "morning");
   if (!st || !st.modes || (st.modes[mode] !== "none" && st.modes[mode] !== "fail")) return null;
   if ((st.late || 0) >= 4) return null;
+  /* 月曜は、朝の前に一覧からレースを拾えていた日（＝祝日の開催）だけ出し直す（2026-11-21。11/23 の祝日開催に備えて） */
+  if (new Date((Number(ms) || Date.now()) + 9 * 3600e3).getUTCDay() === 1) {
+    let has = false;
+    try { const w = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(`wm:${date}`).first(); const j = w && w.body ? JSON.parse(w.body) : null; has = !!(j && j.rids && j.rids.length); } catch {}
+    if (!has) return null;
+  }
   const m = await env.DB.prepare("SELECT tweet_id FROM xpost_log WHERE k=?").bind(`m:${date}:${mode}`).first();
   if (m && m.tweet_id) return null;
   const next = Object.assign({}, st, { late: (st.late || 0) + 1, modes: Object.assign({}, st.modes) });

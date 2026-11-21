@@ -39,12 +39,12 @@ r = await runWarm(env, J(5, 40), { sleep: nosleep });
 eq("そろったあとは取りに行かない", [calls.length, r.tried], [0, 0]);
 eq("同じレースを二重に数えない", new Set(JSON.parse(env.DB.rows["wm:20261114"]).done).size, 8);
 // レースの無い一覧が返る日
-const W = (h, m) => Date.UTC(2026, 10, 16, h - 9, m);   // 月曜
+const W = (h, m) => Date.UTC(2026, 10, 17, h - 9, m);   // 火曜
 env = { DB: mkDB() }; calls = [];
 globalThis.fetch = async u => { calls.push(1); return { ok: true, headers: { get: () => "miss" }, text: async () => "<div>" + " ".repeat(400) + "</div>" }; };
 for (const mm of [0, 10, 20, 30, 40]) r = await runWarm(env, W(5, mm), { sleep: nosleep });
 eq("平日は3回見て無ければやめる", [calls.length, r.none], [3, true]);
 env = { DB: mkDB() }; calls = [];
 for (const mm of [0, 10, 20, 30, 40]) r = await runWarm(env, J(5, mm), { sleep: nosleep });
-eq("土日は開催なしと決めつけず見に行き続ける", [calls.length, r.none], [5, false]);
+eq("土日（と月曜）は開催なしと決めつけず見に行き続ける", [calls.length, r.none], [5, false]);
 console.log("OK", ok, "NG", ng); process.exit(ng ? 1 : 0);
