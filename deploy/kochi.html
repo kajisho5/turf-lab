@@ -653,7 +653,7 @@ function parseShutuba(html){
   const entries={}; const order=[]; const scratched=[];
   // 馬柱は各馬が大きな行。/horse/ を含む tr を1頭として扱う
   let rows=html.match(/<tr[^>]*class="[^"]*HorseList[^"]*"[\s\S]*?<\/tr>/g);
-  if(!rows||!rows.length){ rows=(html.match(/<tr[\s\S]*?<\/tr>/g)||[]).filter(t=>/\/horse\/[0-9][A-Za-z0-9]{5,11}/.test(t)); }
+  if(!rows||!rows.length){ rows=(html.match(/<tr[\s\S]*?<\/tr>/g)||[]).filter(t=>/\/horse\/[A-Za-z]?[0-9][A-Za-z0-9]{5,11}/.test(t)); }
   rows.forEach(r=>{
     // 馬柱: 枠=<td class="WakuN">N</td>, 馬番=<td class="Waku">M</td>（数字サフィックス無し）
     const w=r.match(/class="Waku(\d)"/);
@@ -662,13 +662,13 @@ function parseShutuba(html){
     // 馬名は Horse_Info セル内の馬名リンク（Horse02）から取る。近走の相手馬リンクを拾わないよう限定
     const info=r.match(/class="Horse_Info"[\s\S]*?(?=<td|<\/tr>)/);
     let n=null;
-    if(info){ n=info[0].match(/\/horse\/([0-9][A-Za-z0-9]{5,11})\/?"[^>]*>\s*(?:<[^>]+>\s*)*([^<]{1,30}?)\s*</); }
+    if(info){ n=info[0].match(/\/horse\/([A-Za-z]?[0-9][A-Za-z0-9]{5,11})\/?"[^>]*>\s*(?:<[^>]+>\s*)*([^<]{1,30}?)\s*</); }
     /* ★行全体から拾い直す時は、過去走のセルを除く（2026-11-20）★
        11/19 大井2R 9番（サルトゥス・外国産で馬の番号が 000a02e733 と英字入り）で、番号を数字だけと決めつけていたため馬名の欄から取れず、
        行の中で次に出てくる馬のリンク＝前走の勝ち馬（ハイネデスティニー）を馬名と番号にしてしまった。 */
     const _rNoPast=r.replace(/<td[^>]*class="[^"]*\bPast\b[^"]*"[\s\S]*?<\/td>/g,"");
-    if(!n) n=_rNoPast.match(/\/horse\/([0-9][A-Za-z0-9]{5,11})[^"]*"[^>]*title="([^"]{1,30})"/); // titleフォールバック
-    if(!n) n=_rNoPast.match(/\/horse\/([0-9][A-Za-z0-9]{5,11})[^"]*"[^>]*>\s*([^<]{1,30}?)\s*</);
+    if(!n) n=_rNoPast.match(/\/horse\/([A-Za-z]?[0-9][A-Za-z0-9]{5,11})[^"]*"[^>]*title="([^"]{1,30})"/); // titleフォールバック
+    if(!n) n=_rNoPast.match(/\/horse\/([A-Za-z]?[0-9][A-Za-z0-9]{5,11})[^"]*"[^>]*>\s*([^<]{1,30}?)\s*</);
     if(!u||!n) return;
     const num=String(parseInt(u[1],10)), name=n[2].trim(), hid=n[1];
     // 出走取消・競走除外: entriesに入れず scratched へ退避（採点・印・買い目から完全除外）。過去走セルは判定前に除去
