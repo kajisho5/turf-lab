@@ -40,6 +40,7 @@ jobs:
         run: |
           if [ "$PLAN" = "A" ]; then FILES=$(ls backtest/jvdata/chokyo/*setup* | tr '\n' ':'); else FILES=$(ls backtest/jvdata/chokyo/*opt1* | tr '\n' ':'); fi
           JRA_CHOKYO="$FILES" JRA_EXTRA_DUMPS=backtest/jvdata/gap_20261121.txt python backtest/build_jra_chokyo.py
+          if [ "$PLAN" = "A" ]; then python backtest/r2_sync.py put backtest/nardata/bt_jra.jsonl.chokyo jra/bt_jra_rebuilt.jsonl.chokyo; fi
       - name: ふるい
         run: |
           set -o pipefail

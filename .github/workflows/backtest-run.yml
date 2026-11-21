@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - bt_jra_bands.py
+          - bt_jra_gbm.py
 permissions:
   contents: read
 jobs:
@@ -30,9 +31,10 @@ jobs:
           python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl backtest/nardata/bt_jra.jsonl
           python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.odds backtest/nardata/bt_jra.jsonl.odds
           python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.cand backtest/nardata/bt_jra.jsonl.cand
+          python backtest/r2_sync.py get jra/bt_jra_rebuilt.jsonl.chokyo backtest/nardata/bt_jra.jsonl.chokyo
       - name: 回す
         run: |
           set -o pipefail
-          case "$SCRIPT" in bt_jra_bands.py) ;; *) echo "知らないスクリプト"; exit 1;; esac
+          case "$SCRIPT" in bt_jra_bands.py|bt_jra_gbm.py) ;; *) echo "知らないスクリプト"; exit 1;; esac
           python "backtest/$SCRIPT" | tee /tmp/out.txt
           { echo '```'; cat /tmp/out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
