@@ -1,0 +1,40 @@
+# JV-Link（JRA-VAN の取り込み部品）が GitHub の Windows の実行環境に人の操作なしで入るかを確かめるだけの試し。
+# 手で動かす時だけ。鍵（利用キー）は使わない。データは取りに行かない。何も保存しない。
+name: probe-jvlink
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: インストーラを取る
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://dl.cdn.jra-van.ne.jp/datalab/JV-Link/web/JV-Link.exe" -OutFile "$env:RUNNER_TEMP\JV-Link.exe"
+          $f = Get-Item "$env:RUNNER_TEMP\JV-Link.exe"
+          "サイズ $($f.Length)"
+          "バージョン情報 " + ($f.VersionInfo | Select-Object FileVersion, ProductName, CompanyName, FileDescription | ConvertTo-Json -Compress)
+      - name: 人の操作なしで入れてみる
+        shell: pwsh
+        run: |
+          $exe = "$env:RUNNER_TEMP\JV-Link.exe"
+          $tries = @('/s /v"/qn /norestart"', '/S /v/qn', '/s', '/quiet /norestart', '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART')
+          foreach ($a in $tries) {
+            if (Test-Path "C:\Windows\SysWOW64\JVDTLAB\JVDTLab.dll") { break }
+            "--- 引数: $a"
+            $p = Start-Process -FilePath $exe -ArgumentList $a -PassThru
+            if (-not $p.WaitForExit(150000)) { "時間切れ（画面が出て止まっている可能性）"; Get-Process | Where-Object { $_.MainWindowTitle } | Select-Object Name, MainWindowTitle | Format-Table | Out-String; Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue; Get-Process -Name "JV-Link*","msiexec","setup*","ISBEW64*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue }
+            else { "終了コード $($p.ExitCode)" }
+            Start-Sleep -Seconds 5
+          }
+          "入ったか: " + (Test-Path "C:\Windows\SysWOW64\JVDTLAB\JVDTLab.dll")
+          Get-ChildItem "C:\Windows\SysWOW64\JVDTLAB","C:\Windows\System32\JVDTLAB","C:\Program Files (x86)\JRA-VAN","C:\Program Files\JRA-VAN" -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 200
+      - name: 部品を呼べるか（32ビット）
+        if: always()
+        shell: pwsh
+        run: |
+          $ps32 = "C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"
+          & $ps32 -NoProfile -Command "try { `$j = New-Object -ComObject JVDTLab.JVLink; 'COM 作成 OK'; 'JVInit の戻り値 ' + `$j.JVInit('UNKNOWN'); 'バージョン ' + `$j.m_JVLinkVersion } catch { 'COM 失敗: ' + `$_.Exception.Message }"
+          "サービス: " + ((Get-Service | Where-Object { $_.Name -match 'JV|JRA' -or $_.DisplayName -match 'JV|JRA' } | Select-Object Name, Status | ConvertTo-Json -Compress))
