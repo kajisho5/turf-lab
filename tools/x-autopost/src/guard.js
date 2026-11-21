@@ -156,6 +156,7 @@ export async function runRetry(env, ms, modes, runAll, notify) {
 export function lateSlot(ms) {
   const { h, m } = jst(ms);
   const dow = new Date((Number(ms) || Date.now()) + 9 * 3600e3).getUTCDay();
+  if ((dow === 0 || dow === 6) && h === 9 && m === 50) return true;   // 9:50 は 2026-11-21 に足した（朝とやり直しが全部だめだった日に、1R の前後から出せるように）
   return (dow === 0 || dow === 6) && (m === 0 || m === 30) && (h >= 10 && (h < 14 || (h === 14 && m === 0)));
 }
 /** 昼の出し直し。土日なのに中央の朝の予想が出ていない時（ページが取れず「開催なし」扱いになった時）、発走前のレースだけで出し直す。
