@@ -46,3 +46,27 @@
   const b2 = JSON.parse(e2.db.get("s:20261122:evening").body);
   eq([n, b2.tries, b2.errs && b2.errs.jra], [1, 3, "えらー"], "retry: 夜の3回目（23:40）が動き、理由が残る");
 }
+// ---- 手で頼む入口 queueAsk と、すでに出せていたら出さない（2026-11-22）----
+{
+  const { runAsk, queueAsk } = await import("../src/guard.js");
+  const J = (s) => Date.parse(s + "+09:00");
+  const eq = (a, b, n) => { if (JSON.stringify(a) === JSON.stringify(b)) { console.log("ok  " + n); } else { console.log("NG  " + n, a, b); process.exitCode = 1; } };
+  const mk = (rows) => { const db = new Map(Object.entries(rows));
+    return { db, DB: { prepare: (sql) => ({ run: async () => ({ meta: { changes: 0 } }), bind: (...a) => ({
+      first: async () => { const v = db.get(a[0]); return v === undefined ? null : v; },
+      run: async () => { if (/^UPDATE/.test(sql)) db.set(a[2], { body: a[0] }); else if (/INSERT/.test(sql)) db.set(a[0], { body: a[4] }); return { meta: { changes: 1 } }; } }) }) } }; };
+  const T = J("2026-11-22T22:35:00");
+  const e = mk({ "s:20261122:evening": { body: JSON.stringify({ modes: { nar: "ok", jra: "fail" } }) } });
+  const q = await queueAsk(e, T, { kind: "evening", mode: "jra" });
+  eq([q.queued, JSON.parse(e.db.get("ask:20261122").body)], [true, { kind: "evening", mode: "jra", date: "20261122" }], "queue: 失敗している回は依頼できる");
+  eq((await queueAsk(e, T, { kind: "evening", mode: "jra" })).refused, true, "queue: 待っている依頼があれば重ねない");
+  eq((await queueAsk(e, T, { kind: "evening", mode: "nar" })).refused, true, "queue: 出せている回は頼めない（待ちがある間も）");
+  eq((await queueAsk(mk({ "s:20261122:evening": { body: JSON.stringify({ modes: { nar: "ok" } }) } }), T, { kind: "evening", mode: "nar" })).reason.includes("もう投稿"), true, "queue: すでに ok なら拒否");
+  for (const bad of [{ kind: "morning", mode: "jra" }, { kind: "evening", mode: "x" }, { kind: "evening", mode: "jra", date: "20261110" }])
+    eq((await queueAsk(mk({}), T, bad)).refused, true, "queue: 不正は拒否 " + JSON.stringify(bad));
+  // 依頼のあと自動のやり直しが先に成功していたら、実行時に出さない
+  const e2 = mk({ "ask:20261122": { body: JSON.stringify({ kind: "evening", mode: "jra", date: "20261122" }) }, "s:20261122:evening": { body: JSON.stringify({ modes: { jra: "ok" } }) } });
+  let ran = 0;
+  const r = await runAsk(e2, T, async () => { ran++; return {}; }, async () => {});
+  eq([ran, r && r.state, JSON.parse(e2.db.get("ask:20261122").body).done], [0, "skipped", 1], "ask: 先に自動で出せていたら二重に出さない");
+}

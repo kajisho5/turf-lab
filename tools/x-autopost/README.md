@@ -53,3 +53,16 @@ npx wrangler secret put TRIGGER_KEY      # 手動テスト用の合言葉（好�
 - Browser Rendering の実行時間: 夜の全場照合で最大~90秒。上限は `RENDER_TIMEOUT_MS`。
 - 予想はオッズ前・公開後不変。狙い目は朝の保存信頼度基準（tweet.html側で担保済み）。
 - tweet.html は legacy 配信。`?auto=` はゲート自動通過（公開予想の生成のみ）。
+
+
+## 手で出し直しを頼む（Muse などから・2026-11-22）
+自動の夜の回が失敗して、やり直しでも出なかった時に、URL を開くだけで頼める。
+```
+# 1) 状態を見る（何も起きない）
+https://<ワーカーのURL>/redo?kind=evening&mode=jra&key=<TRIGGER_KEY>
+# 2) 頼む（go=1 が付いた時だけ動く）。mode は nar（地方）か jra（中央）、date は省略で今日（昨日まで可）
+https://<ワーカーのURL>/redo?kind=evening&mode=jra&key=<TRIGGER_KEY>&go=1
+```
+- 頼むと次の10分ごとの回で **1回だけ** 出し、結果をメールで知らせる。
+- すでに投稿できている回・待っている依頼がある時・2日以上前は断る。依頼のあとに自動のやり直しが先に成功していたら、実行時にも出さない（二重投稿よけ）。
+- 朝の回は対象外（今は夜だけ）。TRIGGER_KEY は Cloudflare の Variables and Secrets にある（値はここに書かない）。

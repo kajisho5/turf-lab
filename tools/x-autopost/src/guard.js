@@ -218,6 +218,12 @@ export async function runAsk(env, ms, runOne, notify) {
     const d = String(j.date || "");
     const y = new Date((Number(ms) || Date.now()) + 9 * 3600e3 - 86400e3).toISOString().slice(0, 10).replace(/-/g, "");
     if (d !== date && d !== y) return null;
+    /* すでに出せている回は出さない（自動のやり直しが先に成功した時の二重投稿よけ。2026-11-22） */
+    const cur = await loadState(env, d, "evening");
+    if (cur && cur.modes && (cur.modes[mode] === "ok")) {
+      await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ kind: "evening", mode, date: d, done: 1, state: "skipped-already-ok" }), Date.now(), k).run();
+      return { date, mode, kind: "evening", for: d, state: "skipped" };
+    }
     await env.DB.prepare("UPDATE xpost_log SET body=?, ts=? WHERE k=?").bind(JSON.stringify({ kind: "evening", mode, date: d, done: 1 }), Date.now(), k).run();
     let s = null;
     try { s = await runOne(mode, null, "evening", d); } catch (e) { s = { modes: { [mode]: { ok: false, error: String(e && e.message || e) } } }; }
@@ -272,4 +278,24 @@ export async function rehearsal(env, ms, whoami, get = fetch) {
   try { if (env.DB) await env.DB.prepare("SELECT 1").first(); else bad.push("記録の置き場（D1）がつながっていません"); }
   catch (e) { bad.push("記録の置き場（D1）が読めません: " + String(e && e.message || e)); }
   return bad;
+}
+
+/** 手で出し直しを頼む（Muse などから URL で呼ぶ用。2026-11-22）。依頼の行（ask:<今日>）を置くだけ。実際に出すのは次の10分ごとの回。
+    返す: {queued, ...} か {refused, reason}。すでに「出せた」回・待っている依頼がある時・古い日は頼めない */
+export async function queueAsk(env, ms, { kind, mode, date }) {
+  if (!env.DB) return { refused: true, reason: "DB が無い" };
+  if (mode !== "nar" && mode !== "jra") return { refused: true, reason: "mode は nar か jra" };
+  if (kind !== "evening") return { refused: true, reason: "今は kind=evening だけ頼めます" };
+  const { date: today } = jst(ms);
+  const y = new Date((Number(ms) || Date.now()) + 9 * 3600e3 - 86400e3).toISOString().slice(0, 10).replace(/-/g, "");
+  const d = String(date || today);
+  if (d !== today && d !== y) return { refused: true, reason: "日付は今日か昨日だけ" };
+  const st = await loadState(env, d, "evening");
+  if (st && st.modes && st.modes[mode] === "ok") return { refused: true, reason: `${d} の夜の ${mode} はもう投稿できています` };
+  const k = `ask:${today}`;
+  const row = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(k).first();
+  if (row && row.body) { try { const j = JSON.parse(row.body); if (j && !j.done) return { refused: true, reason: "待っている依頼があります（10分以内に動きます）", pending: j }; } catch {} }
+  await env.DB.prepare("INSERT OR REPLACE INTO xpost_log(k,date,mode,tweet_id,body,ts) VALUES(?,?,?,?,?,?)")
+    .bind(k, today, "-", null, JSON.stringify({ kind, mode, date: d }), Date.now()).run();
+  return { queued: true, key: k, kind, mode, date: d, note: "次の10分ごとの回で1回だけ出します。結果はメールとこのURLの確認で分かります" };
 }

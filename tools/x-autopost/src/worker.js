@@ -30,7 +30,7 @@ import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
 import { wakeDeploy, tokenDaysLeft } from "./wake.js";
 import { runWarm } from "./warm.js";
-import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, runAsk, errsOf, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
+import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, runAsk, queueAsk, errsOf, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
    朝は全場予想（runAll）を回すので手元で90秒、Cloudflare上ではさらに長くかかり、待ち時間150秒を超えていた見込み
@@ -235,8 +235,21 @@ export default {
 
   async fetch(req, env) {
     const url = new URL(req.url);
+    /* 手で出し直しを頼む入口（Muse などから）。go=1 が無い時は何もせず状態を見せるだけ（リンクの先読みで動かないように）。
+       /redo?kind=evening&mode=jra[&date=YYYYMMDD]&key=TRIGGER_KEY&go=1 → 次の10分ごとの回で1回だけ出す（二重に出さない仕組みつき） */
+    if (url.pathname.endsWith("/redo")) {
+      if (!env.TRIGGER_KEY || url.searchParams.get("key") !== env.TRIGGER_KEY) return json({ error: "forbidden (key不一致)" }, 403);
+      const kind = url.searchParams.get("kind") || "evening", mode = url.searchParams.get("mode"), date = url.searchParams.get("date") || undefined;
+      try {
+        const { date: today } = jst(Date.now()), d = date || today;
+        const st = await loadState(env, d, "evening");
+        const row = env.DB ? await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(`ask:${today}`).first() : null;
+        if (url.searchParams.get("go") !== "1") return json({ preview: true, note: "go=1 を付けると依頼します", date: d, state: st || null, ask: row && row.body ? JSON.parse(row.body) : null });
+        return json(await queueAsk(env, Date.now(), { kind, mode, date }));
+      } catch (e) { return json({ error: String(e && e.message || e) }, 500); }
+    }
     if (!url.pathname.endsWith("/run")) {
-      return json({ ok: true, usage: "/run?kind=morning|evening&key=TRIGGER_KEY[&dry=1][&mode=nar|jra]" });
+      return json({ ok: true, usage: "/run?kind=morning|evening&key=TRIGGER_KEY[&dry=1][&mode=nar|jra]  /  /redo?kind=evening&mode=nar|jra[&date=YYYYMMDD]&key=TRIGGER_KEY[&go=1]" });
     }
     if (!env.TRIGGER_KEY || url.searchParams.get("key") !== env.TRIGGER_KEY) {
       return json({ error: "forbidden (key不一致)" }, 403);
