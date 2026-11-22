@@ -1,82 +1,93 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" font-family="'Noto Sans JP','Noto Sans CJK JP',sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" font-family="'Inter','Noto Sans JP','Noto Sans CJK JP',sans-serif">
 <title>今日のレース</title>
-<rect width="1280" height="800" fill="#FFFFFF"/>
-<rect x="0" y="0" width="220" height="800" rx="0" fill="#00118F"/>
-<text x="24" y="48" font-size="24" font-weight="700" fill="#FFFFFF" text-anchor="start">TURF LAB</text>
-<text x="24" y="72" font-size="16" font-weight="400" fill="#FFFFFF" text-anchor="start">デスクトップ（仮）</text>
-<rect x="12" y="90" width="196" height="48" rx="6" fill="#0031D8"/>
-<text x="32" y="120" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="start">今日のレース</text>
-<text x="32" y="176" font-size="18" font-weight="400" fill="#FFFFFF" text-anchor="start">成績</text>
-<text x="32" y="232" font-size="18" font-weight="400" fill="#FFFFFF" text-anchor="start">設定</text>
-<rect x="220" y="0" width="1060" height="56" rx="0" fill="#F2F2F2"/>
-<line x1="220" y1="56" x2="1280" y2="56" stroke="#CCCCCC" stroke-width="1"/>
-<text x="244" y="35" font-size="16" font-weight="400" fill="#1A1A1A" text-anchor="start">データ更新 07:02　試用期間 あと23日</text>
-<text x="1256" y="35" font-size="16" font-weight="400" fill="#595959" text-anchor="end">サンプル表示（架空データ）</text>
-<text x="244" y="100" font-size="26" font-weight="700" fill="#1A1A1A" text-anchor="start">11月22日（日）の中央競馬</text>
-<rect x="244" y="120" width="108" height="44" rx="6" fill="#0031D8"/>
-<text x="298" y="149" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">東京</text>
-<rect x="364" y="120" width="108" height="44" rx="6" fill="#F2F2F2" stroke="#CCCCCC" stroke-width="1"/>
-<text x="418" y="149" font-size="18" font-weight="700" fill="#1A1A1A" text-anchor="middle">京都</text>
-<rect x="484" y="120" width="108" height="44" rx="6" fill="#F2F2F2" stroke="#CCCCCC" stroke-width="1"/>
-<text x="538" y="149" font-size="18" font-weight="700" fill="#1A1A1A" text-anchor="middle">福島</text>
-<rect x="244" y="184" width="1012" height="36" rx="0" fill="#F2F2F2"/>
-<text x="260" y="208" font-size="16" font-weight="700" fill="#595959" text-anchor="start">R</text>
-<text x="330" y="208" font-size="16" font-weight="700" fill="#595959" text-anchor="start">発走</text>
-<text x="420" y="208" font-size="16" font-weight="700" fill="#595959" text-anchor="start">条件</text>
-<text x="720" y="208" font-size="16" font-weight="700" fill="#595959" text-anchor="start">本命</text>
-<text x="1110" y="208" font-size="16" font-weight="700" fill="#595959" text-anchor="start">勝負</text>
-<line x1="244" y1="288" x2="1256" y2="288" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="262" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">1R</text>
-<text x="330" y="262" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">9:55</text>
-<text x="420" y="262" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">3歳未勝利 ダ1600</text>
-<text x="720" y="263" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="262" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">7</text>
-<text x="800" y="262" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">ミズノアカリ</text>
-<line x1="244" y1="356" x2="1256" y2="356" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="330" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">2R</text>
-<text x="330" y="330" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">10:25</text>
-<text x="420" y="330" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">3歳未勝利 芝1800</text>
-<text x="720" y="331" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="330" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">3</text>
-<text x="800" y="330" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">ツキノウサギ</text>
-<line x1="244" y1="424" x2="1256" y2="424" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="398" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">3R</text>
-<text x="330" y="398" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">10:55</text>
-<text x="420" y="398" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">2歳新馬 芝1600</text>
-<text x="720" y="399" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="398" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">11</text>
-<text x="800" y="398" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">ハルノオトモ</text>
-<line x1="244" y1="492" x2="1256" y2="492" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="466" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">4R</text>
-<text x="330" y="466" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">11:30</text>
-<text x="420" y="466" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">3歳以上1勝 ダ1400</text>
-<text x="720" y="467" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="466" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">5</text>
-<text x="800" y="466" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">コトリノウタ</text>
-<rect x="1100" y="440" width="80" height="36" rx="18" fill="#197A4B"/>
-<text x="1140" y="465" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">勝負</text>
-<line x1="244" y1="560" x2="1256" y2="560" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="534" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">5R</text>
-<text x="330" y="534" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">12:20</text>
-<text x="420" y="534" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">3歳以上1勝 芝2000</text>
-<text x="720" y="535" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="534" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">2</text>
-<text x="800" y="534" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">ナミノアワ</text>
-<line x1="244" y1="628" x2="1256" y2="628" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="602" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">6R</text>
-<text x="330" y="602" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">12:50</text>
-<text x="420" y="602" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">2歳未勝利 ダ1800</text>
-<text x="720" y="603" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="602" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">9</text>
-<text x="800" y="602" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">ヒカリノミチ</text>
-<line x1="244" y1="696" x2="1256" y2="696" stroke="#CCCCCC" stroke-width="1"/>
-<text x="260" y="670" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">7R</text>
-<text x="330" y="670" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">13:25</text>
-<text x="420" y="670" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">3歳以上2勝 芝1600</text>
-<text x="720" y="671" font-size="22" font-weight="700" fill="#CE0000" text-anchor="start">◎</text>
-<text x="750" y="670" font-size="20" font-weight="700" fill="#1A1A1A" text-anchor="start">6</text>
-<text x="800" y="670" font-size="18" font-weight="400" fill="#1A1A1A" text-anchor="start">アサヒノカケラ</text>
-<rect x="1100" y="644" width="80" height="36" rx="18" fill="#197A4B"/>
-<text x="1140" y="669" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">勝負</text>
-<text x="244" y="784" font-size="16" font-weight="400" fill="#595959" text-anchor="start">※印は発走前に確定し、後から書き換えません。</text>
+<rect width="1280" height="800" fill="#0B0C0E"/>
+<rect x="0" y="0" width="240" height="800" rx="0" fill="#08090A"/>
+<line x1="240" y1="0" x2="240" y2="800" stroke="#26282D" stroke-width="1"/>
+<rect x="20" y="22" width="28" height="28" rx="7" fill="#5E6AD2"/>
+<text x="34" y="43" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">T</text>
+<text x="60" y="43" font-size="18" font-weight="600" fill="#E6E7EA" text-anchor="start">TURF LAB</text>
+<text x="24" y="96" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">ワークスペース</text>
+<rect x="10" y="112" width="220" height="40" rx="6" fill="#1F2127"/>
+<rect x="24" y="126" width="8" height="8" rx="4" fill="#5E6AD2"/>
+<text x="46" y="140" font-size="17" font-weight="600" fill="#E6E7EA" text-anchor="start">今日のレース</text>
+<text x="214" y="140" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">G T</text>
+<rect x="24" y="174" width="8" height="8" rx="4" fill="#26282D"/>
+<text x="46" y="188" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">成績</text>
+<text x="214" y="188" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">G R</text>
+<rect x="24" y="222" width="8" height="8" rx="4" fill="#26282D"/>
+<text x="46" y="236" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">設定</text>
+<text x="214" y="236" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">G S</text>
+<line x1="0" y1="728" x2="240" y2="728" stroke="#26282D" stroke-width="1"/>
+<text x="24" y="762" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">Ctrl+K で検索</text>
+<line x1="240" y1="56" x2="1280" y2="56" stroke="#26282D" stroke-width="1"/>
+<text x="264" y="35" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">データ更新 07:02　試用期間 あと23日</text>
+<text x="1256" y="35" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">サンプル表示（架空データ）</text>
+<text x="264" y="100" font-size="26" font-weight="700" fill="#F2F3F5" text-anchor="start">11月22日（日）の中央競馬</text>
+<rect x="264" y="120" width="108" height="40" rx="20" fill="#23262E" stroke="#26282D" stroke-width="1"/>
+<text x="318" y="147" font-size="17" font-weight="600" fill="#F2F3F5" text-anchor="middle">東京</text>
+<rect x="384" y="120" width="108" height="40" rx="20" fill="#0B0C0E" stroke="#26282D" stroke-width="1"/>
+<text x="438" y="147" font-size="17" font-weight="400" fill="#9498A1" text-anchor="middle">京都</text>
+<rect x="504" y="120" width="108" height="40" rx="20" fill="#0B0C0E" stroke="#26282D" stroke-width="1"/>
+<text x="558" y="147" font-size="17" font-weight="400" fill="#9498A1" text-anchor="middle">福島</text>
+<line x1="264" y1="220" x2="1256" y2="220" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="208" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">R</text>
+<text x="350" y="208" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">発走</text>
+<text x="440" y="208" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">条件</text>
+<text x="740" y="208" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">本命</text>
+<text x="1130" y="208" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">勝負</text>
+<line x1="264" y1="288" x2="1256" y2="288" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="262" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">1R</text>
+<text x="350" y="262" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">9:55</text>
+<text x="440" y="262" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">3歳未勝利 ダ1600</text>
+<text x="740" y="263" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="262" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">7</text>
+<text x="820" y="262" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">ミズノアカリ</text>
+<line x1="264" y1="356" x2="1256" y2="356" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="330" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">2R</text>
+<text x="350" y="330" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">10:25</text>
+<text x="440" y="330" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">3歳未勝利 芝1800</text>
+<text x="740" y="331" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="330" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">3</text>
+<text x="820" y="330" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">ツキノウサギ</text>
+<line x1="264" y1="424" x2="1256" y2="424" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="398" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">3R</text>
+<text x="350" y="398" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">10:55</text>
+<text x="440" y="398" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">2歳新馬 芝1600</text>
+<text x="740" y="399" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="398" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">11</text>
+<text x="820" y="398" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">ハルノオトモ</text>
+<line x1="264" y1="492" x2="1256" y2="492" stroke="#26282D" stroke-width="1"/>
+<rect x="264" y="424" width="992" height="68" rx="0" fill="#1A1C2E"/>
+<text x="284" y="466" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">4R</text>
+<text x="350" y="466" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">11:30</text>
+<text x="440" y="466" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">3歳以上1勝 ダ1400</text>
+<text x="740" y="467" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="466" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">5</text>
+<text x="820" y="466" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">コトリノウタ</text>
+<rect x="1120" y="440" width="76" height="34" rx="17" fill="#10281E"/>
+<text x="1158" y="464" font-size="17" font-weight="600" fill="#5FD39A" text-anchor="middle">勝負</text>
+<line x1="264" y1="560" x2="1256" y2="560" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="534" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">5R</text>
+<text x="350" y="534" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">12:20</text>
+<text x="440" y="534" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">3歳以上1勝 芝2000</text>
+<text x="740" y="535" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="534" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">2</text>
+<text x="820" y="534" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">ナミノアワ</text>
+<line x1="264" y1="628" x2="1256" y2="628" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="602" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">6R</text>
+<text x="350" y="602" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">12:50</text>
+<text x="440" y="602" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">2歳未勝利 ダ1800</text>
+<text x="740" y="603" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="602" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">9</text>
+<text x="820" y="602" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">ヒカリノミチ</text>
+<line x1="264" y1="696" x2="1256" y2="696" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="670" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">7R</text>
+<text x="350" y="670" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">13:25</text>
+<text x="440" y="670" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">3歳以上2勝 芝1600</text>
+<text x="740" y="671" font-size="22" font-weight="700" fill="#FF7B72" text-anchor="start">◎</text>
+<text x="772" y="670" font-size="19" font-weight="600" fill="#F2F3F5" text-anchor="start">6</text>
+<text x="820" y="670" font-size="17" font-weight="400" fill="#F2F3F5" text-anchor="start">アサヒノカケラ</text>
+<rect x="1120" y="644" width="76" height="34" rx="17" fill="#10281E"/>
+<text x="1158" y="668" font-size="17" font-weight="600" fill="#5FD39A" text-anchor="middle">勝負</text>
+<text x="264" y="784" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">※印は発走前に確定し、後から書き換えません。</text>
 </svg>
