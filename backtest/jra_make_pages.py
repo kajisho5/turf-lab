@@ -72,6 +72,11 @@ def learn_names(html_paths, path=NAMES_PATH):
     return len(d["j"]) + len(d["t"]) - n0
 
 
+def esc(x):
+    """netkeibaは本文中の ' や " をそのまま出す。&<> だけ置換する"""
+    return html.escape(x, quote=False)
+
+
 def load_um(paths, ped=None):
     """UM（競走馬マスタ）レコード(1609バイト)から 血統登録番号 → 父・母父 を作る
     位置は build_jra_pedigree.py が実データで同定したもの: 登録番号11:21 / 父名214:250 / 母父名398:434
@@ -241,7 +246,7 @@ def past_cell(ra_line, se_line, nfield_fallback=None):
         '<div class="Data05">%s <strong>%s</strong></div>\n<div class="Data03">%s</div>\n'
         '<div class="Data06">%s</div>\n</div>\n</td>\n'
     ) % (cls, d["rid"], y, m, dd, JYO.get(d["jyo"], d["jyo"]), rank, d["rid"],
-         html.escape(class_text(d)), icon, d5, going, d3, d6)
+         esc(class_text(d)), icon, d5, going, d3, d6)
 
 
 def horse_row(se_line, past_html, ped, names=None):
@@ -249,14 +254,14 @@ def horse_row(se_line, past_html, ped, names=None):
     hid = se_line[30:40].decode("ascii")
     waku = se_line[27:28].decode("ascii")
     uma = int(se_line[28:30])
-    name = html.escape(s(se_line[40:76]))
+    name = esc(s(se_line[40:76]))
     sex = SEX.get(se_line[78:79], "")
     age = num(se_line[82:84])
     tz = TOZAI.get(se_line[84:85], "")
     tcode = se_line[85:90].decode("ascii")
-    tname = html.escape(names["t"].get(tcode) or s(se_line[90:98]).replace(" ", ""))
+    tname = esc(names["t"].get(tcode) or s(se_line[90:98]).replace(" ", ""))
     jcode = se_line[296:301].decode("ascii")
-    jname = html.escape(names["j"].get(jcode) or s(se_line[306:314]).replace(" ", ""))
+    jname = esc(names["j"].get(jcode) or s(se_line[306:314]).replace(" ", ""))
     mk = se_line[76:78]
     belong_icon = ('<span class="Icon_HorseMark Icon_MaruChi"></span>' if mk == b"05" else
                    ('<span class="Icon_HorseMark Icon_MaruGai"></span>' if mk == b"06" else ""))
@@ -275,8 +280,8 @@ def horse_row(se_line, past_html, ped, names=None):
         '</div>\n</td>\n<td class="Jockey">\n<span class="Barei">%s%s</span>\n'
         '<a href="https://db.netkeiba.com/jockey/result/recent/%s" target="_blank">%s</a><br />\n'
         '<span>%s</span>\n</td>\n%s</tr>\n'
-    ) % (uma, waku, waku, uma, html.escape(sire), hid, belong_icon, name, mark,
-         ("(%s)" % html.escape(dam)) if dam else "", tcode, tz, tname, sex, age if age is not None else "",
+    ) % (uma, waku, waku, uma, esc(sire), hid, belong_icon, name, mark,
+         ("(%s)" % esc(dam)) if dam else "", tcode, tz, tname, sex, age if age is not None else "",
          jcode, jname, ("%.1f" % (kin / 10)) if kin else "", past_html)
 
 
@@ -320,7 +325,7 @@ def build(date, paths, ped, names=None):
                 if len(cells) >= 5:
                     break
             rows.append(horse_row(l, "".join(cells), ped, names))
-        nm = html.escape(class_text(d))
+        nm = esc(class_text(d))
         gi = GRADE_ICON.get(d["grade"])
         gicon = ('<span class="Icon_GradeType Icon_GradeType%d"></span>' % gi) if gi and gi <= 3 else ""
         post = "%s:%s" % (d["post"][:2], d["post"][2:]) if d["post"].isdigit() else ""
@@ -347,7 +352,7 @@ def build(date, paths, ped, names=None):
             '<div class="RaceList_ItemTitle"><span class="ItemTitle">%s</span>%s</div>\n'
             '<div class="RaceData"><span class="RaceList_Itemtime">%s</span>'
             '<span class="RaceList_ItemLong">%s%sm</span><span class="RaceList_Itemnumber">%d頭</span></div>\n'
-            '</div>\n</a>\n</li>\n' % (d["rid"], d["r"], html.escape(class_text(d)), gicon, post,
+            '</div>\n</a>\n</li>\n' % (d["rid"], d["r"], esc(class_text(d)), gicon, post,
                                        d["surf"] or "", d["dist"] or "", d["shusso"] or d["toroku"] or 0))
     if items:
         pages["https://race.netkeiba.com/top/race_list_sub.html?kaisai_date=" + date] = (
@@ -374,6 +379,12 @@ def main():
     ped = json.load(open(a.pedigree, encoding="utf-8")) if a.pedigree and os.path.exists(a.pedigree) else {}
     if a.um:
         load_um(a.um, ped)
+    al_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jra_ped_alias.json")
+    if os.path.exists(al_path):  # JRA-VANの英字・小書き仮名表記 → netkeibaのカタカナ表記
+        al = json.load(open(al_path, encoding="utf-8"))
+        for v in ped.values():
+            for k in ("sire", "damsire"):
+                v[k] = al.get(v.get(k, ""), v.get(k, ""))
     pages, races = build(a.date, a.dump, ped)
     os.makedirs(a.outdir, exist_ok=True)
     with open(os.path.join(a.outdir, "pages.json"), "w", encoding="utf-8") as f:
