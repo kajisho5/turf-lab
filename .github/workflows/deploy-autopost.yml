@@ -9,6 +9,11 @@ on:
       - "tools/deploy_window.py"
       - ".github/workflows/deploy-autopost.yml"
   workflow_dispatch:
+    inputs:
+      now:
+        description: "投稿の回の前後でも待たずに今すぐ公開する（本人が急ぐと言った時だけ）"
+        type: boolean
+        default: false
 concurrency:
   group: deploy-autopost
   cancel-in-progress: false
@@ -24,8 +29,10 @@ jobs:
       - name: 投稿の回の前後なら、過ぎるまで待つ
         env:
           EVENT: ${{ github.event_name }}
+          NOW: ${{ inputs.now }}
         run: |
           if [ "$EVENT" = "schedule" ]; then echo "毎朝の回は待たない"; exit 0; fi
+          if [ "$NOW" = "true" ]; then echo "::warning::手動で「今すぐ」が選ばれたので待たずに公開します"; exit 0; fi
           w=$(python3 tools/deploy_window.py)
           if [ "$w" -gt 0 ]; then
             echo "::warning::投稿の回の前後なので、$((w/60))分待ってから公開します"
