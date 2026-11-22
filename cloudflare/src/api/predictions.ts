@@ -111,6 +111,41 @@ export async function predictions(c: Ctx): Promise<Response> {
     });
   }
 
+  /* ---- 件数の確認（2026-11-23・自動投稿の段階の確認用。読むだけ）----
+     ?action=summary&date=YYYYMMDD&mode=nar|jra → 場ごとに レース数・印あり・見送り・印なし（欠け）・結果のある数 */
+  if (action === 'summary') {
+    const date = q(url, 'date') ?? ''; const mode = q(url, 'mode') ?? '';
+    if (!/^\d{8}$/.test(date) || (mode !== 'nar' && mode !== 'jra')) return reply({ ok: false, error: 'date=YYYYMMDD と mode=nar|jra が必要' }, 400);
+    const rs = await db.prepare('SELECT k, body, body_gz FROM predictions WHERE date=? AND COALESCE(mode_raw,\'\')=? ORDER BY k').bind(date, mode).all();
+    const tracks: Rec[] = []; const predRids: string[] = [];
+    for (const row of rs.results) {
+      let j: Rec | null = null;
+      try { j = JSON.parse(await unpackBody(row as { body?: unknown; body_gz?: unknown })) as Rec; } catch { j = null; }
+      const races = (j && Array.isArray(j.races)) ? (j.races as Rec[]) : [];
+      const pred = races.filter((r) => r && !r.skip && Array.isArray(r.marks) && (r.marks as unknown[]).length);
+      pred.forEach((r) => { if (r.race_id) predRids.push(String(r.race_id)); });
+      tracks.push({ tc: j ? phpStr(j.tc) : String((row as Rec).k), trackName: j ? phpStr(j.trackName ?? '') : '', races: races.length,
+        pred: pred.length, skip: races.filter((r) => r && r.skip).length,
+        noMarks: races.filter((r) => r && !r.skip && !(Array.isArray(r.marks) && (r.marks as unknown[]).length)).length,
+        predRids: pred.map((r) => String(r.race_id ?? '')), unreadable: j ? 0 : 1 });
+    }
+    const have = new Set<string>();
+    for (let i = 0; i < predRids.length; i += 90) {
+      const part = predRids.slice(i, i + 90).map(safeKey);
+      const r2 = await db.prepare(`SELECT k FROM results WHERE k IN (${part.map(() => '?').join(',')})`).bind(...part).all<{ k: string }>();
+      r2.results.forEach((x) => have.add(x.k));
+    }
+    let pred = 0, res = 0;
+    for (const t of tracks) {
+      const ids = (t.predRids as string[]);
+      t.results = ids.filter((x) => have.has(safeKey(x))).length;
+      t.noResult = ids.filter((x) => !have.has(safeKey(x)));
+      pred += ids.length; res += t.results as number;
+      delete t.predRids;
+    }
+    return reply({ ok: true, date, mode, tracks, total: { tracks: tracks.length, pred, results: res } });
+  }
+
   /* ---- 保存日一覧 ---- */
   if (action === 'dates') {
     const rs = await db.prepare(

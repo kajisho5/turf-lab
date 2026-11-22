@@ -30,6 +30,7 @@ import { runHits, rememberMorning } from "./hits.js";
 import { runGrades, saveGrades } from "./grade.js";
 import { wakeDeploy, tokenDaysLeft } from "./wake.js";
 import { runWarm } from "./warm.js";
+import { STEPS, loadStage, saveStage, listStages, running, storedPredictions, storedResults, gateFetch, gateGen, saveGen, loadGen, queueJob, runJobs, listJobs, earlyFetchTime, isNoRace } from "./stages.js";
 import { jst, isRehearsalTime, retryKind, stateOf, markStart, saveState, loadState, runRetry, rehearsal, runLate, runAsk, queueAsk, errsOf, weeklyTarget, claimWeekly, weeklyDone } from "./guard.js";
 const MODES = ["nar", "jra"];               // 中央は開催が無ければ0件で自然にスキップ
 /* ★2026-10-29★ Cloudflare上の初回ドライランで朝だけ500になった（夜は成功）。
@@ -109,7 +110,7 @@ export default {
         try {
           if (retryKind(event.scheduledTime) && env.DRYRUN !== "1") {
             const rr = await runRetry(env, event.scheduledTime, MODES,
-              (kind, mode) => runAll(env, kind, { dry: false, only: mode }),
+              (kind, mode) => runAll(env, kind, { dry: false, only: mode, day: jst(event.scheduledTime).date }),
               (kind, r, note) => notifyMail(env, kind, r, null, note));
             if (rr && (rr.warned || (rr.run && rr.run.length))) console.log("autopost retry", JSON.stringify(rr));
           }
@@ -134,6 +135,31 @@ export default {
             if (ar) console.log("autopost ask", JSON.stringify(ar));
           }
         } catch (e) { console.error("ask", String(e && e.message || e)); }
+        // 手で頼まれた段階（取得・生成・投稿）を1件動かす（/stage?...&go=1 で置いた依頼。src/stages.js）
+        try {
+          if (env.DRYRUN !== "1") {
+            const jr = await runJobs(env, event.scheduledTime,
+              (j) => runAll(env, j.kind, { dry: false, only: j.mode, date: j.date, steps: j.steps, force: j.force, accept: j.accept }),
+              (kind, r, note) => notifyMail(env, kind, r, null, note));
+            if (jr) console.log("autopost job", JSON.stringify({ job: jr.job, ok: jr.result && jr.result.ok, error: jr.result && jr.result.error }));
+          }
+        } catch (e) { console.error("job", String(e && e.message || e)); }
+        // 中央の先行取得（7:00・7:20・7:40・8:00）。予想を作って保存するだけ。8:30 の回はこれを使って画像を作る（作り直さない）
+        try {
+          const ef = earlyFetchTime(event.scheduledTime);
+          if (ef && env.DRYRUN !== "1" && env.EARLY_JRA !== "0" && env.DB) {
+            const d = jst(event.scheduledTime).date;
+            const w = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(`wm:${d}`).first();
+            let rids = []; try { rids = (JSON.parse((w && w.body) || "{}").rids) || []; } catch {}
+            const st = await loadStage(env, d, "morning", "jra");
+            if (rids.length && !(st.fetch && (st.fetch.s === "ok" || st.fetch.s === "none")) && !running(st.fetch)) {
+              const r = await runAll(env, "morning", { dry: false, only: "jra", steps: ["fetch"], day: d });
+              const m = r && r.modes && r.modes.jra;
+              console.log("autopost early-jra", JSON.stringify({ ok: m && m.ok, error: m && m.error }));
+              if (ef.last && m && !m.ok) await notifyMail(env, "morning", r, null, "中央の先行取得（8:30 の回でもう一度取ります）");
+            }
+          }
+        } catch (e) { console.error("early-jra", String(e && e.message || e)); }
         // 重賞の日の1枚（発走2時間前に単独で出す。src/grade.js）。止める時は GRADE="0"
         if (env.GRADE !== "0") {
           try {
@@ -225,7 +251,7 @@ export default {
       try { const st = await loadState(env, day, kind); if (st) { console.error("autopost: この回はもう動いています", day, kind, JSON.stringify(st)); return; } }
       catch (e) { console.error("loadState", String(e && e.message || e)); }
       try { await markStart(env, day, kind); } catch (e) { console.error("markStart", String(e && e.message || e)); }
-      try { r = await runAll(env, kind, { dry: env.DRYRUN === "1" }); console.log("autopost result", JSON.stringify(r)); }
+      try { r = await runAll(env, kind, { dry: env.DRYRUN === "1", day }); console.log("autopost result", JSON.stringify(r)); }
       catch (e) { err = e; console.error("scheduled", kind, e); }
       // 各モードの結果を残す（失敗したモードだけ、あとの回でやり直すため）
       try { const _e = errsOf(r, MODES); await saveState(env, day, kind, Object.assign({ modes: stateOf(r, MODES), tries: 0 }, Object.keys(_e).length ? { errs: _e } : {})); } catch (e) { console.error("saveState", String(e && e.message || e)); }
@@ -248,8 +274,27 @@ export default {
         return json(await queueAsk(env, Date.now(), { kind, mode, date }));
       } catch (e) { return json({ error: String(e && e.message || e) }, 500); }
     }
+    /* 段階ごとの確認と手動の実行（2026-11-23。src/stages.js）。
+       /stage?key=K[&date=YYYYMMDD]                          … その日の段階の状態を見る（何も動かさない）
+       /stage?key=K&kind=morning|evening&mode=nar|jra&step=fetch|gen|post|all[&date=][&force=1][&accept=1]&go=1
+                                                             … 次の10分ごとの回で、その段階を1回動かす */
+    if (url.pathname.endsWith("/stage")) {
+      if (!env.TRIGGER_KEY || url.searchParams.get("key") !== env.TRIGGER_KEY) return json({ error: "forbidden (key不一致)" }, 403);
+      try {
+        const g = (k) => url.searchParams.get(k) || undefined;
+        const d = g("date") || jst(Date.now()).date;
+        if (g("go") === "1") return json(await queueJob(env, Date.now(), { kind: g("kind"), mode: g("mode"), date: g("date"), step: g("step") || "all", force: g("force") === "1", accept: g("accept") === "1" }));
+        const view = {};
+        for (const kind of ["morning", "evening"]) {
+          view[kind] = { all: await loadState(env, d, kind) };
+          for (const mode of MODES) view[kind][mode] = await loadStage(env, d, kind, mode);
+        }
+        return json({ date: d, stages: view, jobs: await listJobs(env, d),
+          note: "s: ok=済み / miss=欠けあり（理由は why と missing）/ fail=失敗 / none=出すものが無い / run=動いている途中 / part=途中まで投稿。go=1 で段階を動かす" });
+      } catch (e) { return json({ error: String(e && e.message || e) }, 500); }
+    }
     if (!url.pathname.endsWith("/run")) {
-      return json({ ok: true, usage: "/run?kind=morning|evening&key=TRIGGER_KEY[&dry=1][&mode=nar|jra]  /  /redo?kind=evening&mode=nar|jra[&date=YYYYMMDD]&key=TRIGGER_KEY[&go=1]" });
+      return json({ ok: true, usage: "/run?kind=morning|evening&key=TRIGGER_KEY[&dry=1][&mode=nar|jra]  /  /redo?kind=evening&mode=nar|jra[&date=YYYYMMDD]&key=TRIGGER_KEY[&go=1]  /  /stage?key=TRIGGER_KEY[&kind=&mode=&step=fetch|gen|post|all&go=1]" });
     }
     if (!env.TRIGGER_KEY || url.searchParams.get("key") !== env.TRIGGER_KEY) {
       return json({ error: "forbidden (key不一致)" }, 403);
@@ -309,8 +354,153 @@ async function notifyMail(env, kind, r, err, note) {
   });
 }
 
-/* 朝/夜を全モード分まとめて実行。dry=true なら投稿せず要約を返す。 */
-async function runAll(env, kind, { dry, only, date, caption, extra, keep } = {}) {
+/* 朝/夜を全モード分まとめて実行。dry=true なら投稿せず要約を返す。
+   ★2026-11-23 から「取得 → 確認 → 生成 → 確認 → 投稿」の段階で回す（src/stages.js）★
+   extra（昼の出し直し・1つの場だけ）を付けた回だけ、今までどおりの一度に作って出す形（runAllOnce）で回す。 */
+async function runAll(env, kind, opts = {}) {
+  if (opts.extra || opts.keep || (kind !== "morning" && kind !== "evening")) return runAllOnce(env, kind, opts);
+  return runStaged(env, kind, opts);
+}
+
+/* 段階で回す。steps＝動かす段階（省略で全部。済みの段階は飛ばして次へ）、force＝済みの取得・生成をやり直す */
+async function runStaged(env, kind, { dry, only, date, day, caption, steps, force, accept } = {}) {
+  const modes = only ? [only] : MODES;
+  const want = steps && steps.length ? steps : STEPS;
+  const summary = { kind, dry: !!dry, at: new Date().toISOString(), modes: {} };
+  let browser = null;
+  const getBrowser = async () => browser || (browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS }));
+  try {
+    for (const mode of modes) {
+      const t0 = Date.now();
+      try { summary.modes[mode] = await runModeStaged(env, getBrowser, kind, mode, { dry, date, day, caption, want, force, accept }); }
+      catch (e) {
+        summary.modes[mode] = { ok: false, error: String(e && e.message || e) };
+        if (e && e.done && e.done.length) summary.modes[mode].partial = e.done;
+      }
+      summary.modes[mode].sec = Math.round((Date.now() - t0) / 1000);
+    }
+  } finally {
+    if (browser) { try { await browser.close(); } catch (_) { /* noop */ } }
+  }
+  return summary;
+}
+
+async function runModeStaged(env, getBrowser, kind, mode, { dry, date, day: day0, caption, want, force, accept }) {
+  const day = date || day0 || jst(Date.now()).date;   // 状態を残す日付（ページに渡す date が無い回は、動いた時刻の日付）
+  const hasDB = !!env.DB;
+  let st = hasDB ? await loadStage(env, day, kind, mode) : {};
+  const keep = async () => { if (hasDB && !dry) await saveStage(env, day, kind, mode, st); };
+  const stamp = (step, o) => { st = Object.assign({}, st, { [step]: Object.assign({ at: Date.now() }, o) }); };
+  const res = { ok: false, error: null, stage: null };
+  const stop = (step, why) => { res.error = why; res.stage = Object.assign({ at: step }, st); return res; };
+  for (const step of STEPS) if (running(st[step])) return stop(step, `${step} の段階が動いている途中です（重ねて動かしません）`);
+
+  /* ---- 取得 ---- */
+  let fetchedNow = false;
+  if (want.includes("fetch") && (force || !st.fetch || st.fetch.s !== "ok")) {
+    stamp("fetch", { s: "run" }); await keep();
+    const b = await getBrowser();
+    const page = await renderOne(b, env, kind, mode, date, "&stage=fetch");
+    if (!page.ok) {
+      const none = isNoRace(page.error);
+      stamp("fetch", { s: none ? "none" : "fail", why: String(page.error || "取得できなかった").slice(0, 300) }); await keep();
+      return stop("fetch", none ? String(page.error) : "取得の失敗: " + String(page.error || ""));
+    }
+    let g;
+    if (hasDB) {
+      // ページが閉じたあとに保存が届くこともあるので、足りなければ少し待って数え直す
+      for (let t = 0; t < 3; t++) {
+        const store = await storedPredictions(env, page.date || day, mode);
+        let expectRids = [], results = null;
+        if (kind === "morning" && mode === "jra") {
+          try { const w = await env.DB.prepare("SELECT body FROM xpost_log WHERE k=?").bind(`wm:${page.date || day}`).first(); const j = w && w.body ? JSON.parse(w.body) : null; expectRids = (j && j.rids) || []; } catch {}
+        }
+        if (kind === "evening") { const rids = []; store.forEach(t => t.races.forEach(r => { if (r.pred && r.rid) rids.push(r.rid); })); results = await storedResults(env, rids); }
+        g = gateFetch(kind, page, store, { expectRids, results });
+        if (g.s !== "miss" || t === 2) break;
+        await new Promise(r => setTimeout(r, 5000));
+      }
+    } else g = { s: "ok", total: 0, got: 0, missing: [], why: "データベースが無いので数えていない" };
+    stamp("fetch", { s: g.s, total: g.total, got: g.got, missing: (g.missing || []).slice(0, 40), why: g.why || null }); await keep();
+    if (g.s === "none") return stop("fetch", "no races（" + (g.why || "") + "）");
+    if (g.s !== "ok") return stop("fetch", `取得の確認で止めました: ${g.why}。欠け: ${(g.missing || []).slice(0, 8).join("、")}${(g.missing || []).length > 8 ? " ほか" : ""}`);
+    fetchedNow = true;
+  }
+  /* 欠けを承知で先に進める（手で頼んだ時だけ。accept=1）。欠けの中身は記録に残したまま */
+  if (accept && st.fetch && st.fetch.s === "miss" && (want.includes("gen") || want.includes("post"))) {
+    stamp("fetch", Object.assign({}, st.fetch, { s: "ok", accepted: 1, why: "欠けを承知で手で通した: " + (st.fetch.why || "") })); await keep();
+  }
+  if (!want.includes("gen") && !want.includes("post")) { res.ok = true; res.stage = st; return res; }
+  if (!st.fetch || st.fetch.s !== "ok") return stop("gen", st.fetch && st.fetch.s === "none" ? "no races（" + (st.fetch.why || "") + "）" : "取得が済んでいないので生成しません");
+
+  /* ---- 生成 ---- */
+  let out = null;
+  if (want.includes("gen") && (force || fetchedNow || !st.gen || st.gen.s !== "ok")) {
+    stamp("gen", { s: "run" }); await keep();
+    const b = await getBrowser();
+    out = await renderOne(b, env, kind, mode, date, kind === "morning" ? "&stage=gen" : "");
+    let expectCards = 0;
+    if (kind === "morning" && hasDB) { try { expectCards = (await storedPredictions(env, day, mode)).filter(t => t.races.length).length; } catch {} }
+    const g = gateGen(kind, out, { expectCards });
+    if (g.s !== "ok") {
+      stamp("gen", { s: isNoRace(g.why) ? "none" : g.s, why: String(g.why).slice(0, 300) }); await keep();
+      return stop("gen", isNoRace(g.why) ? g.why : "生成の確認で止めました: " + g.why);
+    }
+    if (hasDB && !dry) {
+      try { await saveGen(env, day, kind, mode, out); }
+      catch (e) { stamp("gen", { s: "fail", why: String(e && e.message || e).slice(0, 300) }); await keep(); return stop("gen", "生成物を保存できない: " + String(e && e.message || e)); }
+    }
+    stamp("gen", { s: "ok", images: g.images, posts: g.posts }); await keep();
+  }
+  if (!want.includes("post")) { res.ok = true; res.stage = st; return res; }
+  if (!out) {
+    if (!st.gen || st.gen.s !== "ok") return stop("post", "生成が済んでいないので投稿しません");
+    out = hasDB ? await loadGen(env, day, kind, mode) : null;
+    if (!out) return stop("post", "保存した生成物が読めないので投稿しません（生成をやり直してください）");
+  }
+
+  /* ---- 投稿 ---- */
+  const thread = toThread(kind, mode, out, caption);
+  const one = mergePosts(thread, kind === "evening" ? out.caption : null);
+  const posts = one ? [one] : thread;
+  Object.assign(res, { ok: true, posts: posts.map(p => ({ text: p.text, images: p.images.length })) });
+  if (dry || !posts.length) { res.stage = st; return res; }
+  if (st.post && (st.post.s === "ok" || st.post.s === "part")) return stop("post", "もう投稿しています（二重には出しません）");
+  if (hasDB && kind === "morning") {
+    const m = await env.DB.prepare("SELECT tweet_id FROM xpost_log WHERE k=?").bind(`m:${out.date || day}:${mode}`).first();
+    if (m && m.tweet_id) { stamp("post", { s: "ok", ids: [m.tweet_id], why: "朝の投稿の記録がすでにある" }); await keep(); return stop("post", "もう投稿しています（朝の投稿の記録がある）"); }
+  }
+  stamp("post", { s: "run" }); await keep();
+  let r;
+  try {
+    try { r = await postThread(env, posts); }
+    catch (e) {
+      if (!one || (e && e.done && e.done.length)) throw e;
+      res.mergeError = String(e && e.message || e);
+      console.error("merged post failed, falling back to thread", res.mergeError);
+      r = await postThread(env, thread);
+    }
+  } catch (e) {
+    const done = (e && e.done) || [];
+    stamp("post", { s: done.length ? "part" : "fail", ids: done.map(x => x.id), why: String(e && e.message || e).slice(0, 300) }); await keep();
+    if (kind === "morning" && done[0] && done[0].id) { try { await rememberMorning(env, out.date || day, mode, done[0].id); } catch (_) { /* noop */ } }
+    if (e && typeof e === "object") e.date = out.date;
+    throw e;
+  }
+  res.posted = r;
+  stamp("post", { s: "ok", ids: r.map(x => x.id) }); await keep();
+  if (kind === "morning" && r && r[0] && r[0].id) {
+    try { await rememberMorning(env, out.date || day, mode, r[0].id); } catch (e) { console.error("rememberMorning", String(e && e.message || e)); }
+    if (out.grades && out.grades.length) {
+      try { await saveGrades(env, out.date || day, mode, out.grades); res.grades = out.grades.length; } catch (e) { console.error("saveGrades", String(e && e.message || e)); }
+    }
+  }
+  res.stage = st;
+  return res;
+}
+
+/* 今までどおり、1回ページを開いて作って出す（昼の出し直し・1つの場だけの出し直しで使う） */
+async function runAllOnce(env, kind, { dry, only, date, caption, extra, keep } = {}) {
   const modes = only ? [only] : MODES;
   const browser = await puppeteer.launch(env.BROWSER, { keep_alive: KEEP_ALIVE_MS });
   const summary = { kind, dry: !!dry, at: new Date().toISOString(), modes: {} };

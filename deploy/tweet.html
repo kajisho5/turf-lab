@@ -2204,7 +2204,21 @@ function init(){
              夜の答え合わせにも入らない（見送りは集計の外）。 */
           const _late=new URLSearchParams(location.search).get("late")==="1" && date===jstTodayStr();
           if(_late){ const _n=new Date(Date.now()+9*3600e3); window.__LATE_NOW=_n.getUTCHours()*60+_n.getUTCMinutes(); }
-          await runAll();                       // 全場予想（保存も走る＝夜の答え合わせの素）
+          /* ★段階（stage・2026-11-23）★ 自動投稿の「取得 → 確認 → 生成 → 確認 → 投稿」用。
+             stage=fetch … 予想を作って保存するだけ（画像は作らない）。場ごとの件数を返す
+             stage=gen   … 予想を作り直さず、保存した予想から画像と文を作る（投稿する絵＝夜に答え合わせする予想、になる）
+             指定なし     … 今までどおり（予想を作ってそのまま画像にする） */
+          const _stage=String(new URLSearchParams(location.search).get("stage")||"");
+          if(_stage==="gen"){
+            const _sv=await fetch(`predictions.php?action=list&mode=${encodeURIComponent(MODE)}&date=${encodeURIComponent(date)}&_=${Date.now()}`,{headers:{Accept:"application/json"},cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null);
+            const _recs=((_sv&&_sv.records)||[]).filter(x=>x&&x.tc&&x.races&&x.races.length).sort((a,b)=>String(a.tc).localeCompare(String(b.tc)));
+            if(!_recs.length){ window.__autoOut={ok:false, kind:"morning", stage:"gen", mode:MODE, date, error:"保存した予想がありません（先に取得の段階を）"}; return; }
+            allResults={};
+            _recs.forEach(pp=>{ allResults[String(pp.tc)]={trackName:pp.trackName, races:pp.races.map(r=>Object.assign({track:pp.trackName},r))}; });
+          } else {
+            await runAll();                       // 全場予想（保存も走る＝夜の答え合わせの素）
+            try{ await Promise.race([Promise.allSettled(window.__predSaves||[]), new Promise(function(r){ setTimeout(r,30000); })]); }catch(_){}
+          }
           /* ★1つの場だけ出す（onlytc=場の番号・2026-11-21）★ 朝の投稿でその場だけ抜けた日に、あとからその場だけ出す用。
              予想は全場ぶん回るが（保存は noclobber なので朝の版は変わらない）、画像と文に使うのは指定の場だけ。 */
           const _otc=new URLSearchParams(location.search).get("onlytc");
@@ -2225,6 +2239,14 @@ function init(){
                 body:JSON.stringify({mode:MODE,date,tc:"pub_"+tc,ts:Date.now(),firm:{},ovr:{},pub})});
             }
           }catch(_){}
+          if(_stage==="fetch"){
+            const tracks=Object.keys(allResults).map(tc=>{ const g=allResults[tc]||{}; const rs=g.races||[];
+              return { tc:String(tc), trackName:String(g.trackName||""), total:rs.length,
+                pred:rs.filter(r=>r&&!r.skip&&(r.marks||[]).length).length, skip:rs.filter(r=>r&&r.skip).length,
+                err:rs.filter(r=>r&&!r.skip&&!(r.marks||[]).length).length, rids:rs.map(r=>r&&r.race_id).filter(Boolean).map(String) }; });
+            window.__autoOut={ok:true, kind:"morning", stage:"fetch", mode:MODE, date, tracks, saves:(window.__predSaves||[]).length};
+            return;
+          }
           const cards=[];
           for(const tc of Object.keys(allResults)){
             const g=allResults[tc]; if(!g||!(g.races||[]).length) continue;
@@ -2383,6 +2405,17 @@ function init(){
              これが無いと毎晩「【中央】的中なし。推奨0R中0的中」が出てしまう（2026-10-30に発見）。 */
           { let _n=0; for(const _tc of Object.keys(allCheck)){ (allCheck[_tc].races||[]).forEach(c=>{ if(c&&c.decided&&!c.skip) _n++; }); }
             if(!_n){ window.__autoOut={ok:false, kind:"evening", mode:MODE, date, error:"no races（確定レースなし）"}; return; } }
+          /* ★取得の段階（stage=fetch・2026-11-23）★ 結果を取って保存するだけ。件数を返し、画像は作らない。
+             次に進むかは自動投稿の側が「保存できた結果の数」で決める */
+          if(_p.get("stage")==="fetch"){
+            try{ await Promise.race([Promise.allSettled(window.__resSaves||[]), new Promise(function(r){ setTimeout(r,30000); })]); }catch(_){}
+            const tracks=Object.keys(allCheck).map(tc=>{ const cs=(allCheck[tc].races||[]).filter(c=>c&&!c.skip&&(c.marks||[]).length);
+              return { tc:String(tc), trackName:String(allCheck[tc].trackName||""), total:cs.length, decided:cs.filter(c=>c.decided).length,
+                cancelled:cs.filter(c=>c.cancelled).length, cancelledRids:cs.filter(c=>c.cancelled&&c.race_id).map(c=>String(c.race_id)),
+                waiting:cs.filter(c=>!c.decided&&!c.cancelled).map(c=>c.no) }; });
+            window.__autoOut={ok:true, kind:"evening", stage:"fetch", mode:MODE, date, tracks, saves:(window.__resSaves||[]).length};
+            return;
+          }
           /* ★結果が取れていないレースが多い時は投稿しない（2026-11-14）★
              中央は結果のページが取れない回が多い。一部しか取れていないまま答え合わせを出すと、少ないレースの成績を「今日の成績」として出してしまう。
              予想したレースの8割以上で結果（または取消）が分かっている時だけ出す。足りない時は失敗として返す（あとの回でやり直す）。 */
@@ -3465,12 +3498,12 @@ function savePredictions(date,tc,trackName,races,resArr){
          （2026-07-31、実際に全レースが夜に書き換わり結果に都合よくなっていた）。
          手動の「全場予想」ボタンからの保存は noclobber=false で従来通り上書き可。 */
       noclobber: !!(LINE_AUTO || autoOddsBusy),
-      races: src.map((m)=>({ no:m.no, name:m.name, race_id:m.race_id||null, post:(m.post||null), surface:(m.surface||null), dist:(m.dist||null), going:(m.going||null), marks:m.marks, ranked:(m.ranked||null), firmO:(m.firmO!=null?m.firmO:null), firm1:(m.firm1!=null?m.firm1:null), oProb:(m.oProb!=null?m.oProb:null), hasOdds:(m.hasOdds!==false), field:(m.field||0), chaos:(m.chaos||null), skip:!!m.skip, skipReason:m.skipReason||null, ovr:(m.ovr||null), scratched:(m.scratched||[]), shadow:(m.shadow||null), strong:(m.strong||null) })),
+      races: src.map((m)=>({ no:m.no, name:m.name, race_id:m.race_id||null, post:(m.post||null), surface:(m.surface||null), dist:(m.dist||null), going:(m.going||null), marks:m.marks, ranked:(m.ranked||null), firmO:(m.firmO!=null?m.firmO:null), firm1:(m.firm1!=null?m.firm1:null), oProb:(m.oProb!=null?m.oProb:null), hasOdds:(m.hasOdds!==false), field:(m.field||0), chaos:(m.chaos||null), skip:!!m.skip, skipReason:m.skipReason||null, ovr:(m.ovr||null), scratched:(m.scratched||[]), shadow:(m.shadow||null), strong:(m.strong||null), grade:(m.grade||null) })),   /* grade: 重賞の1枚を保存から作るため（2026-11-23） */
       wx: (_WX_SAVE[tc]||null) };
     PRED_CACHE[predKey(date,tc)]=payload;   // セッション内キャッシュ（同一セッションの答え合わせ用）
     /* サーバー保存。フル版が弾かれたら（WAF/POSTサイズ制限）軽量版で自動リトライ。
        警告はステータスに上書きされない専用エリア(#saveWarn)へ。 */
-    (async()=>{
+    const _ps=(async()=>{
       function warn(msg,col){ let w=$("#saveWarn"); if(!w){ w=document.createElement("div"); w.id="saveWarn"; w.style.cssText="margin:6px 0;font-size:13px;font-weight:700"; const st=$("#status"); (st&&st.parentNode)?st.parentNode.insertBefore(w,st.nextSibling):document.body.appendChild(w); } w.innerHTML+=`<div style="color:${col}">${msg}</div>`; }
       async function post(p){ const r=await fetch("predictions.php?action=save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}); return await r.json(); }
       try{
@@ -3491,6 +3524,8 @@ function savePredictions(date,tc,trackName,races,resArr){
         }
       }
     })();   // keepaliveは64KB上限で大きい予想が失敗するので使わない
+    /* ★自動投稿の回では保存の終わりを待てるようにする（2026-11-23）★ 取得の段階は「保存できた件数」で次に進むかを決めるため */
+    if(LINE_AUTO){ (window.__predSaves=window.__predSaves||[]).push(_ps); }
   }catch(_){}
 }
 function markChangedCards(cardHost, tc){
