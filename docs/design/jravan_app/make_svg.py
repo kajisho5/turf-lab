@@ -151,6 +151,37 @@ for i, t in enumerate(["データはこのPCの中だけに保存します。外
     s.text(272, 708+i*30, t, 16, C['text'], C['bg'])
 s.save("04_setup.svg")
 
+
+# 5 買い目
+s = Svg("買い目"); frame(s, "今日のレース")
+s.text(264, 100, "東京 4R　買い目", 26, C['text'], C['bg'], 700)
+s.rect(480, 70, 76, 34, C['win'], r=17); s.text(518, 94, "勝負", 17, C['wintext'], C['win'], 600, "middle")
+s.line(264, 164, 954, 164)
+for x, t in [(284, "券種"), (400, "買い目"), (760, "金額")]: s.text(x, 152, t, 16, C['sub'], C['bg'], 500)
+bets = [("複勝", "5　コトリノウタ", "300円"), ("ワイド", "5 - 8", "200円"), ("ワイド", "5 - 6", "200円"), ("馬連", "5 - 8", "100円")]
+for i, (k, b, m) in enumerate(bets):
+    y = 164 + i*64
+    s.line(264, y+64, 954, y+64)
+    s.text(284, y+40, k, 18, C['text'], C['bg'], 600); s.text(400, y+40, b, 18, C['text'])
+    s.text(760, y+40, m, 18, C['text'], C['bg'], 600)
+s.rect(264, 436, 690, 64, C['surf'], C['line'], 8)
+s.text(284, 476, "合計 4点", 18, C['sub'], C['surf']); s.text(934, 476, "800円", 22, C['text'], C['surf'], 700, "end")
+s.rect(264, 524, 690, 120, C['warnbg'], r=8)
+s.text(284, 560, "今の実績では、買い続けると平均で損をします。", 17, C['warntext'], C['warnbg'], 700)
+s.text(284, 592, "複勝の回収率は84%（買った全540レースが分母）です。", 16, C['warntext'], C['warnbg'])
+s.text(284, 620, "買い目は参考です。使える金額の範囲で楽しんでください。", 16, C['warntext'], C['warnbg'])
+s.rect(976, 128, 280, 640, C['surf'], C['line'], 8)
+s.text(996, 164, "今日の上限", 18, C['text'], C['surf'], 700)
+s.rect(996, 180, 240, 44, C['bg'], C['line'], 6); s.text(1008, 210, "3,000円", 18, C['text'], C['bg'])
+s.text(996, 256, "今日ここまで 800円", 16, C['sub'], C['surf'])
+s.text(996, 282, "残り 2,200円", 16, C['text'], C['surf'])
+s.rect(996, 312, 240, 52, C['primary'], r=6); s.text(1116, 346, "IPATに転送", 18, "#FFFFFF", C['primary'], 700, "middle")
+for i, t in enumerate(["最後の投票ボタンは", "あなたが押します。", "ソフトが勝手に投票", "することはありません。"]):
+    s.text(996, 410+i*28, t, 16, C['text'], C['surf'], 700 if i < 2 else 400)
+for i, t in enumerate(["IPATの画面が変わると", "転送できなくなる", "ことがあります。", "（JRAが保証した", "方法ではありません）"]):
+    s.text(996, 560+i*28, t, 16, C['sub'], C['surf'])
+s.save("05_bets.svg")
+
 bad = [c for c in checks if c[4] < 4.5]
 small = [c for c in checks if c[5] < 16]
 print("文字色チェック:", len(checks), "件 / 4.5未満:", len(bad), "/ 16px未満:", len(small))

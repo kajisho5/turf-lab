@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" font-family="'Inter','Noto Sans JP','Noto Sans CJK JP',sans-serif">
+<title>買い目</title>
+<rect width="1280" height="800" fill="#0B0C0E"/>
+<rect x="0" y="0" width="240" height="800" rx="0" fill="#08090A"/>
+<line x1="240" y1="0" x2="240" y2="800" stroke="#26282D" stroke-width="1"/>
+<rect x="20" y="22" width="28" height="28" rx="7" fill="#5E6AD2"/>
+<text x="34" y="43" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">T</text>
+<text x="60" y="43" font-size="18" font-weight="600" fill="#E6E7EA" text-anchor="start">TURF LAB</text>
+<text x="24" y="96" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">ワークスペース</text>
+<rect x="10" y="112" width="220" height="40" rx="6" fill="#1F2127"/>
+<rect x="24" y="126" width="8" height="8" rx="4" fill="#5E6AD2"/>
+<text x="46" y="140" font-size="17" font-weight="600" fill="#E6E7EA" text-anchor="start">今日のレース</text>
+<text x="214" y="140" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">G T</text>
+<rect x="24" y="174" width="8" height="8" rx="4" fill="#26282D"/>
+<text x="46" y="188" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">成績</text>
+<text x="214" y="188" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">G R</text>
+<rect x="24" y="222" width="8" height="8" rx="4" fill="#26282D"/>
+<text x="46" y="236" font-size="17" font-weight="400" fill="#9498A1" text-anchor="start">設定</text>
+<text x="214" y="236" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">G S</text>
+<line x1="0" y1="728" x2="240" y2="728" stroke="#26282D" stroke-width="1"/>
+<text x="24" y="762" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">Ctrl+K で検索</text>
+<line x1="240" y1="56" x2="1280" y2="56" stroke="#26282D" stroke-width="1"/>
+<text x="264" y="35" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">データ更新 07:02　試用期間 あと23日</text>
+<text x="1256" y="35" font-size="16" font-weight="400" fill="#9498A1" text-anchor="end">サンプル表示（架空データ）</text>
+<text x="264" y="100" font-size="26" font-weight="700" fill="#F2F3F5" text-anchor="start">東京 4R　買い目</text>
+<rect x="480" y="70" width="76" height="34" rx="17" fill="#10281E"/>
+<text x="518" y="94" font-size="17" font-weight="600" fill="#5FD39A" text-anchor="middle">勝負</text>
+<line x1="264" y1="164" x2="954" y2="164" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="152" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">券種</text>
+<text x="400" y="152" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">買い目</text>
+<text x="760" y="152" font-size="16" font-weight="500" fill="#9498A1" text-anchor="start">金額</text>
+<line x1="264" y1="228" x2="954" y2="228" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="204" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">複勝</text>
+<text x="400" y="204" font-size="18" font-weight="400" fill="#F2F3F5" text-anchor="start">5　コトリノウタ</text>
+<text x="760" y="204" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">300円</text>
+<line x1="264" y1="292" x2="954" y2="292" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="268" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">ワイド</text>
+<text x="400" y="268" font-size="18" font-weight="400" fill="#F2F3F5" text-anchor="start">5 - 8</text>
+<text x="760" y="268" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">200円</text>
+<line x1="264" y1="356" x2="954" y2="356" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="332" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">ワイド</text>
+<text x="400" y="332" font-size="18" font-weight="400" fill="#F2F3F5" text-anchor="start">5 - 6</text>
+<text x="760" y="332" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">200円</text>
+<line x1="264" y1="420" x2="954" y2="420" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="396" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">馬連</text>
+<text x="400" y="396" font-size="18" font-weight="400" fill="#F2F3F5" text-anchor="start">5 - 8</text>
+<text x="760" y="396" font-size="18" font-weight="600" fill="#F2F3F5" text-anchor="start">100円</text>
+<rect x="264" y="436" width="690" height="64" rx="8" fill="#141517" stroke="#26282D" stroke-width="1"/>
+<text x="284" y="476" font-size="18" font-weight="400" fill="#9498A1" text-anchor="start">合計 4点</text>
+<text x="934" y="476" font-size="22" font-weight="700" fill="#F2F3F5" text-anchor="end">800円</text>
+<rect x="264" y="524" width="690" height="120" rx="8" fill="#2B2312"/>
+<text x="284" y="560" font-size="17" font-weight="700" fill="#E9C05A" text-anchor="start">今の実績では、買い続けると平均で損をします。</text>
+<text x="284" y="592" font-size="16" font-weight="400" fill="#E9C05A" text-anchor="start">複勝の回収率は84%（買った全540レースが分母）です。</text>
+<text x="284" y="620" font-size="16" font-weight="400" fill="#E9C05A" text-anchor="start">買い目は参考です。使える金額の範囲で楽しんでください。</text>
+<rect x="976" y="128" width="280" height="640" rx="8" fill="#141517" stroke="#26282D" stroke-width="1"/>
+<text x="996" y="164" font-size="18" font-weight="700" fill="#F2F3F5" text-anchor="start">今日の上限</text>
+<rect x="996" y="180" width="240" height="44" rx="6" fill="#0B0C0E" stroke="#26282D" stroke-width="1"/>
+<text x="1008" y="210" font-size="18" font-weight="400" fill="#F2F3F5" text-anchor="start">3,000円</text>
+<text x="996" y="256" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">今日ここまで 800円</text>
+<text x="996" y="282" font-size="16" font-weight="400" fill="#F2F3F5" text-anchor="start">残り 2,200円</text>
+<rect x="996" y="312" width="240" height="52" rx="6" fill="#5E6AD2"/>
+<text x="1116" y="346" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">IPATに転送</text>
+<text x="996" y="410" font-size="16" font-weight="700" fill="#F2F3F5" text-anchor="start">最後の投票ボタンは</text>
+<text x="996" y="438" font-size="16" font-weight="700" fill="#F2F3F5" text-anchor="start">あなたが押します。</text>
+<text x="996" y="466" font-size="16" font-weight="400" fill="#F2F3F5" text-anchor="start">ソフトが勝手に投票</text>
+<text x="996" y="494" font-size="16" font-weight="400" fill="#F2F3F5" text-anchor="start">することはありません。</text>
+<text x="996" y="560" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">IPATの画面が変わると</text>
+<text x="996" y="588" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">転送できなくなる</text>
+<text x="996" y="616" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">ことがあります。</text>
+<text x="996" y="644" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">（JRAが保証した</text>
+<text x="996" y="672" font-size="16" font-weight="400" fill="#9498A1" text-anchor="start">方法ではありません）</text>
+</svg>
